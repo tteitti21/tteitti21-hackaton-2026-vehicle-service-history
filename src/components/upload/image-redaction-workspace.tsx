@@ -34,10 +34,15 @@ import {
   renderEditorImage,
 } from "@/lib/images/canvas-renderer";
 import { postSanitizedImages } from "@/lib/images/sanitized-submission";
+import {
+  readRequestSizeResponseHeaders,
+  type RequestSizeResponseDetails,
+} from "@/lib/http/request-size-headers";
 
 interface ImageRedactionWorkspaceProps {
   maxFiles: number;
   maxBytesPerFile: number;
+  maxRequestBytes: number;
 }
 
 interface ImageAsset {
@@ -65,6 +70,7 @@ const MINIMUM_SELECTION_SIZE = 4;
 export function ImageRedactionWorkspace({
   maxFiles,
   maxBytesPerFile,
+  maxRequestBytes,
 }: Readonly<ImageRedactionWorkspaceProps>) {
   const {
     state,
@@ -82,6 +88,8 @@ export function ImageRedactionWorkspace({
   const [isPreparing, setIsPreparing] = useState(false);
   const [privacyConfirmed, setPrivacyConfirmed] = useState(false);
   const [imagesApproved, setImagesApproved] = useState(false);
+  const [requestSizeResponse, setRequestSizeResponse] =
+    useState<RequestSizeResponseDetails | null>(null);
   const [workspaceMessage, setWorkspaceMessage] = useState(
     "Lisää kuvat ja peitä niistä tarpeettomat tunnisteet.",
   );
@@ -109,6 +117,7 @@ export function ImageRedactionWorkspace({
     setPreparedImages([]);
     setPrivacyConfirmed(false);
     setImagesApproved(false);
+    setRequestSizeResponse(null);
   }, []);
 
   const invalidatePreparedImages = useCallback(() => {
@@ -159,6 +168,13 @@ export function ImageRedactionWorkspace({
 
   const selectedImage =
     images.find((image) => image.id === selectedImageId) ?? null;
+  const sanitizedImageBytes = preparedImages.reduce(
+    (total, image) => total + image.blob.size,
+    0,
+  );
+  const hasOversizedPreparedImages = preparedImages.some(
+    (image) => image.blob.size > maxBytesPerFile,
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -445,8 +461,13 @@ export function ImageRedactionWorkspace({
 
       preparedImagesRef.current = nextPreparedImages;
       setPreparedImages(nextPreparedImages);
+      const oversizedCount = nextPreparedImages.filter(
+        (image) => image.blob.size > maxBytesPerFile,
+      ).length;
       setWorkspaceMessage(
-        "Tarkista alla täsmälleen ne kuvat, jotka voidaan lähettää analyysiin myöhemmässä vaiheessa.",
+        oversizedCount > 0
+          ? `${oversizedCount} peitettyä PNG-kuvaa ylittää kuvakohtaisen kokorajan. Rajaa kuvaa pienemmäksi ennen lähetystä.`
+          : "Tarkista alla täsmälleen ne kuvat, jotka voidaan lähettää analyysiin.",
       );
     } catch {
       setWorkspaceMessage(
@@ -458,7 +479,11 @@ export function ImageRedactionWorkspace({
   };
 
   const approvePreparedImages = () => {
-    if (!privacyConfirmed || preparedImages.length === 0) {
+    if (
+      !privacyConfirmed ||
+      preparedImages.length === 0 ||
+      hasOversizedPreparedImages
+    ) {
       return;
     }
 
@@ -473,12 +498,16 @@ export function ImageRedactionWorkspace({
       !imagesApproved ||
       !privacyConfirmed ||
       preparedImagesRef.current.length === 0 ||
+      preparedImagesRef.current.some(
+        (image) => image.blob.size > maxBytesPerFile,
+      ) ||
       state.extractionStatus === "submitting"
     ) {
       return;
     }
 
     beginExtraction();
+    setRequestSizeResponse(null);
     setWorkspaceMessage(
       "Hyväksytyt peitetyt PNG-kuvat lähetetään OpenAI:lle poimintaa varten.",
     );
@@ -494,6 +523,7 @@ export function ImageRedactionWorkspace({
           height: image.height,
         })),
       );
+      setRequestSizeResponse(readRequestSizeResponseHeaders(response.headers));
       const payload: unknown = await response.json();
 
       if (!response.ok) {
@@ -788,17 +818,33 @@ export function ImageRedactionWorkspace({
                   <div>
                     <strong>{preparedImage.sourceName}</strong>
                     <span>
-                      Uusi PNG · {preparedImage.width} × {preparedImage.height} px
+                      Uusi PNG · {preparedImage.width} × {preparedImage.height}{" "}
+                      px · {formatBytes(preparedImage.blob.size)}
                     </span>
+                    {preparedImage.blob.size > maxBytesPerFile ? (
+                      <span className="sizeLimitWarning">
+                        Ylittää kuvakohtaisen rajan{" "}
+                        {formatBytes(maxBytesPerFile)}.
+                      </span>
+                    ) : null}
                   </div>
                 </li>
               ))}
             </ol>
 
+            <RequestSizeDebug
+              sanitizedImageBytes={sanitizedImageBytes}
+              requestBodyBytes={requestSizeResponse?.requestBodyBytes ?? null}
+              maximumRequestBytes={
+                requestSizeResponse?.maximumRequestBytes ?? maxRequestBytes
+              }
+            />
+
             <div className="consentPanel">
               <label>
                 <input
                   type="checkbox"
+                  disabled={hasOversizedPreparedImages}
                   checked={privacyConfirmed}
                   onChange={(event) => {
                     setPrivacyConfirmed(event.target.checked);
@@ -814,15 +860,17 @@ export function ImageRedactionWorkspace({
               <button
                 className="primaryButton"
                 type="button"
-                disabled={!privacyConfirmed}
+                disabled={!privacyConfirmed || hasOversizedPreparedImages}
                 onClick={approvePreparedImages}
               >
                 Hyväksy peitetyt kuvat
               </button>
               <p>
-                {imagesApproved
-                  ? "Hyväksytty tähän istuntoon. Kuvia ei lähetetä ennen erillistä poimintapainiketta."
-                  : "Hyväksyntä vaaditaan ennen ensimmäistä analyysipyyntöä."}
+                {hasOversizedPreparedImages
+                  ? "Rajaa liian suuri lähetysversio pienemmäksi ja luo esikatselu uudelleen."
+                  : imagesApproved
+                    ? "Hyväksytty tähän istuntoon. Kuvia ei lähetetä ennen erillistä poimintapainiketta."
+                    : "Hyväksyntä vaaditaan ennen ensimmäistä analyysipyyntöä."}
               </p>
               {imagesApproved ? (
                 <div className="extractionSubmit">
@@ -905,6 +953,59 @@ function formatMegabytes(bytes: number): string {
   return new Intl.NumberFormat("fi-FI", {
     maximumFractionDigits: 1,
   }).format(bytes / 1_048_576);
+}
+
+function formatBytes(bytes: number): string {
+  const formatter = new Intl.NumberFormat("fi-FI", {
+    maximumFractionDigits: 1,
+  });
+  const readable =
+    bytes >= 1_048_576
+      ? `${formatter.format(bytes / 1_048_576)} Mt`
+      : `${formatter.format(bytes / 1_024)} kt`;
+
+  return `${readable} (${new Intl.NumberFormat("fi-FI").format(bytes)} tavua)`;
+}
+
+function RequestSizeDebug({
+  sanitizedImageBytes,
+  requestBodyBytes,
+  maximumRequestBytes,
+}: Readonly<{
+  sanitizedImageBytes: number;
+  requestBodyBytes: number | null;
+  maximumRequestBytes: number;
+}>) {
+  return (
+    <aside className="requestSizeDebug" aria-label="Lähetyksen kokotiedot">
+      <div>
+        <strong>Vianmääritys: lähetyksen koko</strong>
+        <span>Sisältöä tai kuvatietoja ei kirjoiteta lokiin.</span>
+      </div>
+      <dl>
+        <div>
+          <dt>Peitetyt PNG-kuvat</dt>
+          <dd>{formatBytes(sanitizedImageBytes)}</dd>
+        </div>
+        <div>
+          <dt>HTTP-pyyntörunko</dt>
+          <dd>
+            {requestBodyBytes === null
+              ? "Tarkka koko näkyy palvelinvastauksen jälkeen."
+              : formatBytes(requestBodyBytes)}
+          </dd>
+        </div>
+        <div>
+          <dt>Sovelluksen pyyntöraja</dt>
+          <dd>{formatBytes(maximumRequestBytes)}</dd>
+        </div>
+      </dl>
+      <p>
+        Pyyntörunko sisältää PNG-kuvien lisäksi multipart-otsakkeet ja pienen
+        kuvaluettelon.
+      </p>
+    </aside>
+  );
 }
 
 function readExtractionError(payload: unknown): string {

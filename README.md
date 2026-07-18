@@ -53,6 +53,12 @@ yhdistää tapahtumia. Tyhjä tai lukukelvoton aineisto esitetään rehellisenä
 tyhjänä tuloksena, ja palveluvirhe säilyttää paikalliset kuvat uutta yritystä
 varten.
 
+`/api/extract` ohittaa Next.js-proxyn pyyntörungon puskuroinnin. Rajapinta
+validoi itse enintään 10 kuvaa, 10 Mt kuvaa kohden ja noin 101 Mt koko
+multipart-pyyntöä oletusasetuksilla. Lähetysesikatselu näyttää peitettyjen
+PNG-kuvien tavumäärät, palvelimen vastaanottaman HTTP-pyyntörungon koon sekä
+sovelletun kokonaisrajan. Kuvan tai pyynnön sisältöä ei kirjoiteta lokiin.
+
 Ajoneuvovarianttiin perustuva tutkimus, tapahtumien Phase 4 -normalisointi,
 huoltojen tilalaskenta ja vientitoiminnot eivät ole vielä toteutettuja.
 

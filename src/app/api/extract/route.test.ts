@@ -42,6 +42,12 @@ describe("POST /api/extract", () => {
     expect(response.headers.get("cache-control")).toBe("no-store, max-age=0");
     expect(response.headers.get("pragma")).toBe("no-cache");
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(
+      Number(response.headers.get("x-autohuolto-request-body-bytes")),
+    ).toBeGreaterThan(0);
+    expect(
+      Number(response.headers.get("x-autohuolto-request-body-limit-bytes")),
+    ).toBe(2 * 1_024 + 1_048_576);
     expect(executeExtraction).toHaveBeenCalledWith(
       [
         expect.objectContaining({
@@ -97,6 +103,9 @@ describe("POST /api/extract", () => {
     expect(payload).toContain("provider_error");
     expect(payload).not.toContain("SECRET_REGISTRATION");
     expect(payload).not.toContain("provider detail");
+    expect(
+      Number(response.headers.get("x-autohuolto-request-body-bytes")),
+    ).toBeGreaterThan(0);
     expect(consoleError).not.toHaveBeenCalled();
     expect(consoleLog).not.toHaveBeenCalled();
   });

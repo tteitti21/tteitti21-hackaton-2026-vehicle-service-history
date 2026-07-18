@@ -66,6 +66,7 @@ export default function Home() {
       <ImageRedactionWorkspace
         maxFiles={uploadLimits.maxFiles}
         maxBytesPerFile={uploadLimits.maxBytesPerFile}
+        maxRequestBytes={uploadLimits.maxRequestBytes}
       />
 
       <ExtractionReview />

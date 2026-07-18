@@ -148,6 +148,10 @@ test("submits only the sanitized image and renders an editable extraction", asyn
     await route.fulfill({
       status: 200,
       contentType: "application/json",
+      headers: {
+        "X-AutoHuolto-Request-Body-Bytes": "3145728",
+        "X-AutoHuolto-Request-Body-Limit-Bytes": "105906176",
+      },
       body: JSON.stringify({
         images: [
           {
@@ -205,6 +209,12 @@ test("submits only the sanitized image and renders an editable extraction", asyn
     page.getByRole("cell", { name: "Öljy ja suodatin vaihdettu" }),
   ).toBeVisible();
   await expect(page.getByText(/Korkea \(88 %\)/).first()).toBeVisible();
+  const requestSizeDebug = page.getByRole("complementary", {
+    name: "Lähetyksen kokotiedot",
+  });
+  await expect(requestSizeDebug).toContainText("HTTP-pyyntörunko");
+  await expect(requestSizeDebug).toContainText("3 145 728 tavua");
+  await expect(requestSizeDebug).toContainText("105 906 176 tavua");
 
   const evidence = page.getByLabel("Raaka kuvasta luettu näyttö");
   await evidence.fill("Käyttäjän tarkistama synteettinen näyttö");

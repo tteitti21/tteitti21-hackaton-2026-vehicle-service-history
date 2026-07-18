@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import type { ServiceHistory } from "@/domain/schemas/service-history";
 import { withNoStoreHeaders } from "@/lib/http/no-store";
+import { createRequestSizeResponseHeaders } from "@/lib/http/request-size-headers";
 import {
   extractServiceHistoryWithRetry,
   ExtractionOutputValidationError,
@@ -82,8 +83,19 @@ export function createExtractPostHandler(
       return errorResponse(500, "internal_error", requestId);
     }
 
+    let limits: ReturnType<typeof readUploadLimits>;
     try {
-      const limits = readUploadLimits(environment);
+      limits = readUploadLimits(environment);
+    } catch {
+      return errorResponse(500, "internal_error", requestId);
+    }
+
+    const requestSizeHeaders = createRequestSizeResponseHeaders(
+      request.headers,
+      limits.maxRequestBytes,
+    );
+
+    try {
       const images = await parseExtractionRequest(request, limits);
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), config.timeoutMs);
@@ -97,27 +109,52 @@ export function createExtractPostHandler(
 
         return NextResponse.json(serviceHistory, {
           status: 200,
-          headers: withNoStoreHeaders(),
+          headers: withNoStoreHeaders(requestSizeHeaders),
         });
       } catch (error) {
         if (controller.signal.aborted) {
-          return errorResponse(504, "provider_timeout", requestId);
+          return errorResponse(
+            504,
+            "provider_timeout",
+            requestId,
+            requestSizeHeaders,
+          );
         }
 
         if (error instanceof ExtractionOutputValidationError) {
-          return errorResponse(502, "invalid_provider_output", requestId);
+          return errorResponse(
+            502,
+            "invalid_provider_output",
+            requestId,
+            requestSizeHeaders,
+          );
         }
 
-        return errorResponse(502, "provider_error", requestId);
+        return errorResponse(
+          502,
+          "provider_error",
+          requestId,
+          requestSizeHeaders,
+        );
       } finally {
         clearTimeout(timeout);
       }
     } catch (error) {
       if (error instanceof ExtractionRequestError) {
-        return errorResponse(error.status, error.code, requestId);
+        return errorResponse(
+          error.status,
+          error.code,
+          requestId,
+          requestSizeHeaders,
+        );
       }
 
-      return errorResponse(400, "invalid_request", requestId);
+      return errorResponse(
+        400,
+        "invalid_request",
+        requestId,
+        requestSizeHeaders,
+      );
     }
   };
 }

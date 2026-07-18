@@ -988,6 +988,65 @@ nav a {
   font-size: 0.72rem;
 }
 
+.sanitizedPreviewGrid .sizeLimitWarning {
+  color: #8c2f21;
+  font-weight: 740;
+}
+
+.requestSizeDebug {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  color: #29483d;
+  background: #edf4ef;
+  border: 1px solid #b8cbbf;
+  border-radius: 0.75rem;
+}
+
+.requestSizeDebug > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.8rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.requestSizeDebug > div span,
+.requestSizeDebug p {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.requestSizeDebug dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0;
+}
+
+.requestSizeDebug dl div {
+  padding: 0.65rem;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 0.5rem;
+}
+
+.requestSizeDebug dt {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.requestSizeDebug dd {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 740;
+  overflow-wrap: anywhere;
+}
+
+.requestSizeDebug p {
+  margin: 0;
+}
+
 .consentPanel {
   margin-top: 1.5rem;
   padding: 1.2rem;
@@ -1680,6 +1739,10 @@ h2 {
 
   .stepGrid li:nth-child(n + 3) {
     border-top: 1px solid var(--line);
+  }
+
+  .requestSizeDebug dl {
+    grid-template-columns: 1fr;
   }
 }
 

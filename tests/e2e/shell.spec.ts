@@ -154,3 +154,43 @@ test("disables response caching and content sniffing", async ({ request }) => {
   expect(response.headers()["x-content-type-options"]).toBe("nosniff");
   expect(response.headers()["x-powered-by"]).toBeUndefined();
 });
+
+test("lets the extraction route reject a body above the proxy buffer limit", async ({
+  request,
+}) => {
+  const oversizedImageBytes = 31 * 1_048_576;
+  const response = await request.post("/api/extract", {
+    multipart: {
+      images: {
+        name: "sanitized-1-large-synthetic.png",
+        mimeType: "image/png",
+        buffer: Buffer.alloc(oversizedImageBytes),
+      },
+      image_manifest: JSON.stringify([
+        {
+          clientId: "large-synthetic",
+          fileName: "sanitized-1-large-synthetic.png",
+          mediaType: "image/png",
+          width: 1,
+          height: 1,
+        },
+      ]),
+    },
+  });
+
+  expect(response.status()).toBe(413);
+  expect(await response.json()).toMatchObject({
+    error: { code: "payload_too_large" },
+  });
+
+  const headers = response.headers();
+  const requestBodyBytes = Number(
+    headers["x-autohuolto-request-body-bytes"],
+  );
+  const requestLimitBytes = Number(
+    headers["x-autohuolto-request-body-limit-bytes"],
+  );
+
+  expect(requestBodyBytes).toBeGreaterThan(30 * 1_048_576);
+  expect(requestLimitBytes).toBeGreaterThan(requestBodyBytes);
+});

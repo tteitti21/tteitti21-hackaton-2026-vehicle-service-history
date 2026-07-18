@@ -17,7 +17,11 @@ describe("ImageRedactionWorkspace", () => {
 
     render(
       <AnalysisSessionProvider>
-        <ImageRedactionWorkspace maxFiles={10} maxBytesPerFile={10} />
+        <ImageRedactionWorkspace
+          maxFiles={10}
+          maxBytesPerFile={10}
+          maxRequestBytes={110}
+        />
       </AnalysisSessionProvider>,
     );
 
@@ -48,7 +52,11 @@ describe("ImageRedactionWorkspace", () => {
 
     render(
       <AnalysisSessionProvider>
-        <ImageRedactionWorkspace maxFiles={10} maxBytesPerFile={4} />
+        <ImageRedactionWorkspace
+          maxFiles={10}
+          maxBytesPerFile={4}
+          maxRequestBytes={44}
+        />
       </AnalysisSessionProvider>,
     );
 
