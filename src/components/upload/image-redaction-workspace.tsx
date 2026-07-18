@@ -28,10 +28,12 @@ import {
   hasSafeImageDimensions,
   validateImageSelection,
 } from "@/domain/images/image-validation";
+import { serviceHistorySchema } from "@/domain/schemas/service-history";
 import {
   createSanitizedImageBlob,
   renderEditorImage,
 } from "@/lib/images/canvas-renderer";
+import { postSanitizedImages } from "@/lib/images/sanitized-submission";
 
 interface ImageRedactionWorkspaceProps {
   maxFiles: number;
@@ -64,7 +66,13 @@ export function ImageRedactionWorkspace({
   maxFiles,
   maxBytesPerFile,
 }: Readonly<ImageRedactionWorkspaceProps>) {
-  const { state } = useAnalysisSession();
+  const {
+    state,
+    beginExtraction,
+    completeExtraction,
+    failExtraction,
+    clearExtraction,
+  } = useAnalysisSession();
   const [images, setImages] = useState<ImageAsset[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [mode, setMode] = useState<EditorMode>("redact");
@@ -106,7 +114,8 @@ export function ImageRedactionWorkspace({
   const invalidatePreparedImages = useCallback(() => {
     editVersionRef.current += 1;
     revokePreparedImages();
-  }, [revokePreparedImages]);
+    clearExtraction();
+  }, [clearExtraction, revokePreparedImages]);
 
   const clearWorkspace = useCallback(
     (message = "Kaikki kuvat poistettiin tämän välilehden muistista.") => {
@@ -459,11 +468,73 @@ export function ImageRedactionWorkspace({
     );
   };
 
+  const submitSanitizedImages = async () => {
+    if (
+      !imagesApproved ||
+      !privacyConfirmed ||
+      preparedImagesRef.current.length === 0 ||
+      state.extractionStatus === "submitting"
+    ) {
+      return;
+    }
+
+    beginExtraction();
+    setWorkspaceMessage(
+      "Hyväksytyt peitetyt PNG-kuvat lähetetään OpenAI:lle poimintaa varten.",
+    );
+
+    try {
+      const response = await postSanitizedImages(
+        fetch,
+        "/api/extract",
+        preparedImagesRef.current.map((image) => ({
+          clientId: image.clientId,
+          blob: image.blob,
+          width: image.width,
+          height: image.height,
+        })),
+      );
+      const payload: unknown = await response.json();
+
+      if (!response.ok) {
+        failExtraction(readExtractionError(payload));
+        setWorkspaceMessage(
+          "Poiminta epäonnistui. Paikalliset kuvat ja lähetysversiot säilyvät selaimessa.",
+        );
+        return;
+      }
+
+      const parsed = serviceHistorySchema.safeParse(payload);
+
+      if (!parsed.success) {
+        failExtraction(
+          "Palvelimen vastaus ei ollut turvallisesti käsiteltävässä muodossa.",
+        );
+        setWorkspaceMessage(
+          "Poiminnan vastaus hylättiin. Kuvat säilyvät selaimessa uutta yritystä varten.",
+        );
+        return;
+      }
+
+      completeExtraction(parsed.data);
+      setWorkspaceMessage(
+        "Huoltotapahtumat poimittiin. Tarkista ja korjaa tulos alla.",
+      );
+    } catch {
+      failExtraction(
+        "Poimintapalveluun ei saatu yhteyttä. Tarkista yhteys ja yritä uudelleen.",
+      );
+      setWorkspaceMessage(
+        "Verkkovirhe ei poistanut paikallisia kuvia tai lähetysversioita.",
+      );
+    }
+  };
+
   return (
     <section className="imageSection" aria-labelledby="image-workspace-heading">
       <div className="imageSectionIntro">
         <div>
-          <p className="sectionLabel">Vaihe 2 / Kuvat ja peittäminen</p>
+          <p className="sectionLabel">Vaihe 2–3 / Kuvat ja poiminta</p>
           <h2 id="image-workspace-heading">
             Peitä tunnisteet ennen kuin kuva voi lähteä selaimesta.
           </h2>
@@ -750,9 +821,27 @@ export function ImageRedactionWorkspace({
               </button>
               <p>
                 {imagesApproved
-                  ? "Hyväksytty tähän istuntoon. Kuvia ei lähetetty."
-                  : "Hyväksyntä vaaditaan ennen ensimmäistä analyysipyyntöä. Analyysipyyntö toteutetaan vaiheessa 3."}
+                  ? "Hyväksytty tähän istuntoon. Kuvia ei lähetetä ennen erillistä poimintapainiketta."
+                  : "Hyväksyntä vaaditaan ennen ensimmäistä analyysipyyntöä."}
               </p>
+              {imagesApproved ? (
+                <div className="extractionSubmit">
+                  <button
+                    className="primaryButton"
+                    type="button"
+                    disabled={state.extractionStatus === "submitting"}
+                    onClick={submitSanitizedImages}
+                  >
+                    {state.extractionStatus === "submitting"
+                      ? "Poimitaan tapahtumia…"
+                      : "Lähetä OpenAI:lle ja poimi tapahtumat"}
+                  </button>
+                  <p>
+                    Vain yllä näkyvät uudet PNG-kuvat lähetetään. Alkuperäisiä
+                    tiedostoja ei ole lähetyspaketissa.
+                  </p>
+                </div>
+              ) : null}
             </div>
           </>
         ) : (
@@ -816,4 +905,20 @@ function formatMegabytes(bytes: number): string {
   return new Intl.NumberFormat("fi-FI", {
     maximumFractionDigits: 1,
   }).format(bytes / 1_048_576);
+}
+
+function readExtractionError(payload: unknown): string {
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "error" in payload &&
+    typeof payload.error === "object" &&
+    payload.error !== null &&
+    "message" in payload.error &&
+    typeof payload.error.message === "string"
+  ) {
+    return payload.error.message;
+  }
+
+  return "Kuvien poiminta epäonnistui. Kuvat säilyvät selaimessa uutta yritystä varten.";
 }

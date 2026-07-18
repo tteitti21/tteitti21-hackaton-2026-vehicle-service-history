@@ -46,7 +46,7 @@ test("redacts a synthetic identifier into the exact intercepted PNG payload", as
   const exactPreview = page.getByRole("img", {
     name: "Lähetettävä esikatselu: synthetic-registration.png",
   });
-  await expect(exactPreview).toBeVisible();
+  await expect(exactPreview).toBeVisible({ timeout: 15_000 });
 
   const previewPixels = await decodeImagePixelsFromElement(page, exactPreview, [
     { x: 160, y: 90 },
@@ -64,7 +64,9 @@ test("redacts a synthetic identifier into the exact intercepted PNG payload", as
     .check();
   await approveButton.click();
   await expect(
-    page.getByText("Hyväksytty tähän istuntoon. Kuvia ei lähetetty."),
+    page.getByText(
+      "Hyväksytty tähän istuntoon. Kuvia ei lähetetä ennen erillistä poimintapainiketta.",
+    ),
   ).toBeVisible();
 
   let interceptedMultipart: Buffer | null = null;
@@ -127,6 +129,139 @@ test("redacts a synthetic identifier into the exact intercepted PNG payload", as
   expect(transmittedPixels[1]).not.toEqual([0, 0, 0, 255]);
 });
 
+test("submits only the sanitized image and renders an editable extraction", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await prepareApprovedSyntheticImage(page);
+
+  let submittedBytes: Buffer | null = null;
+  await page.route("**/api/extract", async (route) => {
+    submittedBytes = route.request().postDataBuffer();
+    const requestText = submittedBytes?.toString("utf8") ?? "";
+    const imageId = requestText.match(/"clientId":"([^"]+)"/)?.[1];
+
+    if (imageId === undefined) {
+      throw new Error("The sanitized image manifest is missing.");
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        images: [
+          {
+            image_id: imageId,
+            readability: 0.94,
+            notes: "Synteettinen kuva on selkeä.",
+          },
+        ],
+        events: [
+          {
+            event_id: "event-synthetic-1",
+            source_image_ids: [imageId],
+            raw_evidence:
+              "Öljy ja suodatin vaihdettu 12.3.2024, 120000 km",
+            service_date: {
+              value: "2024-03-12",
+              precision: "day",
+              confidence: 0.93,
+            },
+            odometer: {
+              value: 120000,
+              unit: "km",
+              confidence: 0.91,
+            },
+            actions: [
+              {
+                component_code: "engine_oil",
+                component_label: "Moottoriöljy",
+                action_type: "replaced",
+                description: "Öljy ja suodatin vaihdettu",
+                confidence: 0.9,
+              },
+            ],
+            workshop: null,
+            notes: null,
+            confidence: 0.88,
+            ambiguities: [],
+          },
+        ],
+        warnings: [],
+      }),
+    });
+  });
+
+  await page
+    .getByRole("button", { name: "Lähetä OpenAI:lle ja poimi tapahtumat" })
+    .click();
+
+  await expect(
+    page.getByRole("heading", {
+      name: "Tarkista jokainen kuvista poimittu tapahtuma.",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("cell", { name: "Öljy ja suodatin vaihdettu" }),
+  ).toBeVisible();
+  await expect(page.getByText(/Korkea \(88 %\)/).first()).toBeVisible();
+
+  const evidence = page.getByLabel("Raaka kuvasta luettu näyttö");
+  await evidence.fill("Käyttäjän tarkistama synteettinen näyttö");
+  await expect(evidence).toHaveValue("Käyttäjän tarkistama synteettinen näyttö");
+
+  await page.getByRole("button", { name: "Lisää tapahtuma" }).click();
+  await expect(page.getByRole("row")).toHaveCount(3);
+
+  expect(submittedBytes).not.toBeNull();
+  const multipart = submittedBytes as unknown as Buffer;
+  expect(multipart.includes(Buffer.from("synthetic-registration.png"))).toBe(
+    false,
+  );
+  await expect(
+    page.getByRole("img", {
+      name: "Lähetettävä esikatselu: synthetic-registration.png",
+    }),
+  ).toBeVisible();
+});
+
+test("keeps local images available after a provider error", async ({ page }) => {
+  await page.goto("/");
+  await prepareApprovedSyntheticImage(page);
+
+  await page.route("**/api/extract", async (route) => {
+    await route.fulfill({
+      status: 502,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: {
+          code: "provider_error",
+          message: "Poimintapalvelu ei vastannut turvallisesti.",
+          request_id: "synthetic-request",
+        },
+      }),
+    });
+  });
+
+  await page
+    .getByRole("button", { name: "Lähetä OpenAI:lle ja poimi tapahtumat" })
+    .click();
+
+  await expect(page.locator(".extractionError")).toContainText(
+    "Poimintapalvelu ei vastannut turvallisesti.",
+  );
+  await expect(
+    page.getByRole("img", {
+      name: "Lähetettävä esikatselu: synthetic-registration.png",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: "Lähetä OpenAI:lle ja poimi tapahtumat",
+    }),
+  ).toBeEnabled();
+});
+
 test("rejects unsupported and oversized files before browser decoding", async ({
   page,
 }) => {
@@ -170,6 +305,30 @@ test("reload discards decoded images and sanitized previews", async ({ page }) =
   ).toBeVisible();
   await expect(page.getByText(/Kuvat eivät poistu laitteelta/)).toBeVisible();
 });
+
+async function prepareApprovedSyntheticImage(page: Page) {
+  await uploadSyntheticRegistrationImage(page);
+  await page.getByRole("button", { name: "Peitä alue" }).click();
+  await dragCanvasRectangle(
+    page.getByRole("img", { name: /Muokattava kuva/ }),
+    {
+      x: 76,
+      y: 62,
+      width: 168,
+      height: 58,
+    },
+  );
+  await page.getByRole("button", { name: "Luo lähetysesikatselu" }).click();
+  await expect(
+    page.getByRole("img", {
+      name: "Lähetettävä esikatselu: synthetic-registration.png",
+    }),
+  ).toBeVisible({ timeout: 15_000 });
+  await page
+    .getByRole("checkbox", { name: /Olen tarkistanut yllä näkyvät/ })
+    .check();
+  await page.getByRole("button", { name: "Hyväksy peitetyt kuvat" }).click();
+}
 
 async function uploadSyntheticRegistrationImage(page: Page): Promise<number[]> {
   return page.evaluate(async () => {

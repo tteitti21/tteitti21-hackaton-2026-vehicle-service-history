@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-test("shows the Phase 2 vehicle and image privacy controls", async ({ page }) => {
+test("shows the Phase 3 vehicle, image, and extraction controls", async ({
+  page,
+}) => {
   await page.goto("/");
 
   await expect(
@@ -9,7 +11,7 @@ test("shows the Phase 2 vehicle and image privacy controls", async ({ page }) =>
       name: /Huoltohistoria selkeäksi/,
     }),
   ).toBeVisible();
-  await expect(page.getByText("Vaihe 2 käytössä")).toBeVisible();
+  await expect(page.getByText("Vaihe 3 käytössä")).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Merkki" })).toBeVisible();
   await expect(
     page.getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" }),
@@ -18,6 +20,11 @@ test("shows the Phase 2 vehicle and image privacy controls", async ({ page }) =>
     "accept",
     "image/jpeg,image/png,image/webp",
   );
+  await expect(
+    page.getByRole("heading", {
+      name: "Poimitut huoltotapahtumat näkyvät tässä.",
+    }),
+  ).toBeVisible();
 });
 
 test("validates, confirms, and resets vehicle data in memory", async ({

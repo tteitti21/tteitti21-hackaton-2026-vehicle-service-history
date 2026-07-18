@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ExtractionReview } from "@/components/extraction/extraction-review";
 import { ImageRedactionWorkspace } from "@/components/upload/image-redaction-workspace";
 import { VehicleForm } from "@/components/vehicle/vehicle-form";
 import { readUploadLimits } from "@/lib/validation/request-limits";
@@ -50,10 +51,11 @@ export default function Home() {
         <div className="phaseNotice" role="status">
           <span className="statusDot" aria-hidden="true" />
           <div>
-            <strong>Vaihe 2 käytössä</strong>
+            <strong>Vaihe 3 käytössä</strong>
             <p>
               Voit vahvistaa ajoneuvon tiedot sekä muokata ja peittää kuvat
-              paikallisesti. Kuvien analyysi lisätään seuraavassa vaiheessa.
+              paikallisesti. Hyväksytyistä lähetysversioista voi poimia
+              muokattavan huoltohistorian OpenAI:n avulla.
             </p>
           </div>
         </div>
@@ -65,6 +67,8 @@ export default function Home() {
         maxFiles={uploadLimits.maxFiles}
         maxBytesPerFile={uploadLimits.maxBytesPerFile}
       />
+
+      <ExtractionReview />
 
       <section className="privacyBand" aria-labelledby="privacy-heading">
         <div>
@@ -78,10 +82,9 @@ export default function Home() {
             tiedostovarastoon.
           </p>
           <p>
-            Kun analyysi myöhemmin otetaan käyttöön, vain selaimessa peitetyt
-            kuvat ja analyysiin tarvittavat tiedot lähetetään OpenAI:lle.
-            Palveluntarjoajan säilytys- ja väärinkäytön valvontakäytännöt voivat
-            silti koskea käsittelyä.
+            Kun käynnistät poiminnan, vain selaimessa peitetyt uudet PNG-kuvat
+            lähetetään OpenAI:lle. Palveluntarjoajan säilytys- ja
+            väärinkäytön valvontakäytännöt voivat silti koskea käsittelyä.
           </p>
           <Link className="textLink" href="/tietosuoja">
             Miten tietoja käsitellään <span aria-hidden="true">→</span>

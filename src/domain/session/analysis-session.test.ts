@@ -23,6 +23,9 @@ describe("analysis session reducer", () => {
       confirmedVehicle: null,
       status: "empty",
       resetVersion: 0,
+      serviceHistory: null,
+      extractionStatus: "idle",
+      extractionError: null,
     });
   });
 
@@ -63,5 +66,44 @@ describe("analysis session reducer", () => {
     });
 
     expect(resetState).toEqual(createInitialAnalysisSession("reset", 1));
+  });
+
+  it("tracks extraction progress, result, safe failure, and clearing in memory", () => {
+    const serviceHistory = {
+      images: [{ image_id: "image-1", readability: 0, notes: null }],
+      events: [],
+      warnings: [],
+    };
+    const submitting = analysisSessionReducer(createInitialAnalysisSession(), {
+      type: "begin_extraction",
+    });
+    const completed = analysisSessionReducer(submitting, {
+      type: "complete_extraction",
+      serviceHistory,
+    });
+    const failed = analysisSessionReducer(completed, {
+      type: "fail_extraction",
+      message: "Safe error",
+    });
+    const cleared = analysisSessionReducer(failed, {
+      type: "clear_extraction",
+    });
+
+    expect(submitting.extractionStatus).toBe("submitting");
+    expect(completed).toMatchObject({
+      extractionStatus: "success",
+      serviceHistory,
+      extractionError: null,
+    });
+    expect(failed).toMatchObject({
+      extractionStatus: "error",
+      extractionError: "Safe error",
+      serviceHistory,
+    });
+    expect(cleared).toMatchObject({
+      extractionStatus: "idle",
+      extractionError: null,
+      serviceHistory: null,
+    });
   });
 });

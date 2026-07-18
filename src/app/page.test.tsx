@@ -6,7 +6,7 @@ import { AnalysisSessionProvider } from "@/components/session/analysis-session-p
 import Home from "./page";
 import PrivacyPage from "./tietosuoja/page";
 
-describe("Phase 2 shell", () => {
+describe("Phase 3 shell", () => {
   it("renders the Finnish product shell, vehicle form, and image privacy workflow", () => {
     render(
       <AnalysisSessionProvider>
@@ -20,7 +20,7 @@ describe("Phase 2 shell", () => {
         name: /Huoltohistoria selkeäksi/,
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Vaihe 2 käytössä")).toBeVisible();
+    expect(screen.getByText("Vaihe 3 käytössä")).toBeVisible();
     expect(
       screen.getByRole("heading", {
         level: 2,
@@ -37,6 +37,12 @@ describe("Phase 2 shell", () => {
       "accept",
       "image/jpeg,image/png,image/webp",
     );
+    expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: /Poimitut huoltotapahtumat näkyvät tässä/,
+      }),
+    ).toBeVisible();
     expect(
       screen.getByRole("link", { name: /Miten tietoja käsitellään/ }),
     ).toHaveAttribute("href", "/tietosuoja");

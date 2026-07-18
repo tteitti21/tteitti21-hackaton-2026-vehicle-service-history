@@ -18,12 +18,22 @@ import type {
   VehicleFieldName,
   VehicleInput,
 } from "@/domain/vehicle/vehicle-input";
+import type {
+  ServiceEvent,
+  ServiceHistory,
+} from "@/domain/schemas/service-history";
 
 interface AnalysisSessionContextValue {
   state: AnalysisSessionState;
   updateVehicleField: (field: VehicleFieldName, value: string) => void;
   confirmVehicle: (vehicle: VehicleInput) => void;
   resetSession: () => void;
+  beginExtraction: () => void;
+  completeExtraction: (serviceHistory: ServiceHistory) => void;
+  failExtraction: (message: string) => void;
+  clearExtraction: () => void;
+  replaceServiceHistory: (serviceHistory: ServiceHistory) => void;
+  updateServiceEvent: (event: ServiceEvent) => void;
 }
 
 const AnalysisSessionContext =
@@ -53,14 +63,58 @@ export function AnalysisSessionProvider({
     dispatch({ type: "reset_session" });
   }, []);
 
+  const beginExtraction = useCallback(() => {
+    dispatch({ type: "begin_extraction" });
+  }, []);
+
+  const completeExtraction = useCallback((serviceHistory: ServiceHistory) => {
+    dispatch({ type: "complete_extraction", serviceHistory });
+  }, []);
+
+  const failExtraction = useCallback((message: string) => {
+    dispatch({ type: "fail_extraction", message });
+  }, []);
+
+  const clearExtraction = useCallback(() => {
+    dispatch({ type: "clear_extraction" });
+  }, []);
+
+  const replaceServiceHistory = useCallback(
+    (serviceHistory: ServiceHistory) => {
+      dispatch({ type: "replace_service_history", serviceHistory });
+    },
+    [],
+  );
+
+  const updateServiceEvent = useCallback((event: ServiceEvent) => {
+    dispatch({ type: "update_service_event", event });
+  }, []);
+
   const value = useMemo(
     () => ({
       state,
       updateVehicleField,
       confirmVehicle,
       resetSession,
+      beginExtraction,
+      completeExtraction,
+      failExtraction,
+      clearExtraction,
+      replaceServiceHistory,
+      updateServiceEvent,
     }),
-    [confirmVehicle, resetSession, state, updateVehicleField],
+    [
+      beginExtraction,
+      clearExtraction,
+      completeExtraction,
+      confirmVehicle,
+      failExtraction,
+      replaceServiceHistory,
+      resetSession,
+      state,
+      updateServiceEvent,
+      updateVehicleField,
+    ],
   );
 
   return (

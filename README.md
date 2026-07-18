@@ -40,16 +40,21 @@ Tekninen spesifikaatio on englanniksi, koska se on Codexille ja lähdekoodin tuo
 
 ## Nykyinen toteutusvaihe
 
-Phase 2 sisältää Next.js- ja TypeScript-perustan, suomalaisen
-käyttöliittymäkuoren, tietosuojasivun, Zod-skeemat, pyyntökoon tarkistuksen,
-tilattoman nopeusrajoitusabstraktion sekä validoidun ajoneuvolomakkeen ja
-ainoastaan React-muistissa säilyvän istuntomallin. Lisäksi käyttäjä voi lisätä
-1–10 JPG-, PNG- tai WebP-kuvaa, kääntää ja rajata niitä, piirtää pysyviä
-suorakulmaisia peitteitä sekä tarkistaa selaimen canvasilla uutena PNG-blobina
-luodut lähetysversiot.
+Phase 3 sisältää aiempien vaiheiden ajoneuvolomakkeen ja selaimessa tehtävän
+kuvan peittämisen lisäksi tilattoman `/api/extract`-rajapinnan. Käyttäjän
+erikseen hyväksymät uudet PNG-kuvat lähetetään pyyntökohtaisena kuvasisältönä
+OpenAI Responses API:lle. `store: false`, palvelinpuolinen API-avain,
+rakenteinen tulos, skeemavalidointi, yksi rajattu skeemakorjausyritys,
+pyyntöaikaraja ja muistissa toimiva nopeusrajoitus suojaavat työnkulkua.
 
-OpenAI-kutsuja, huoltotapahtumien poimintaa, huoltojen tilalaskentaa tai
-vientitoimintoja ei ole vielä toteutettu. Vaihe 2 ei lähetä kuvia verkkoon.
+Poimitut tapahtumat, lähdekuvaviitteet, luettavuus ja luottamus näytetään
+muokattavassa tarkistustaulukossa. Käyttäjä voi muokata, lisätä, poistaa ja
+yhdistää tapahtumia. Tyhjä tai lukukelvoton aineisto esitetään rehellisenä
+tyhjänä tuloksena, ja palveluvirhe säilyttää paikalliset kuvat uutta yritystä
+varten.
+
+Ajoneuvovarianttiin perustuva tutkimus, tapahtumien Phase 4 -normalisointi,
+huoltojen tilalaskenta ja vientitoiminnot eivät ole vielä toteutettuja.
 
 ## Paikallinen kehitys
 

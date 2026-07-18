@@ -46,12 +46,11 @@ export default function PrivacyPage() {
           omaan tietokantaan tai tiedostovarastoon.
         </p>
         <p>
-          Kun analyysitoiminnot otetaan käyttöön, käyttäjän hyväksymät peitetyt
-          kuvat ja analyysin syötteet välitetään OpenAI:lle pyynnön käsittelyä
-          varten. API:n syötteitä ja tulosteita ei oletusarvoisesti käytetä
-          OpenAI-mallien kouluttamiseen, mutta palveluntarjoajan tietojen
-          säilytys- ja väärinkäytön valvontakäytännöt voivat silti olla
-          voimassa.
+          Kun käyttäjä käynnistää poiminnan, hänen hyväksymänsä peitetyt
+          PNG-kuvat välitetään OpenAI:lle pyynnön käsittelyä varten. API:n
+          syötteitä ja tulosteita ei oletusarvoisesti käytetä OpenAI-mallien
+          kouluttamiseen, mutta palveluntarjoajan tietojen säilytys- ja
+          väärinkäytön valvontakäytännöt voivat silti olla voimassa.
         </p>
       </section>
 

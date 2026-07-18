@@ -76,5 +76,6 @@ export const serviceHistorySchema = z.strictObject({
 
 export type ComponentCode = z.infer<typeof componentCodeSchema>;
 export type ServiceImage = z.infer<typeof serviceImageSchema>;
+export type ServiceAction = z.infer<typeof serviceActionSchema>;
 export type ServiceEvent = z.infer<typeof serviceEventSchema>;
 export type ServiceHistory = z.infer<typeof serviceHistorySchema>;
