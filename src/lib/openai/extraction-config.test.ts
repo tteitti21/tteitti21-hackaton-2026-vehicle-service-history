@@ -12,7 +12,7 @@ describe("readOpenAIExtractionConfig", () => {
     expect(config).toEqual({
       apiKey: "test-secret",
       model: "gpt-5.6-terra",
-      timeoutMs: 60_000,
+      timeoutMs: 180_000,
     });
   });
 
@@ -36,6 +36,12 @@ describe("readOpenAIExtractionConfig", () => {
       readOpenAIExtractionConfig({
         OPENAI_API_KEY: "test-secret",
         OPENAI_EXTRACTION_TIMEOUT_MS: "1000",
+      }),
+    ).toThrow();
+    expect(() =>
+      readOpenAIExtractionConfig({
+        OPENAI_API_KEY: "test-secret",
+        OPENAI_EXTRACTION_TIMEOUT_MS: "240001",
       }),
     ).toThrow();
   });

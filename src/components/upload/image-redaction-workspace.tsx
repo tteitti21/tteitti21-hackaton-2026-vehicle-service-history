@@ -34,6 +34,7 @@ import {
   renderEditorImage,
 } from "@/lib/images/canvas-renderer";
 import { postSanitizedImages } from "@/lib/images/sanitized-submission";
+import { readExtractionTimeoutResponseHeader } from "@/lib/http/extraction-timeout-header";
 import {
   readRequestSizeResponseHeaders,
   type RequestSizeResponseDetails,
@@ -90,6 +91,9 @@ export function ImageRedactionWorkspace({
   const [imagesApproved, setImagesApproved] = useState(false);
   const [requestSizeResponse, setRequestSizeResponse] =
     useState<RequestSizeResponseDetails | null>(null);
+  const [extractionTimeoutMs, setExtractionTimeoutMs] = useState<number | null>(
+    null,
+  );
   const [workspaceMessage, setWorkspaceMessage] = useState(
     "Lisää kuvat ja peitä niistä tarpeettomat tunnisteet.",
   );
@@ -118,6 +122,7 @@ export function ImageRedactionWorkspace({
     setPrivacyConfirmed(false);
     setImagesApproved(false);
     setRequestSizeResponse(null);
+    setExtractionTimeoutMs(null);
   }, []);
 
   const invalidatePreparedImages = useCallback(() => {
@@ -508,6 +513,7 @@ export function ImageRedactionWorkspace({
 
     beginExtraction();
     setRequestSizeResponse(null);
+    setExtractionTimeoutMs(null);
     setWorkspaceMessage(
       "Hyväksytyt peitetyt PNG-kuvat lähetetään OpenAI:lle poimintaa varten.",
     );
@@ -524,6 +530,9 @@ export function ImageRedactionWorkspace({
         })),
       );
       setRequestSizeResponse(readRequestSizeResponseHeaders(response.headers));
+      setExtractionTimeoutMs(
+        readExtractionTimeoutResponseHeader(response.headers),
+      );
       const payload: unknown = await response.json();
 
       if (!response.ok) {
@@ -838,6 +847,7 @@ export function ImageRedactionWorkspace({
               maximumRequestBytes={
                 requestSizeResponse?.maximumRequestBytes ?? maxRequestBytes
               }
+              extractionTimeoutMs={extractionTimeoutMs}
             />
 
             <div className="consentPanel">
@@ -971,10 +981,12 @@ function RequestSizeDebug({
   sanitizedImageBytes,
   requestBodyBytes,
   maximumRequestBytes,
+  extractionTimeoutMs,
 }: Readonly<{
   sanitizedImageBytes: number;
   requestBodyBytes: number | null;
   maximumRequestBytes: number;
+  extractionTimeoutMs: number | null;
 }>) {
   return (
     <aside className="requestSizeDebug" aria-label="Lähetyksen kokotiedot">
@@ -998,6 +1010,16 @@ function RequestSizeDebug({
         <div>
           <dt>Sovelluksen pyyntöraja</dt>
           <dd>{formatBytes(maximumRequestBytes)}</dd>
+        </div>
+        <div>
+          <dt>Käsittelyn aikaraja</dt>
+          <dd>
+            {extractionTimeoutMs === null
+              ? "Palvelin vahvistaa lähetyksen jälkeen."
+              : `${new Intl.NumberFormat("fi-FI", {
+                  maximumFractionDigits: 1,
+                }).format(extractionTimeoutMs / 1_000)} sekuntia`}
+          </dd>
         </div>
       </dl>
       <p>

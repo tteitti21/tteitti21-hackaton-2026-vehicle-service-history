@@ -151,6 +151,7 @@ test("submits only the sanitized image and renders an editable extraction", asyn
       headers: {
         "X-AutoHuolto-Request-Body-Bytes": "3145728",
         "X-AutoHuolto-Request-Body-Limit-Bytes": "210763776",
+        "X-AutoHuolto-Extraction-Timeout-Ms": "180000",
       },
       body: JSON.stringify({
         images: [
@@ -215,6 +216,7 @@ test("submits only the sanitized image and renders an editable extraction", asyn
   await expect(requestSizeDebug).toContainText("HTTP-pyyntörunko");
   await expect(requestSizeDebug).toContainText("3 145 728 tavua");
   await expect(requestSizeDebug).toContainText("210 763 776 tavua");
+  await expect(requestSizeDebug).toContainText("180 sekuntia");
 
   const evidence = page.getByLabel("Raaka kuvasta luettu näyttö");
   await evidence.fill("Käyttäjän tarkistama synteettinen näyttö");

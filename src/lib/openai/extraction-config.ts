@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const DEFAULT_EXTRACTION_MODEL = "gpt-5.6-terra";
-const DEFAULT_EXTRACTION_TIMEOUT_MS = 60_000;
+const DEFAULT_EXTRACTION_TIMEOUT_MS = 180_000;
 
 const extractionEnvironmentSchema = z.object({
   OPENAI_API_KEY: z.string().trim().min(1),
@@ -19,7 +19,7 @@ const extractionEnvironmentSchema = z.object({
         value === undefined || value === ""
           ? DEFAULT_EXTRACTION_TIMEOUT_MS
           : value,
-      z.coerce.number().int().min(5_000).max(120_000),
+      z.coerce.number().int().min(5_000).max(240_000),
     ),
 });
 

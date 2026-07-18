@@ -88,6 +88,7 @@ export function ExtractionReview() {
           <div>
             <strong>Poimitaan näkyvää huoltohistoriaa</strong>
             <p>
+              Usean suuren kuvan käsittely voi kestää muutaman minuutin.
               Selaimen paikalliset kuvat ja lähetysversiot säilyvät muistissa
               myös virheen aikana.
             </p>

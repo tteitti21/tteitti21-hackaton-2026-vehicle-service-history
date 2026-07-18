@@ -48,6 +48,9 @@ describe("POST /api/extract", () => {
     expect(
       Number(response.headers.get("x-autohuolto-request-body-limit-bytes")),
     ).toBe(2 * 1_024 + 1_048_576);
+    expect(
+      Number(response.headers.get("x-autohuolto-extraction-timeout-ms")),
+    ).toBe(5_000);
     expect(executeExtraction).toHaveBeenCalledWith(
       [
         expect.objectContaining({
@@ -172,8 +175,14 @@ describe("POST /api/extract", () => {
 
     expect(response.status).toBe(504);
     expect(await response.json()).toMatchObject({
-      error: { code: "provider_timeout" },
+      error: {
+        code: "provider_timeout",
+        message: expect.stringContaining("5 sekunnin aikarajan"),
+      },
     });
+    expect(
+      Number(response.headers.get("x-autohuolto-extraction-timeout-ms")),
+    ).toBe(5_000);
   });
 
   it("rate-limits repeated requests using an in-memory coarse key", async () => {

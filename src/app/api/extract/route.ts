@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import type { ServiceHistory } from "@/domain/schemas/service-history";
+import { createExtractionTimeoutResponseHeader } from "@/lib/http/extraction-timeout-header";
 import { withNoStoreHeaders } from "@/lib/http/no-store";
 import { createRequestSizeResponseHeaders } from "@/lib/http/request-size-headers";
 import {
@@ -28,6 +29,7 @@ import { readUploadLimits } from "@/lib/validation/request-limits";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 const EXTRACTION_RATE_LIMIT = {
   limit: 5,
@@ -90,10 +92,13 @@ export function createExtractPostHandler(
       return errorResponse(500, "internal_error", requestId);
     }
 
-    const requestSizeHeaders = createRequestSizeResponseHeaders(
-      request.headers,
-      limits.maxRequestBytes,
-    );
+    const extractionDiagnosticsHeaders = {
+      ...createRequestSizeResponseHeaders(
+        request.headers,
+        limits.maxRequestBytes,
+      ),
+      ...createExtractionTimeoutResponseHeader(config.timeoutMs),
+    };
 
     try {
       const images = await parseExtractionRequest(request, limits);
@@ -109,7 +114,7 @@ export function createExtractPostHandler(
 
         return NextResponse.json(serviceHistory, {
           status: 200,
-          headers: withNoStoreHeaders(requestSizeHeaders),
+          headers: withNoStoreHeaders(extractionDiagnosticsHeaders),
         });
       } catch (error) {
         if (controller.signal.aborted) {
@@ -117,7 +122,8 @@ export function createExtractPostHandler(
             504,
             "provider_timeout",
             requestId,
-            requestSizeHeaders,
+            extractionDiagnosticsHeaders,
+            `Kuvien käsittely ylitti ${formatTimeoutSeconds(config.timeoutMs)} sekunnin aikarajan. Kuvat säilyvät selaimessa uutta yritystä varten.`,
           );
         }
 
@@ -126,7 +132,7 @@ export function createExtractPostHandler(
             502,
             "invalid_provider_output",
             requestId,
-            requestSizeHeaders,
+            extractionDiagnosticsHeaders,
           );
         }
 
@@ -134,7 +140,7 @@ export function createExtractPostHandler(
           502,
           "provider_error",
           requestId,
-          requestSizeHeaders,
+          extractionDiagnosticsHeaders,
         );
       } finally {
         clearTimeout(timeout);
@@ -145,7 +151,7 @@ export function createExtractPostHandler(
           error.status,
           error.code,
           requestId,
-          requestSizeHeaders,
+          extractionDiagnosticsHeaders,
         );
       }
 
@@ -153,7 +159,7 @@ export function createExtractPostHandler(
         400,
         "invalid_request",
         requestId,
-        requestSizeHeaders,
+        extractionDiagnosticsHeaders,
       );
     }
   };
@@ -213,12 +219,13 @@ function errorResponse(
   code: string,
   requestId: string,
   headers: HeadersInit = {},
+  message?: string,
 ): NextResponse {
   return NextResponse.json(
     {
       error: {
         code,
-        message: userFacingErrorMessage(code),
+        message: message ?? userFacingErrorMessage(code),
         request_id: requestId,
       },
     },
@@ -227,6 +234,12 @@ function errorResponse(
       headers: withNoStoreHeaders(headers),
     },
   );
+}
+
+function formatTimeoutSeconds(timeoutMs: number): string {
+  return new Intl.NumberFormat("fi-FI", {
+    maximumFractionDigits: 1,
+  }).format(timeoutMs / 1_000);
 }
 
 function userFacingErrorMessage(code: string): string {

@@ -58,6 +58,10 @@ validoi itse enintään 10 kuvaa, 20 Mt kuvaa kohden ja noin 201 Mt koko
 multipart-pyyntöä oletusasetuksilla. Lähetysesikatselu näyttää peitettyjen
 PNG-kuvien tavumäärät, palvelimen vastaanottaman HTTP-pyyntörungon koon sekä
 sovelletun kokonaisrajan. Kuvan tai pyynnön sisältöä ei kirjoiteta lokiin.
+Kuvien poiminnan oletusaikaraja on 180 sekuntia, ja sen voi asettaa välille
+5–240 sekuntia `OPENAI_EXTRACTION_TIMEOUT_MS`-ympäristömuuttujalla.
+Poimintareitti ilmoittaa alustalle 300 sekunnin enimmäissuoritusajan, jotta
+sovellus ehtii palauttaa hallitun aikakatkaisuvirheen.
 
 Ajoneuvovarianttiin perustuva tutkimus, tapahtumien Phase 4 -normalisointi,
 huoltojen tilalaskenta ja vientitoiminnot eivät ole vielä toteutettuja.
