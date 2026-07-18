@@ -40,12 +40,13 @@ Tekninen spesifikaatio on englanniksi, koska se on Codexille ja lähdekoodin tuo
 
 ## Nykyinen toteutusvaihe
 
-Phase 0 sisältää Next.js- ja TypeScript-perustan, suomalaisen käyttöliittymäkuoren,
-tietosuojasivun, Zod-skeemat, pyyntökoon tarkistuksen, tilattoman
-nopeusrajoitusabstraktion sekä testaus- ja CI-työkalut.
+Phase 1 sisältää Next.js- ja TypeScript-perustan, suomalaisen
+käyttöliittymäkuoren, tietosuojasivun, Zod-skeemat, pyyntökoon tarkistuksen,
+tilattoman nopeusrajoitusabstraktion sekä validoidun ajoneuvolomakkeen ja
+ainoastaan React-muistissa säilyvän istuntomallin.
 
-Ajoneuvolomaketta, kuvalatausta, peittämistä, OpenAI-kutsuja, huoltojen
-tilalaskentaa tai vientitoimintoja ei ole vielä toteutettu.
+Kuvalatausta, peittämistä, OpenAI-kutsuja, huoltojen tilalaskentaa tai
+vientitoimintoja ei ole vielä toteutettu.
 
 ## Paikallinen kehitys
 

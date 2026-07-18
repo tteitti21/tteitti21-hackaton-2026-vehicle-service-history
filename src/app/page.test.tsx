@@ -1,12 +1,18 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { AnalysisSessionProvider } from "@/components/session/analysis-session-provider";
+
 import Home from "./page";
 import PrivacyPage from "./tietosuoja/page";
 
-describe("Phase 0 shell", () => {
-  it("renders the Finnish product shell and marks analysis unavailable", () => {
-    render(<Home />);
+describe("Phase 1 shell", () => {
+  it("renders the Finnish product shell and vehicle form", () => {
+    render(
+      <AnalysisSessionProvider>
+        <Home />
+      </AnalysisSessionProvider>,
+    );
 
     expect(
       screen.getByRole("heading", {
@@ -14,8 +20,12 @@ describe("Phase 0 shell", () => {
         name: /Huoltohistoria selkeäksi/,
       }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Vaihe 1 käytössä")).toBeVisible();
     expect(
-      screen.getByText(/Analyysi ei ole vielä käytössä\./),
+      screen.getByRole("heading", {
+        level: 2,
+        name: /Kuvaile ajoneuvo mahdollisimman tarkasti/,
+      }),
     ).toBeVisible();
     expect(
       screen.getByRole("link", { name: /Miten tietoja käsitellään/ }),

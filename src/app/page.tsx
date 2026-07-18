@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { VehicleForm } from "@/components/vehicle/vehicle-form";
+
 const steps = [
   {
     number: "01",
@@ -44,14 +46,16 @@ export default function Home() {
         <div className="phaseNotice" role="status">
           <span className="statusDot" aria-hidden="true" />
           <div>
-            <strong>Perusta on valmis</strong>
+            <strong>Vaihe 1 käytössä</strong>
             <p>
-              Analyysi ei ole vielä käytössä. Ajoneuvotiedot ja kuvien käsittely
-              lisätään seuraavissa toteutusvaiheissa.
+              Voit nyt vahvistaa ajoneuvon tiedot tämän välilehden istuntoon.
+              Kuvien käsittely ja analyysi lisätään seuraavissa vaiheissa.
             </p>
           </div>
         </div>
       </section>
+
+      <VehicleForm />
 
       <section className="privacyBand" aria-labelledby="privacy-heading">
         <div>

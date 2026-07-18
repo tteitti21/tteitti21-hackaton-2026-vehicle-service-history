@@ -21,7 +21,7 @@ const protections = [
   },
   {
     title: "Istunto päättyy sivun sulkemiseen",
-    text: "Analyysin tila pidetään vain selaimen muistissa. Sivun sulkeminen tai päivittäminen poistaa istunnon, kun myöhemmät analyysivaiheet on toteutettu.",
+    text: "Ajoneuvotiedot ja analyysin tila pidetään vain selaimen muistissa. Sivun sulkeminen tai päivittäminen poistaa nykyisen istunnon.",
   },
 ];
 
