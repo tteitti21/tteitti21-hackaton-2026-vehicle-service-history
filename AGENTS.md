@@ -80,7 +80,7 @@ OPENAI_API_KEY=
 OPENAI_EXTRACTION_MODEL=
 OPENAI_RESEARCH_MODEL=
 MAX_UPLOAD_FILES=10
-MAX_UPLOAD_BYTES_PER_FILE=10485760
+MAX_UPLOAD_BYTES_PER_FILE=20971520
 ```
 
 Use a current OpenAI model that supports image input, Structured Outputs, and the Responses API. The exact model must remain configurable.

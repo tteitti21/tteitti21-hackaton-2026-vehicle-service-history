@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const DEFAULT_MAX_UPLOAD_FILES = 10;
-const DEFAULT_MAX_UPLOAD_BYTES_PER_FILE = 10_485_760;
+const DEFAULT_MAX_UPLOAD_BYTES_PER_FILE = 20_971_520;
 const MULTIPART_OVERHEAD_ALLOWANCE_BYTES = 1_048_576;
 
 const positiveIntegerFromEnvironment = (fallback: number) =>

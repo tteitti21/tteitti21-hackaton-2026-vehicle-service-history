@@ -9,8 +9,8 @@ describe("readUploadLimits", () => {
   it("uses the documented defaults", () => {
     expect(readUploadLimits({})).toEqual({
       maxFiles: 10,
-      maxBytesPerFile: 10_485_760,
-      maxRequestBytes: 105_906_176,
+      maxBytesPerFile: 20_971_520,
+      maxRequestBytes: 210_763_776,
     });
   });
 

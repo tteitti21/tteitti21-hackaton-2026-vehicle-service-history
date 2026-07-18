@@ -54,7 +54,7 @@ tyhjänä tuloksena, ja palveluvirhe säilyttää paikalliset kuvat uutta yritys
 varten.
 
 `/api/extract` ohittaa Next.js-proxyn pyyntörungon puskuroinnin. Rajapinta
-validoi itse enintään 10 kuvaa, 10 Mt kuvaa kohden ja noin 101 Mt koko
+validoi itse enintään 10 kuvaa, 20 Mt kuvaa kohden ja noin 201 Mt koko
 multipart-pyyntöä oletusasetuksilla. Lähetysesikatselu näyttää peitettyjen
 PNG-kuvien tavumäärät, palvelimen vastaanottaman HTTP-pyyntörungon koon sekä
 sovelletun kokonaisrajan. Kuvan tai pyynnön sisältöä ei kirjoiteta lokiin.

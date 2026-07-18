@@ -63,6 +63,47 @@ describe("POST /api/extract", () => {
     );
   });
 
+  it("accepts a sanitized PNG above the previous 10 MiB limit", async () => {
+    const executeExtraction = vi.fn().mockResolvedValue(validHistory);
+    const handler = createExtractPostHandler({
+      environment: {
+        ...environment,
+        MAX_UPLOAD_FILES: "1",
+        MAX_UPLOAD_BYTES_PER_FILE: "20971520",
+      },
+      rateLimiter: new InMemoryRateLimiter(),
+      executeExtraction,
+    });
+
+    const response = await handler(
+      createExtractionRequest([
+        {
+          id: "image-1",
+          width: 32,
+          height: 24,
+          byteLength: 15 * 1_048_576,
+        },
+      ]),
+    );
+
+    expect(response.status).toBe(200);
+    expect(
+      Number(response.headers.get("x-autohuolto-request-body-bytes")),
+    ).toBeGreaterThan(15 * 1_048_576);
+    expect(executeExtraction).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          imageId: "image-1",
+          bytes: expect.objectContaining({
+            byteLength: 15 * 1_048_576,
+          }),
+        }),
+      ],
+      expect.any(Object),
+      expect.any(AbortSignal),
+    );
+  });
+
   it("rejects cross-origin requests before reading the body", async () => {
     const executeExtraction = vi.fn();
     const handler = createExtractPostHandler({

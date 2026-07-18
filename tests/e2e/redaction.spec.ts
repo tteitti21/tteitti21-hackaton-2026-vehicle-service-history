@@ -150,7 +150,7 @@ test("submits only the sanitized image and renders an editable extraction", asyn
       contentType: "application/json",
       headers: {
         "X-AutoHuolto-Request-Body-Bytes": "3145728",
-        "X-AutoHuolto-Request-Body-Limit-Bytes": "105906176",
+        "X-AutoHuolto-Request-Body-Limit-Bytes": "210763776",
       },
       body: JSON.stringify({
         images: [
@@ -214,7 +214,7 @@ test("submits only the sanitized image and renders an editable extraction", asyn
   });
   await expect(requestSizeDebug).toContainText("HTTP-pyyntörunko");
   await expect(requestSizeDebug).toContainText("3 145 728 tavua");
-  await expect(requestSizeDebug).toContainText("105 906 176 tavua");
+  await expect(requestSizeDebug).toContainText("210 763 776 tavua");
 
   const evidence = page.getByLabel("Raaka kuvasta luettu näyttö");
   await evidence.fill("Käyttäjän tarkistama synteettinen näyttö");
@@ -291,9 +291,9 @@ test("rejects unsupported and oversized files before browser decoding", async ({
   await input.setInputFiles({
     name: "too-large.png",
     mimeType: "image/png",
-    buffer: Buffer.alloc(10_485_761),
+    buffer: Buffer.alloc(20_971_521),
   });
-  await expect(page.getByText(/tiedosto ylittää kokorajan 10 Mt/)).toBeVisible();
+  await expect(page.getByText(/tiedosto ylittää kokorajan 20 Mt/)).toBeVisible();
   await expect(page.getByText(/1\/10 muistissa/)).toHaveCount(0);
 });
 

@@ -1,7 +1,12 @@
 import { Buffer } from "node:buffer";
 
 export function createExtractionRequest(
-  images: Array<{ id: string; width: number; height: number }>,
+  images: Array<{
+    id: string;
+    width: number;
+    height: number;
+    byteLength?: number;
+  }>,
   options: { manifestWidth?: number; origin?: string } = {},
 ): Request {
   const boundary = "----autohuolto-synthetic-boundary";
@@ -13,7 +18,11 @@ export function createExtractionRequest(
         `--${boundary}\r\nContent-Disposition: form-data; name="images"; filename="${fileName}"\r\nContent-Type: image/png\r\n\r\n`,
         "utf8",
       ),
-      Buffer.from(createPngHeader(image.width, image.height)),
+      createPngBytes(
+        image.width,
+        image.height,
+        image.byteLength,
+      ),
       Buffer.from("\r\n", "utf8"),
     );
 
@@ -57,4 +66,18 @@ function createPngHeader(width: number, height: number): ArrayBuffer {
   view.setUint32(16, width);
   view.setUint32(20, height);
   return buffer;
+}
+
+function createPngBytes(
+  width: number,
+  height: number,
+  byteLength = 24,
+): Buffer {
+  if (byteLength < 24) {
+    throw new Error("Synthetic PNG byte length must be at least 24.");
+  }
+
+  const bytes = Buffer.alloc(byteLength);
+  bytes.set(new Uint8Array(createPngHeader(width, height)));
+  return bytes;
 }

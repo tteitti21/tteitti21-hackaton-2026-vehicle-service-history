@@ -9,13 +9,13 @@ describe("request size response headers", () => {
   it("round-trips safe byte counts without request content", () => {
     const responseHeaders = createRequestSizeResponseHeaders(
       new Headers({ "content-length": "31457280" }),
-      105_906_176,
+      210_763_776,
     );
 
     expect(readRequestSizeResponseHeaders(new Headers(responseHeaders))).toEqual(
       {
         requestBodyBytes: 31_457_280,
-        maximumRequestBytes: 105_906_176,
+        maximumRequestBytes: 210_763_776,
       },
     );
   });
