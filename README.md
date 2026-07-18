@@ -37,3 +37,45 @@ Rakenna yksi vaihe kerrallaan. Älä ohita testejä tai yksityisyysvaatimuksia.
 - Excel-vienti selaimessa
 
 Tekninen spesifikaatio on englanniksi, koska se on Codexille ja lähdekoodin tuottamiseen yksiselitteisempi. Käyttöliittymän oletuskieli on suomi.
+
+## Nykyinen toteutusvaihe
+
+Phase 0 sisältää Next.js- ja TypeScript-perustan, suomalaisen käyttöliittymäkuoren,
+tietosuojasivun, Zod-skeemat, pyyntökoon tarkistuksen, tilattoman
+nopeusrajoitusabstraktion sekä testaus- ja CI-työkalut.
+
+Ajoneuvolomaketta, kuvalatausta, peittämistä, OpenAI-kutsuja, huoltojen
+tilalaskentaa tai vientitoimintoja ei ole vielä toteutettu.
+
+## Paikallinen kehitys
+
+Vaatimukset:
+
+- Node.js 20.9 tai uudempi
+- npm
+
+Asenna riippuvuudet ja käynnistä kehityspalvelin:
+
+```bash
+npm ci
+npm run dev
+```
+
+Kopioi tarvittaessa `.env.example` tiedostoksi `.env.local`. Älä tallenna
+API-avainta lähdekoodiin tai selaimelle näkyvään `NEXT_PUBLIC_`-muuttujaan.
+
+## Laatuportit
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run test:e2e
+npm run build
+```
+
+Playwright tarvitsee paikallisen Chromium-asennuksen:
+
+```bash
+npx playwright install chromium
+```
