@@ -11,6 +11,7 @@ export interface AnalysisSessionState {
   vehicleDraft: VehicleFormDraft;
   confirmedVehicle: VehicleInput | null;
   status: SessionStatus;
+  resetVersion: number;
 }
 
 export type AnalysisSessionAction =
@@ -29,11 +30,13 @@ export type AnalysisSessionAction =
 
 export function createInitialAnalysisSession(
   status: SessionStatus = "empty",
+  resetVersion = 0,
 ): AnalysisSessionState {
   return {
     vehicleDraft: createEmptyVehicleDraft(),
     confirmedVehicle: null,
     status,
+    resetVersion,
   };
 }
 
@@ -44,6 +47,7 @@ export function analysisSessionReducer(
   switch (action.type) {
     case "update_vehicle_field":
       return {
+        ...state,
         vehicleDraft: {
           ...state.vehicleDraft,
           [action.field]: action.value,
@@ -58,6 +62,6 @@ export function analysisSessionReducer(
         status: "confirmed",
       };
     case "reset_session":
-      return createInitialAnalysisSession("reset");
+      return createInitialAnalysisSession("reset", state.resetVersion + 1);
   }
 }

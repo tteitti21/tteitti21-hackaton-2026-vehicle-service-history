@@ -40,13 +40,16 @@ Tekninen spesifikaatio on englanniksi, koska se on Codexille ja lähdekoodin tuo
 
 ## Nykyinen toteutusvaihe
 
-Phase 1 sisältää Next.js- ja TypeScript-perustan, suomalaisen
+Phase 2 sisältää Next.js- ja TypeScript-perustan, suomalaisen
 käyttöliittymäkuoren, tietosuojasivun, Zod-skeemat, pyyntökoon tarkistuksen,
 tilattoman nopeusrajoitusabstraktion sekä validoidun ajoneuvolomakkeen ja
-ainoastaan React-muistissa säilyvän istuntomallin.
+ainoastaan React-muistissa säilyvän istuntomallin. Lisäksi käyttäjä voi lisätä
+1–10 JPG-, PNG- tai WebP-kuvaa, kääntää ja rajata niitä, piirtää pysyviä
+suorakulmaisia peitteitä sekä tarkistaa selaimen canvasilla uutena PNG-blobina
+luodut lähetysversiot.
 
-Kuvalatausta, peittämistä, OpenAI-kutsuja, huoltojen tilalaskentaa tai
-vientitoimintoja ei ole vielä toteutettu.
+OpenAI-kutsuja, huoltotapahtumien poimintaa, huoltojen tilalaskentaa tai
+vientitoimintoja ei ole vielä toteutettu. Vaihe 2 ei lähetä kuvia verkkoon.
 
 ## Paikallinen kehitys
 

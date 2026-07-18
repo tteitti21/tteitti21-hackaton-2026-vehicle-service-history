@@ -13,7 +13,7 @@ const protections = [
   },
   {
     title: "Peittäminen tapahtuu selaimessa",
-    text: "Kun kuvatoiminto toteutetaan, käyttäjä peittää tunnisteet paikallisesti. Lähetystä varten luodaan uusi kuvatiedosto, eikä alkuperäistä kuvaa lähetetä palvelimelle.",
+    text: "Käyttäjä peittää tunnisteet paikallisesti. Lähetystä varten selain piirtää uuden PNG-kuvan, eikä alkuperäistä kuvatiedostoa käytetä lähetyspaketissa.",
   },
   {
     title: "Vain tarpeellinen lähetetään",
@@ -46,11 +46,12 @@ export default function PrivacyPage() {
           omaan tietokantaan tai tiedostovarastoon.
         </p>
         <p>
-          Kun analyysitoiminnot otetaan käyttöön, peitetyt kuvat ja analyysin
-          syötteet välitetään OpenAI:lle pyynnön käsittelyä varten. API:n
-          syötteitä ja tulosteita ei oletusarvoisesti käytetä OpenAI-mallien
-          kouluttamiseen, mutta palveluntarjoajan tietojen säilytys- ja
-          väärinkäytön valvontakäytännöt voivat silti olla voimassa.
+          Kun analyysitoiminnot otetaan käyttöön, käyttäjän hyväksymät peitetyt
+          kuvat ja analyysin syötteet välitetään OpenAI:lle pyynnön käsittelyä
+          varten. API:n syötteitä ja tulosteita ei oletusarvoisesti käytetä
+          OpenAI-mallien kouluttamiseen, mutta palveluntarjoajan tietojen
+          säilytys- ja väärinkäytön valvontakäytännöt voivat silti olla
+          voimassa.
         </p>
       </section>
 
@@ -74,7 +75,7 @@ export default function PrivacyPage() {
       <section className="userChecklist" aria-labelledby="checklist-heading">
         <div>
           <p className="sectionLabel">Käyttäjän tarkistuslista</p>
-          <h2 id="checklist-heading">Ennen myöhempää kuvalähetystä</h2>
+          <h2 id="checklist-heading">Ennen kuvalähetystä</h2>
         </div>
         <ul>
           <li>Peitä rekisterinumero ja valmistenumero (VIN).</li>

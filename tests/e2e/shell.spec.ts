@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("shows the Phase 1 vehicle form without image controls", async ({
-  page,
-}) => {
+test("shows the Phase 2 vehicle and image privacy controls", async ({ page }) => {
   await page.goto("/");
 
   await expect(
@@ -11,12 +9,15 @@ test("shows the Phase 1 vehicle form without image controls", async ({
       name: /Huoltohistoria selkeäksi/,
     }),
   ).toBeVisible();
-  await expect(page.getByText("Vaihe 1 käytössä")).toBeVisible();
+  await expect(page.getByText("Vaihe 2 käytössä")).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Merkki" })).toBeVisible();
   await expect(
     page.getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" }),
   ).toBeVisible();
-  await expect(page.locator('input[type="file"]')).toHaveCount(0);
+  await expect(page.getByLabel("Valitse kuvat")).toHaveAttribute(
+    "accept",
+    "image/jpeg,image/png,image/webp",
+  );
 });
 
 test("validates, confirms, and resets vehicle data in memory", async ({

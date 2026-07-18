@@ -1,6 +1,8 @@
 import Link from "next/link";
 
+import { ImageRedactionWorkspace } from "@/components/upload/image-redaction-workspace";
 import { VehicleForm } from "@/components/vehicle/vehicle-form";
+import { readUploadLimits } from "@/lib/validation/request-limits";
 
 const steps = [
   {
@@ -30,6 +32,8 @@ const steps = [
 ];
 
 export default function Home() {
+  const uploadLimits = readUploadLimits();
+
   return (
     <main id="sisalto">
       <section className="hero">
@@ -46,16 +50,21 @@ export default function Home() {
         <div className="phaseNotice" role="status">
           <span className="statusDot" aria-hidden="true" />
           <div>
-            <strong>Vaihe 1 käytössä</strong>
+            <strong>Vaihe 2 käytössä</strong>
             <p>
-              Voit nyt vahvistaa ajoneuvon tiedot tämän välilehden istuntoon.
-              Kuvien käsittely ja analyysi lisätään seuraavissa vaiheissa.
+              Voit vahvistaa ajoneuvon tiedot sekä muokata ja peittää kuvat
+              paikallisesti. Kuvien analyysi lisätään seuraavassa vaiheessa.
             </p>
           </div>
         </div>
       </section>
 
       <VehicleForm />
+
+      <ImageRedactionWorkspace
+        maxFiles={uploadLimits.maxFiles}
+        maxBytesPerFile={uploadLimits.maxBytesPerFile}
+      />
 
       <section className="privacyBand" aria-labelledby="privacy-heading">
         <div>

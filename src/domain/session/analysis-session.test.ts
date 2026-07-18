@@ -22,6 +22,7 @@ describe("analysis session reducer", () => {
       vehicleDraft: createEmptyVehicleDraft(),
       confirmedVehicle: null,
       status: "empty",
+      resetVersion: 0,
     });
   });
 
@@ -61,6 +62,6 @@ describe("analysis session reducer", () => {
       type: "reset_session",
     });
 
-    expect(resetState).toEqual(createInitialAnalysisSession("reset"));
+    expect(resetState).toEqual(createInitialAnalysisSession("reset", 1));
   });
 });
