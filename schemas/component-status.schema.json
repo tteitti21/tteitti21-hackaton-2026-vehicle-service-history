@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ComponentStatus",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "component_code",
+    "status",
+    "reason_codes",
+    "last_service_event_id",
+    "interval_claim_id",
+    "distance_used_km",
+    "distance_remaining_km",
+    "months_used",
+    "months_remaining"
+  ],
+  "properties": {
+    "component_code": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "due_soon",
+        "due",
+        "overdue",
+        "unknown",
+        "insufficient_evidence",
+        "conflicting_sources"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "last_service_event_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "interval_claim_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "distance_used_km": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "distance_remaining_km": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "months_used": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "months_remaining": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  }
+}

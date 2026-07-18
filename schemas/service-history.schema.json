@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServiceHistoryExtraction",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "images",
+    "events",
+    "warnings"
+  ],
+  "properties": {
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "image_id",
+          "readability",
+          "notes"
+        ],
+        "properties": {
+          "image_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "readability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event_id",
+          "source_image_ids",
+          "raw_evidence",
+          "service_date",
+          "odometer",
+          "actions",
+          "workshop",
+          "notes",
+          "confidence",
+          "ambiguities"
+        ],
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_image_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "raw_evidence": {
+            "type": "string"
+          },
+          "service_date": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "value",
+                  "precision",
+                  "confidence"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "string"
+                  },
+                  "precision": {
+                    "type": "string",
+                    "enum": [
+                      "day",
+                      "month",
+                      "year",
+                      "unknown"
+                    ]
+                  },
+                  "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              }
+            ]
+          },
+          "odometer": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "value",
+                  "unit",
+                  "confidence"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "km",
+                      "mi",
+                      "unknown"
+                    ]
+                  },
+                  "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              }
+            ]
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "component_code",
+                "component_label",
+                "action_type",
+                "description",
+                "confidence"
+              ],
+              "properties": {
+                "component_code": {
+                  "type": "string",
+                  "enum": [
+                    "engine_oil",
+                    "oil_filter",
+                    "air_filter",
+                    "cabin_filter",
+                    "fuel_filter",
+                    "spark_plugs",
+                    "timing_belt",
+                    "timing_chain",
+                    "water_pump",
+                    "transmission_fluid",
+                    "transmission_filter",
+                    "brake_fluid",
+                    "coolant",
+                    "brakes",
+                    "suspension",
+                    "battery",
+                    "tires",
+                    "inspection",
+                    "other"
+                  ]
+                },
+                "component_label": {
+                  "type": "string"
+                },
+                "action_type": {
+                  "type": "string",
+                  "enum": [
+                    "replaced",
+                    "serviced",
+                    "repaired",
+                    "inspected",
+                    "adjusted",
+                    "unknown"
+                  ]
+                },
+                "description": {
+                  "type": "string"
+                },
+                "confidence": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            }
+          },
+          "workshop": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "ambiguities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
