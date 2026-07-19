@@ -39,6 +39,7 @@ export interface AnalysisSessionState {
   vehicleResolution: VehicleResolution | null;
   vehicleResolutionStatus: VehicleResolutionStatus;
   vehicleResolutionError: string | null;
+  confirmedVehicleCandidateId: string | null;
   confirmedVehicleVariant: VehicleVariant | null;
   vehicleResolutionRejected: boolean;
   maintenanceResearch: MaintenanceResearch | null;
@@ -130,6 +131,7 @@ export function createInitialAnalysisSession(
     vehicleResolution: null,
     vehicleResolutionStatus: "idle",
     vehicleResolutionError: null,
+    confirmedVehicleCandidateId: null,
     confirmedVehicleVariant: null,
     vehicleResolutionRejected: false,
     maintenanceResearch: null,
@@ -156,6 +158,7 @@ export function analysisSessionReducer(
         vehicleResolution: null,
         vehicleResolutionStatus: "idle",
         vehicleResolutionError: null,
+        confirmedVehicleCandidateId: null,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: false,
         ...emptyMaintenanceResearch(),
@@ -169,6 +172,7 @@ export function analysisSessionReducer(
         vehicleResolution: null,
         vehicleResolutionStatus: "idle",
         vehicleResolutionError: null,
+        confirmedVehicleCandidateId: null,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: false,
         ...emptyMaintenanceResearch(),
@@ -242,6 +246,7 @@ export function analysisSessionReducer(
         ...state,
         vehicleResolutionStatus: "submitting",
         vehicleResolutionError: null,
+        confirmedVehicleCandidateId: null,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: false,
         ...emptyMaintenanceResearch(),
@@ -252,6 +257,7 @@ export function analysisSessionReducer(
         vehicleResolution: action.resolution,
         vehicleResolutionStatus: "success",
         vehicleResolutionError: null,
+        confirmedVehicleCandidateId: null,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: false,
         ...emptyMaintenanceResearch(),
@@ -261,6 +267,8 @@ export function analysisSessionReducer(
         ...state,
         vehicleResolutionStatus: "error",
         vehicleResolutionError: action.message,
+        confirmedVehicleCandidateId: null,
+        confirmedVehicleVariant: null,
         ...emptyMaintenanceResearch(),
       };
     case "confirm_vehicle_candidate": {
@@ -274,6 +282,7 @@ export function analysisSessionReducer(
 
       return {
         ...state,
+        confirmedVehicleCandidateId: candidate.candidate_id,
         confirmedVehicleVariant: candidate.variant,
         vehicleResolutionRejected: false,
         ...emptyMaintenanceResearch(),
@@ -282,6 +291,7 @@ export function analysisSessionReducer(
     case "reject_vehicle_candidates":
       return {
         ...state,
+        confirmedVehicleCandidateId: null,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: true,
         ...emptyMaintenanceResearch(),

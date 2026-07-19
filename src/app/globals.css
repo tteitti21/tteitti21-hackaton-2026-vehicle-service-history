@@ -210,12 +210,14 @@ nav a {
 .vehicleSection,
 .imageSection,
 .maintenanceResearchSection,
-.componentStatusSection {
+.componentStatusSection,
+.reportSection {
   padding-block: clamp(4.5rem, 8vw, 8rem);
 }
 
 .componentStatusSection,
-.maintenanceResearchSection {
+.maintenanceResearchSection,
+.reportSection {
   border-bottom: 1px solid var(--line);
 }
 
@@ -380,6 +382,309 @@ nav a {
   margin: 1rem 0 0;
   color: var(--muted);
   font: 650 0.7rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.reportHeading {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.75fr);
+  gap: clamp(2rem, 7vw, 7rem);
+  align-items: start;
+  margin-bottom: 2rem;
+}
+
+.localExportNotice {
+  padding: 1.2rem 1.3rem;
+  color: #234b3b;
+  background: var(--forest-soft);
+  border: 1px solid #b5d0c0;
+  border-radius: 0.85rem;
+}
+
+.localExportNotice p {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.reportWorkspace {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.reportSnapshotHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+  gap: 2rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  color: white;
+  background: var(--forest);
+  border-radius: 1.1rem;
+}
+
+.reportSnapshotHeader h3 {
+  margin: 0.3rem 0 0;
+  color: white;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+.reportSnapshotHeader p {
+  margin: 0.55rem 0 0;
+  color: #d2dfd9;
+}
+
+.reportKicker {
+  color: var(--lime) !important;
+  font: 750 0.72rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reportSnapshotHeader dl {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.reportSnapshotHeader dl > div {
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 0.6rem;
+}
+
+.reportSnapshotHeader dt {
+  color: #bdd0c6;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.reportSnapshotHeader dd {
+  margin: 0.2rem 0 0;
+  font-weight: 750;
+}
+
+.reportExportActions {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+}
+
+.reportExportActions p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.reportExportButtons {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.65rem;
+}
+
+.reportExportButtons button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.reportExportError {
+  padding: 0.9rem 1rem;
+  color: #78291f;
+  background: #fbe9e5;
+  border: 1px solid #e5a99e;
+  border-radius: 0.75rem;
+}
+
+.reportSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.reportSummaryGrid > div {
+  padding: 1rem;
+  background: #f3f6f4;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+}
+
+.reportSummaryGrid strong,
+.reportSummaryGrid span {
+  display: block;
+}
+
+.reportSummaryGrid strong {
+  color: var(--forest);
+  font-size: 1.4rem;
+}
+
+.reportSummaryGrid span {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.reportUncertainty,
+.reportDisclaimer {
+  padding: 1rem 1.1rem;
+  border-radius: 0.75rem;
+}
+
+.reportUncertainty {
+  color: #5f4310;
+  background: #fff4d7;
+  border: 1px solid #e8ca81;
+}
+
+.reportUncertainty p,
+.reportDisclaimer p {
+  margin: 0.35rem 0 0;
+}
+
+.reportWarnings {
+  padding: 1rem 1.1rem;
+  color: #5f4310;
+  background: #fffaf0;
+  border: 1px solid #e8ca81;
+  border-radius: 0.75rem;
+}
+
+.reportWarnings summary {
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.reportWarnings ul {
+  margin-bottom: 0;
+}
+
+.reportTableSection {
+  min-width: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.reportTableSection > div:first-child {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.55fr) minmax(300px, 1fr);
+  gap: 2rem;
+  align-items: end;
+  margin-bottom: 0.9rem;
+}
+
+.reportTableSection h3 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.reportTableSection > div:first-child p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.reportTableFrame {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+}
+
+.reportTable {
+  width: 100%;
+  min-width: 940px;
+  border-collapse: collapse;
+  font-size: 0.76rem;
+}
+
+.reportTable th,
+.reportTable td {
+  padding: 0.85rem;
+  vertical-align: top;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.reportTable th {
+  color: #3f5c51;
+  background: #eef2ef;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.reportTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.reportTable td strong,
+.reportTable td span,
+.reportTable td small,
+.reportTable td code {
+  display: block;
+}
+
+.reportTable td span,
+.reportTable td small {
+  margin-top: 0.25rem;
+  color: var(--muted);
+}
+
+.reportTable td code {
+  margin-top: 0.35rem;
+  color: #416055;
+  font-size: 0.66rem;
+  overflow-wrap: anywhere;
+}
+
+.reportTable td p {
+  margin: 0;
+}
+
+.reportTable ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.reportTable li + li {
+  margin-top: 0.35rem;
+}
+
+.reportTable a {
+  color: var(--forest);
+  font-weight: 750;
+  overflow-wrap: anywhere;
+  text-underline-offset: 0.18rem;
+}
+
+.reportComponentTable,
+.reportSourceTable {
+  min-width: 1120px;
+}
+
+.reportEmptyTable {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px dashed #b9c4be;
+  border-radius: 0.75rem;
+}
+
+.reportDisclaimer {
+  color: #d8e4de;
+  background: var(--forest);
+}
+
+.reportDisclaimer strong {
+  color: var(--lime);
+}
+
+.reportDisclaimer p {
+  color: #d8e4de;
 }
 
 .maintenanceResearchHeading {
@@ -2656,7 +2961,10 @@ h2 {
   .evidenceComparison,
   .vehicleResolutionHeading,
   .maintenanceResearchHeading,
-  .componentStatusHeading {
+  .componentStatusHeading,
+  .reportHeading,
+  .reportSnapshotHeader,
+  .reportTableSection > div:first-child {
     grid-template-columns: 1fr;
   }
 
@@ -2667,6 +2975,10 @@ h2 {
   }
 
   .statusCountGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reportSummaryGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2751,9 +3063,14 @@ h2 {
   .eventEditorHeading,
   .actionEditorHeading,
   .componentSuggestion,
-  .resolutionSearchActions {
+  .resolutionSearchActions,
+  .reportExportActions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .reportExportButtons {
+    display: grid;
   }
 
   .formFieldWide {
@@ -2776,6 +3093,10 @@ h2 {
 
   .candidateConfirmation {
     display: grid;
+  }
+
+  .reportSummaryGrid {
+    grid-template-columns: 1fr;
   }
 
   .stepGrid li,

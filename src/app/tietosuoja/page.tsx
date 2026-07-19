@@ -74,6 +74,13 @@ export default function PrivacyPage() {
           sovelluskoodilla. Tilalaskenta ei lähetä uutta pyyntöä
           palveluntarjoajalle eikä tallenna tulosta pysyvästi.
         </p>
+        <p>
+          JSON- ja Excel-raportit muodostetaan paikallisesti selaimessa
+          käyttäjän erillisestä latauspyynnöstä. Raporttiin ei liitetä
+          alkuperäisiä tai peitettyjä kuvia, eikä vienti lähetä uutta
+          verkkopyyntöä. Ladattu tiedosto jää käyttäjän oman laitteen ja
+          valitun tallennuspaikan hallintaan.
+        </p>
       </section>
 
       <section aria-labelledby="protections-heading">

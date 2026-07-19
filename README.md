@@ -40,7 +40,7 @@ Tekninen spesifikaatio on englanniksi, koska se on Codexille ja lähdekoodin tuo
 
 ## Nykyinen toteutusvaihe
 
-Phase 7 sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
+Phase 8 sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
 kuvan peittämisen ja tilattoman `/api/extract`-rajapinnan. Käyttäjän
 erikseen hyväksymät uudet PNG-kuvat lähetetään pyyntökohtaisena kuvasisältönä
 OpenAI Responses API:lle. `store: false`, palvelinpuolinen API-avain,
@@ -126,7 +126,16 @@ käytetyn ja jäljellä olevan matkan/ajan sekä arvioidun erääntymislukeman j
 -päivän. Jos huoltomerkintää ei löydy, käyttöliittymä kertoo
 “Huoltohistoriasta ei löytynyt merkintää” eikä väitä, ettei huoltoa ole tehty.
 
-Vientitoiminnot eivät ole vielä toteutettuja.
+Valmis raporttinäkymä kokoaa vahvistetun ajoneuvoversion, tarkistetun
+huoltohistorian, deterministisesti lasketut komponenttitilat sekä kaikki
+ajoneuvo- ja huoltovälilähteet epävarmuuksineen. Raportti voidaan ladata
+paikallisesti JSON- tai Excel-tiedostona ilman uutta verkkopyyntöä.
+
+Excel-vienti sisältää erilliset yhteenveto-, huoltohistoria-, komponentti- ja
+lähdetaulukot. Ulkoinen tekstisisältö suojataan kaavainjektiolta ennen
+soluihin kirjoittamista. Kuvat ja niiden sisältö eivät kuulu kumpaankaan
+vientimuotoon; vain huoltotapahtuman lähdekuvien istuntotunnisteet säilytetään
+tekstimuotoisina jäljitettävyyttä varten.
 
 ## Paikallinen kehitys
 

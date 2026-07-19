@@ -6,7 +6,7 @@ import { AnalysisSessionProvider } from "@/components/session/analysis-session-p
 import Home from "./page";
 import PrivacyPage from "./tietosuoja/page";
 
-describe("Phase 7 shell", () => {
+describe("Phase 8 shell", () => {
   it("renders the Finnish product shell, vehicle form, and image privacy workflow", () => {
     render(
       <AnalysisSessionProvider>
@@ -20,7 +20,7 @@ describe("Phase 7 shell", () => {
         name: /Huoltohistoria selkeäksi/,
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Vaihe 7 käytössä")).toBeVisible();
+    expect(screen.getByText("Vaihe 8 käytössä")).toBeVisible();
     expect(
       screen.getByRole("heading", {
         level: 2,
@@ -59,6 +59,12 @@ describe("Phase 7 shell", () => {
       screen.getByRole("heading", {
         level: 2,
         name: /Huoltojen tila lasketaan todennetusta näytöstä/,
+      }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: /Tarkista raportti ja tallenna se omalle laitteellesi/,
       }),
     ).toBeVisible();
     expect(

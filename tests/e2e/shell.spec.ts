@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("shows the Phase 7 vehicle, review, research, and status controls", async ({
+test("shows the Phase 8 vehicle, research, status, and report controls", async ({
   page,
 }) => {
   await page.goto("/");
@@ -11,7 +11,7 @@ test("shows the Phase 7 vehicle, review, research, and status controls", async (
       name: /Huoltohistoria selkeäksi/,
     }),
   ).toBeVisible();
-  await expect(page.getByText("Vaihe 7 käytössä")).toBeVisible();
+  await expect(page.getByText("Vaihe 8 käytössä")).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Merkki" })).toBeVisible();
   await expect(
     page.getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" }),
@@ -38,6 +38,11 @@ test("shows the Phase 7 vehicle, review, research, and status controls", async (
   await expect(
     page.getByRole("heading", {
       name: "Huoltojen tila lasketaan todennetusta näytöstä.",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Tarkista raportti ja tallenna se omalle laitteellesi.",
     }),
   ).toBeVisible();
 });

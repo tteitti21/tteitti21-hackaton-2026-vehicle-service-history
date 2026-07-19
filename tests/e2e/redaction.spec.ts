@@ -1,3 +1,6 @@
+import fs from "node:fs/promises";
+
+import ExcelJS from "exceljs";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 test("redacts a synthetic identifier into the exact intercepted PNG payload", async ({
@@ -447,7 +450,8 @@ test("requires explicit candidate selection and preserves research sources", asy
                   publisher: "toyota.example",
                   url: "https://toyota.example/maintenance",
                   retrieved_at: "2026-07-19",
-                  evidence: "Virallinen taulukko ilmoittaa 15 000 km.",
+                  evidence:
+                    "=HYPERLINK(\"https://attacker.example\",\"Virallinen taulukko ilmoittaa 15 000 km\")",
                 },
                 authority_rank: 1,
                 compatibility: "exact",
@@ -470,7 +474,7 @@ test("requires explicit candidate selection and preserves research sources", asy
     .click();
   await expect(page.getByText("Lähde löytyi")).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Toyota maintenance schedule" }),
+    page.getByRole("link", { name: "Toyota maintenance schedule" }).first(),
   ).toHaveAttribute("href", "https://toyota.example/maintenance");
   const calculatedStatus = page.locator(".componentStatusCard").filter({
     hasText: "Moottoriöljy",
@@ -484,6 +488,84 @@ test("requires explicit candidate selection and preserves research sources", asy
   await expect(
     calculatedStatus.getByText("Sovelluskoodin laskema"),
   ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Tarkista raportti ja tallenna se omalle laitteellesi.",
+    }),
+  ).toBeVisible();
+
+  const exportApiRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().includes("/api/")) {
+      exportApiRequests.push(request.url());
+    }
+  });
+
+  const jsonDownloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Lataa JSON" }).click();
+  const jsonDownload = await jsonDownloadPromise;
+  expect(jsonDownload.suggestedFilename()).toBe(
+    "autohuolto-toyota-avensis-2026-07-19.json",
+  );
+  const jsonPath = await jsonDownload.path();
+  expect(jsonPath).not.toBeNull();
+  const exportedJsonText = await fs.readFile(jsonPath!, "utf8");
+  const exportedJson = JSON.parse(exportedJsonText);
+  expect(exportedJson).toMatchObject({
+    metadata: {
+      distance_unit: "km",
+      local_export: true,
+      images_included: false,
+    },
+    vehicle: {
+      current_odometer_km: 184000,
+      resolution: { candidate_id: "candidate-2" },
+      resolved_variant: { engine: "2.0 D-4D (2WW), 105 kW" },
+    },
+    summary: { component_count: 1, source_count: 2 },
+    service_history: [],
+    components: [
+      {
+        component_code: "engine_oil",
+        status: "unknown",
+        recommended_interval_km: 15000,
+      },
+    ],
+  });
+  expect(exportedJsonText).not.toContain('"images":');
+  expect(exportedJsonText).not.toContain("data:image/");
+  expect(exportedJson.sources[1].evidence).toBe(
+    "=HYPERLINK(\"https://attacker.example\",\"Virallinen taulukko ilmoittaa 15 000 km\")",
+  );
+
+  const excelDownloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Lataa Excel" }).click();
+  const excelDownload = await excelDownloadPromise;
+  expect(excelDownload.suggestedFilename()).toBe(
+    "autohuolto-toyota-avensis-2026-07-19.xlsx",
+  );
+  const excelPath = await excelDownload.path();
+  expect(excelPath).not.toBeNull();
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(excelPath!);
+  expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
+    "Yhteenveto",
+    "Huoltohistoria",
+    "Komponentit",
+    "Lähteet",
+  ]);
+  expect(workbook.getWorksheet("Komponentit")?.getCell("C2").value).toBe(
+    "unknown",
+  );
+  expect(workbook.getWorksheet("Lähteet")?.getCell("R3").value).toBe(
+    "https://toyota.example/maintenance",
+  );
+  expect(workbook.getWorksheet("Lähteet")?.getCell("T3").value).toBe(
+    "'=HYPERLINK(\"https://attacker.example\",\"Virallinen taulukko ilmoittaa 15 000 km\")",
+  );
+  workbook.eachSheet((sheet) => expect(sheet.getImages()).toEqual([]));
+  expect(exportApiRequests).toEqual([]);
+
   expect(submittedResearch).toMatchObject({
     current_odometer_km: 184000,
     country: "FI",

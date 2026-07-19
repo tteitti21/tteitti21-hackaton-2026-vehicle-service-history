@@ -31,6 +31,7 @@ describe("analysis session reducer", () => {
       vehicleResolution: null,
       vehicleResolutionStatus: "idle",
       vehicleResolutionError: null,
+      confirmedVehicleCandidateId: null,
       confirmedVehicleVariant: null,
       vehicleResolutionRejected: false,
       maintenanceResearch: null,
@@ -193,6 +194,7 @@ describe("analysis session reducer", () => {
     expect(submitting.vehicleResolutionStatus).toBe("submitting");
     expect(completed.vehicleResolutionStatus).toBe("success");
     expect(completed.vehicleResolution).toEqual(vehicleResolutionFixture);
+    expect(completed.confirmedVehicleCandidateId).toBeNull();
     expect(completed.confirmedVehicleVariant).toBeNull();
   });
 
@@ -214,6 +216,7 @@ describe("analysis session reducer", () => {
     expect(confirmed.confirmedVehicleVariant).toEqual(
       vehicleResolutionFixture.candidates[1].variant,
     );
+    expect(confirmed.confirmedVehicleCandidateId).toBe("candidate-2");
   });
 
   it("supports none-of-these and invalidates resolution when vehicle fields change", () => {
@@ -235,10 +238,12 @@ describe("analysis session reducer", () => {
     });
 
     expect(rejected.confirmedVehicleVariant).toBeNull();
+    expect(rejected.confirmedVehicleCandidateId).toBeNull();
     expect(rejected.vehicleResolutionRejected).toBe(true);
     expect(edited).toMatchObject({
       vehicleResolution: null,
       vehicleResolutionStatus: "idle",
+      confirmedVehicleCandidateId: null,
       confirmedVehicleVariant: null,
       vehicleResolutionRejected: false,
     });
