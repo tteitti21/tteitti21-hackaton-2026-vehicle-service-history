@@ -1,4 +1,7 @@
-import type { ServiceEvent } from "@/domain/schemas/service-history";
+import type {
+  ServiceEvent,
+  ServiceHistory,
+} from "@/domain/schemas/service-history";
 
 export const MILES_TO_KILOMETRES = 1.609344;
 
@@ -22,6 +25,14 @@ export interface NormalizedServiceEvent {
   odometer: NormalizedOdometer;
 }
 
+type ServiceDate = NonNullable<ServiceEvent["service_date"]>;
+type ServiceDatePrecision = ServiceDate["precision"];
+
+export interface InferredServiceDateInput {
+  value: string;
+  precision: ServiceDatePrecision;
+}
+
 export function normalizeServiceEvent(
   event: ServiceEvent,
 ): NormalizedServiceEvent {
@@ -29,6 +40,97 @@ export function normalizeServiceEvent(
     event,
     date: normalizeServiceDate(event.service_date),
     odometer: normalizeOdometer(event.odometer),
+  };
+}
+
+export function inferServiceDateInput(
+  input: string,
+): InferredServiceDateInput {
+  const value = input.trim();
+  const finnishDay = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value);
+  if (finnishDay !== null) {
+    return {
+      value: `${finnishDay[3]}-${finnishDay[2]}-${finnishDay[1]}`,
+      precision: "day",
+    };
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return { value, precision: "day" };
+  }
+
+  const finnishMonth = /^(\d{2})\.(\d{4})$/.exec(value);
+  if (finnishMonth !== null) {
+    return {
+      value: `${finnishMonth[2]}-${finnishMonth[1]}`,
+      precision: "month",
+    };
+  }
+
+  if (/^\d{4}-\d{2}$/.test(value)) {
+    return { value, precision: "month" };
+  }
+
+  if (/^\d{4}$/.test(value)) {
+    return { value, precision: "year" };
+  }
+
+  return { value, precision: "unknown" };
+}
+
+export function createServiceDateFromInput(
+  input: string,
+  confidence: number,
+): ServiceDate | null {
+  const inferred = inferServiceDateInput(input);
+  return inferred.value === ""
+    ? null
+    : {
+        ...inferred,
+        confidence,
+      };
+}
+
+export function formatServiceDateInput(
+  serviceDate: ServiceEvent["service_date"],
+): string {
+  if (serviceDate === null) {
+    return "";
+  }
+
+  const inferred = inferServiceDateInput(serviceDate.value);
+  if (inferred.precision === "day") {
+    const [year, month, day] = inferred.value.split("-");
+    return `${day}.${month}.${year}`;
+  }
+  if (inferred.precision === "month") {
+    const [year, month] = inferred.value.split("-");
+    return `${month}.${year}`;
+  }
+  return inferred.value;
+}
+
+export function reconcileServiceDatePrecision(
+  serviceDate: ServiceEvent["service_date"],
+): ServiceEvent["service_date"] {
+  if (serviceDate === null) {
+    return null;
+  }
+  return {
+    ...serviceDate,
+    ...inferServiceDateInput(serviceDate.value),
+  };
+}
+
+export function reconcileServiceHistoryDatePrecisions(
+  serviceHistory: ServiceHistory,
+): ServiceHistory {
+  return {
+    ...serviceHistory,
+    events: serviceHistory.events.map((event) => ({
+      ...event,
+      service_date: reconcileServiceDatePrecision(event.service_date),
+    })),
   };
 }
 

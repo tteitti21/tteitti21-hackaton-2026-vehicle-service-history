@@ -65,7 +65,7 @@ export function validateEventValues(
         code: "invalid_date",
         severity: "error",
         eventIds: [event.event_id],
-        message: `Tapahtuman ${event.event_id} päivämäärä ei vastaa valittua tarkkuutta.`,
+        message: `Tapahtuman ${event.event_id} päivämäärä ei ole mahdollinen tai vastaa tuettua muotoa.`,
       });
     } else if (date.status === "unverified") {
       issues.push({
@@ -73,7 +73,7 @@ export function validateEventValues(
         code: "unverified_date",
         severity: "warning",
         eventIds: [event.event_id],
-        message: `Tapahtuman ${event.event_id} päivämäärän muotoa ei voida varmistaa, koska tarkkuus on epäselvä.`,
+        message: `Tapahtuman ${event.event_id} päivämäärän tarkkuutta ei voitu päätellä syötetystä muodosta.`,
       });
     }
 

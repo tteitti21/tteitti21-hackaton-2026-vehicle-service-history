@@ -8,6 +8,10 @@ import type {
 } from "@/domain/schemas/service-history";
 import type { VehicleResolution } from "@/domain/schemas/vehicle-resolution";
 import {
+  reconcileServiceDatePrecision,
+  reconcileServiceHistoryDatePrecisions,
+} from "@/domain/service-events/normalization";
+import {
   createEmptyVehicleDraft,
   type VehicleFieldName,
   type VehicleFormDraft,
@@ -190,7 +194,9 @@ export function analysisSessionReducer(
     case "complete_extraction":
       return {
         ...state,
-        serviceHistory: action.serviceHistory,
+        serviceHistory: reconcileServiceHistoryDatePrecisions(
+          action.serviceHistory,
+        ),
         serviceHistoryReviewConfirmed: false,
         extractionStatus: "success",
         extractionError: null,
@@ -214,7 +220,9 @@ export function analysisSessionReducer(
     case "replace_service_history":
       return {
         ...state,
-        serviceHistory: action.serviceHistory,
+        serviceHistory: reconcileServiceHistoryDatePrecisions(
+          action.serviceHistory,
+        ),
         serviceHistoryReviewConfirmed: false,
         ...emptyMaintenanceResearch(),
       };
@@ -229,7 +237,14 @@ export function analysisSessionReducer(
         serviceHistory: {
           ...state.serviceHistory,
           events: state.serviceHistory.events.map((event) =>
-            event.event_id === action.event.event_id ? action.event : event,
+            event.event_id === action.event.event_id
+              ? {
+                  ...action.event,
+                  service_date: reconcileServiceDatePrecision(
+                    action.event.service_date,
+                  ),
+                }
+              : event,
           ),
         },
       };

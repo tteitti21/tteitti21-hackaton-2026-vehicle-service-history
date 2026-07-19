@@ -22,6 +22,8 @@ import {
   resolveActionComponentCode,
 } from "@/domain/service-events/component-taxonomy";
 import {
+  createServiceDateFromInput,
+  formatServiceDateInput,
   normalizeOdometer,
   normalizeServiceDate,
 } from "@/domain/service-events/normalization";
@@ -39,7 +41,6 @@ const actionTypes = [
   "unknown",
 ] as const;
 
-const precisionOptions = ["day", "month", "year", "unknown"] as const;
 const odometerUnits = ["km", "mi", "unknown"] as const;
 
 const actionTypeLabels: Record<(typeof actionTypes)[number], string> = {
@@ -51,7 +52,10 @@ const actionTypeLabels: Record<(typeof actionTypes)[number], string> = {
   unknown: "Epäselvä",
 };
 
-const precisionLabels: Record<(typeof precisionOptions)[number], string> = {
+const precisionLabels: Record<
+  NonNullable<ServiceEvent["service_date"]>["precision"],
+  string
+> = {
   day: "Päivä",
   month: "Kuukausi",
   year: "Vuosi",
@@ -264,6 +268,7 @@ export function ExtractionReview() {
             <thead>
               <tr>
                 <th scope="col">Yhdistä</th>
+                <th scope="col">Tapahtuma</th>
                 <th scope="col">Lähdekuva</th>
                 <th scope="col">Päivä</th>
                 <th scope="col">Mittari</th>
@@ -275,73 +280,110 @@ export function ExtractionReview() {
               </tr>
             </thead>
             <tbody>
-              {history.events.map((event) => (
-                <tr key={event.event_id}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      aria-label={`Valitse tapahtuma ${event.event_id} yhdistettäväksi`}
-                      checked={mergeSelection.has(event.event_id)}
-                      onChange={(changeEvent) =>
-                        setMergeSelection((current) => {
-                          const next = new Set(current);
-                          if (changeEvent.target.checked) {
-                            next.add(event.event_id);
-                          } else {
-                            next.delete(event.event_id);
+              {history.events.map((event) => {
+                const isActive = activeEvent?.event_id === event.event_id;
+                return (
+                  <tr
+                    className={
+                      isActive
+                        ? "reviewTableRow reviewTableRowActive"
+                        : "reviewTableRow"
+                    }
+                    aria-current={isActive ? "true" : undefined}
+                    data-active={isActive ? "true" : "false"}
+                    key={event.event_id}
+                  >
+                    <td>
+                      <input
+                        type="checkbox"
+                        aria-label={`Valitse tapahtuma ${event.event_id} yhdistettäväksi`}
+                        checked={mergeSelection.has(event.event_id)}
+                        onChange={(changeEvent) =>
+                          setMergeSelection((current) => {
+                            const next = new Set(current);
+                            if (changeEvent.target.checked) {
+                              next.add(event.event_id);
+                            } else {
+                              next.delete(event.event_id);
+                            }
+                            return next;
+                          })
+                        }
+                      />
+                    </td>
+                    <td>
+                      <div className="eventIdentity">
+                        <code>{event.event_id}</code>
+                        {isActive ? (
+                          <span className="activeEventBadge">
+                            Muokattavana
+                          </span>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="sourceReferences">
+                        {event.source_image_ids.map((imageId) => (
+                          <code key={imageId}>{imageId}</code>
+                        ))}
+                      </div>
+                    </td>
+                    <td>
+                      {formatServiceDateInput(event.service_date) ||
+                        "Ei tiedossa"}
+                    </td>
+                    <td>
+                      <OdometerSummary event={event} />
+                    </td>
+                    <td>
+                      {event.actions.length > 0
+                        ? event.actions
+                            .map(
+                              (action) =>
+                                `${getComponentLabel(
+                                  resolveActionComponentCode(
+                                    action,
+                                    event.raw_evidence,
+                                  ),
+                                )}: ${action.description}`,
+                            )
+                            .join(", ")
+                        : "Ei tunnistettu"}
+                    </td>
+                    <td>
+                      <ConfidenceBadge value={event.confidence} />
+                    </td>
+                    <td>
+                      <div className="rowActions">
+                        <button
+                          aria-controls="event-editor"
+                          aria-label={
+                            isActive
+                              ? `Tapahtuma ${event.event_id} on muokattavana`
+                              : `Muokkaa tapahtumaa ${event.event_id}`
                           }
-                          return next;
-                        })
-                      }
-                    />
-                  </td>
-                  <td>
-                    <div className="sourceReferences">
-                      {event.source_image_ids.map((imageId) => (
-                        <code key={imageId}>{imageId}</code>
-                      ))}
-                    </div>
-                  </td>
-                  <td>{event.service_date?.value || "Ei tiedossa"}</td>
-                  <td>
-                    <OdometerSummary event={event} />
-                  </td>
-                  <td>
-                    {event.actions.length > 0
-                      ? event.actions
-                          .map(
-                            (action) =>
-                              `${getComponentLabel(
-                                resolveActionComponentCode(
-                                  action,
-                                  event.raw_evidence,
-                                ),
-                              )}: ${action.description}`,
-                          )
-                          .join(", ")
-                      : "Ei tunnistettu"}
-                  </td>
-                  <td>
-                    <ConfidenceBadge value={event.confidence} />
-                  </td>
-                  <td>
-                    <div className="rowActions">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedEventId(event.event_id)}
-                      >
-                        Muokkaa
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteEvent(event.event_id)}
-                      >
-                        Poista
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                          aria-pressed={isActive}
+                          className={
+                            isActive
+                              ? "rowEditButton rowEditButtonActive"
+                              : "rowEditButton"
+                          }
+                          type="button"
+                          onClick={() => setSelectedEventId(event.event_id)}
+                        >
+                          {isActive ? "Muokattavana" : "Muokkaa"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteEvent(event.event_id)}
+                        >
+                          Poista
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -553,13 +595,27 @@ function EventEditor({
   const normalizedOdometer = normalizeOdometer(event.odometer);
 
   return (
-    <div className="eventEditor" aria-labelledby="event-editor-heading">
+    <div
+      className="eventEditor eventEditorActive"
+      id="event-editor"
+      aria-labelledby="event-editor-heading"
+      data-active-event={event.event_id}
+    >
       <div className="eventEditorHeading">
         <div>
-          <p className="sectionLabel">Tapahtuman muokkaus</p>
+          <p className="sectionLabel">Muokattavana juuri nyt</p>
           <h3 id="event-editor-heading">{event.event_id}</h3>
         </div>
-        <ConfidenceBadge value={event.confidence} label="Kokonaisluottamus" />
+        <div className="activeEditorStatus">
+          <span className="activeEditIndicator">
+            <span aria-hidden="true" />
+            Aktiivinen muokkaus
+          </span>
+          <ConfidenceBadge
+            value={event.confidence}
+            label="Kokonaisluottamus"
+          />
+        </div>
       </div>
 
       <div className="evidenceComparison">
@@ -580,66 +636,56 @@ function EventEditor({
         <label>
           <span>Päivämäärä</span>
           <input
-            value={event.service_date?.value ?? ""}
-            placeholder="VVVV-KK-PP tai osittainen arvo"
+            aria-label="Päivämäärä"
+            value={formatServiceDateInput(event.service_date)}
+            placeholder="PP.KK.VVVV, KK.VVVV tai VVVV"
             aria-invalid={
               normalizedDate.status === "invalid" ? "true" : undefined
             }
             aria-describedby={
               normalizedDate.status === "invalid"
-                ? "service-date-validation-error"
-                : undefined
+                ? "service-date-input-help service-date-validation-error"
+                : "service-date-input-help"
             }
             onChange={(changeEvent) =>
               patchEvent({
-                service_date:
-                  {
-                    value: changeEvent.target.value,
-                    precision: event.service_date?.precision ?? "unknown",
-                    confidence: event.service_date?.confidence ?? 0.5,
-                  },
+                service_date: createServiceDateFromInput(
+                  changeEvent.target.value,
+                  event.service_date?.confidence ?? 0.5,
+                ),
               })
             }
-            onBlur={(blurEvent) => {
-              if (blurEvent.target.value === "") {
-                patchEvent({ service_date: null });
-              }
-            }}
           />
+          <small className="dateInputHelp" id="service-date-input-help">
+            Tarkkuus päätellään automaattisesti syötetystä muodosta. Myös
+            ISO-muodot VVVV-KK-PP ja VVVV-KK hyväksytään.
+          </small>
           {normalizedDate.status === "invalid" ? (
             <span
               className="fieldError"
               id="service-date-validation-error"
             >
-              Päivämäärän muoto ei vastaa valittua tarkkuutta.
+              Tarkista, että päivämäärä on mahdollinen ja käyttää annettua
+              muotoa.
             </span>
           ) : null}
         </label>
 
-        <label>
-          <span>Päivämäärän tarkkuus</span>
-          <select
-            value={event.service_date?.precision ?? "unknown"}
-            disabled={event.service_date === null}
-            onChange={(changeEvent) => {
-              if (event.service_date !== null) {
-                patchEvent({
-                  service_date: {
-                    ...event.service_date,
-                    precision: changeEvent.target
-                      .value as (typeof precisionOptions)[number],
-                  },
-                });
-              }
-            }}
-          >
-            {precisionOptions.map((precision) => (
-              <option key={precision} value={precision}>
-                {precisionLabels[precision]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div
+          className={`datePrecisionStatus datePrecision-${event.service_date?.precision ?? "missing"}`}
+          role="status"
+          aria-live="polite"
+        >
+          <span>Automaattinen tarkkuus</span>
+          <strong>
+            {event.service_date === null
+              ? "Ei päivämäärää"
+              : precisionLabels[event.service_date.precision]}
+          </strong>
+          <small>
+            {datePrecisionDescription(event.service_date?.precision)}
+          </small>
+        </div>
 
         <label>
           <span>Päivämäärän luottamus 0–1</span>
@@ -1135,6 +1181,25 @@ function normalizedDateDescription(
       return `${date.value ?? "Ei tiedossa"} (tarkkuus epäselvä)`;
     case "invalid":
       return "Virheellinen päivämäärä";
+  }
+}
+
+function datePrecisionDescription(
+  precision:
+    | NonNullable<ServiceEvent["service_date"]>["precision"]
+    | undefined,
+): string {
+  switch (precision) {
+    case "day":
+      return "Päivä, kuukausi ja vuosi tunnistettiin.";
+    case "month":
+      return "Kuukausi ja vuosi tunnistettiin.";
+    case "year":
+      return "Vain vuosi tunnistettiin.";
+    case "unknown":
+      return "Täydennä päivämäärä tuettuun muotoon.";
+    default:
+      return "Syötä päivämäärä, jos se on tiedossa.";
   }
 }
 

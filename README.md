@@ -51,12 +51,16 @@ Poimitut tapahtumat, lähdekuvaviitteet, luettavuus ja luottamus näytetään
 muokattavassa tarkistustaulukossa. Käyttäjä voi muokata, lisätä, poistaa ja
 yhdistää tapahtumia. Tyhjä tai lukukelvoton aineisto esitetään rehellisenä
 tyhjänä tuloksena, ja palveluvirhe säilyttää paikalliset kuvat uutta yritystä
-varten.
+varten. Muokattava tapahtuma tunnistetaan koko rivin korostuksesta,
+aktiivisesta painikkeesta ja muokkauslomakkeen vierityksessä pysyvästä
+otsakkeesta.
 
 Tarkistusnäkymä näyttää alkuperäisen kuvanäytön rinnalla normalisoidun
 päivämäärän, kilometreiksi muunnetun mittarilukeman ja kanonisen
 komponenttiluokituksen. Mailit muunnetaan laskentaa varten täsmällisellä
 kertoimella `1.609344`, mutta alkuperäinen arvo ja yksikkö säilyvät.
+Päivämäärän tarkkuus päätellään syötteestä automaattisesti: `PP.KK.VVVV`,
+`KK.VVVV` ja `VVVV` vastaavat päivä-, kuukausi- ja vuositarkkuutta.
 Sovelluskoodi havaitsee virheelliset päivämäärät ja mittarilukemat,
 mahdolliset kaksoiskappaleet sekä aikajärjestyksen ristiriidat. Käyttäjän on
 korjattava virheet, kuitattava näkyvät epävarmuudet ja vahvistettava

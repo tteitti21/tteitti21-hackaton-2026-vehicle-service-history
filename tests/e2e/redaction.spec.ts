@@ -216,6 +216,38 @@ test("submits only the sanitized image and renders an editable extraction", asyn
   await expect(
     page.getByRole("complementary", { name: "Normalisoidut arvot" }),
   ).toContainText("160,9344 km");
+  const activeEventRow = page
+    .getByRole("row")
+    .filter({ hasText: "event-synthetic-1" });
+  await expect(activeEventRow).toHaveAttribute("data-active", "true");
+  await expect(
+    activeEventRow.getByRole("button", {
+      name: "Tapahtuma event-synthetic-1 on muokattavana",
+    }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.locator(".eventEditor > .eventEditorHeading"),
+  ).toHaveCSS("position", "sticky");
+
+  const serviceDate = page.getByRole("textbox", {
+    name: "Päivämäärä",
+    exact: true,
+  });
+  await expect(serviceDate).toHaveValue("12.03.2024");
+  await expect(page.locator(".datePrecisionStatus strong")).toHaveText(
+    "Päivä",
+  );
+  await expect(
+    page.getByRole("combobox", { name: "Päivämäärän tarkkuus" }),
+  ).toHaveCount(0);
+  await serviceDate.fill("03.2024");
+  await expect(page.locator(".datePrecisionStatus strong")).toHaveText(
+    "Kuukausi",
+  );
+  await serviceDate.fill("12.03.2024");
+  await expect(page.locator(".datePrecisionStatus strong")).toHaveText(
+    "Päivä",
+  );
   const requestSizeDebug = page.getByRole("complementary", {
     name: "Lähetyksen kokotiedot",
   });

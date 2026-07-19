@@ -78,6 +78,72 @@ describe("ExtractionReview", () => {
     expect(screen.getAllByRole("row")).toHaveLength(2);
   });
 
+  it("keeps the active event identifiable and derives date precision from the input", async () => {
+    const user = userEvent.setup();
+    const multiEventHistory = structuredClone(history);
+    multiEventHistory.events.push({
+      ...structuredClone(multiEventHistory.events[0]),
+      event_id: "event-7",
+      service_date: {
+        value: "2024-03-12",
+        precision: "unknown",
+        confidence: 0.7,
+      },
+    });
+
+    render(
+      <AnalysisSessionProvider>
+        <SessionControls history={multiEventHistory} />
+        <ExtractionReview />
+      </AnalysisSessionProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Lataa tulos" }));
+    const bodyRows = screen.getAllByRole("row").slice(1);
+
+    expect(bodyRows[0]).toHaveAttribute("aria-current", "true");
+    expect(
+      within(bodyRows[0]).getByRole("button", {
+        name: "Tapahtuma event-1 on muokattavana",
+      }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(
+      within(bodyRows[1]).getByRole("button", {
+        name: "Muokkaa tapahtumaa event-7",
+      }),
+    );
+
+    expect(bodyRows[0]).not.toHaveAttribute("aria-current");
+    expect(bodyRows[1]).toHaveAttribute("aria-current", "true");
+    expect(bodyRows[1]).toHaveClass("reviewTableRowActive");
+    expect(
+      within(bodyRows[1]).getByRole("button", {
+        name: "Tapahtuma event-7 on muokattavana",
+      }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("heading", { name: "event-7", level: 3 }),
+    ).toBeVisible();
+    expect(document.getElementById("event-editor")).toHaveAttribute(
+      "data-active-event",
+      "event-7",
+    );
+
+    const dateInput = screen.getByLabelText("Päivämäärä");
+    expect(dateInput).toHaveValue("12.03.2024");
+    expect(screen.getByText("Automaattinen tarkkuus")).toBeVisible();
+    expect(screen.getByText("Päivä", { selector: "strong" })).toBeVisible();
+    expect(
+      screen.queryByRole("combobox", { name: "Päivämäärän tarkkuus" }),
+    ).not.toBeInTheDocument();
+
+    await user.clear(dateInput);
+    await user.type(dateInput, "03.2024");
+    expect(dateInput).toHaveValue("03.2024");
+    expect(screen.getByText("Kuukausi", { selector: "strong" })).toBeVisible();
+  });
+
   it("presents an honest result when no event was evidenced", async () => {
     const user = userEvent.setup();
     render(
@@ -168,7 +234,7 @@ describe("ExtractionReview", () => {
 
     const dateInput = screen.getByLabelText("Päivämäärä");
     await user.clear(dateInput);
-    await user.type(dateInput, "2024-02-31");
+    await user.type(dateInput, "31.02.2024");
 
     expect(dateInput).toHaveAttribute("aria-invalid", "true");
     expect(
@@ -178,7 +244,7 @@ describe("ExtractionReview", () => {
     ).toBeDisabled();
 
     await user.clear(dateInput);
-    await user.type(dateInput, "2024-02-29");
+    await user.type(dateInput, "29.02.2024");
     await user.click(
       screen.getByRole("button", {
         name: "Vahvista tarkistettu huoltohistoria",

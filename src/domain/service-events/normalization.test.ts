@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createServiceDateFromInput,
+  formatServiceDateInput,
+  inferServiceDateInput,
   MILES_TO_KILOMETRES,
   normalizeOdometer,
   normalizeServiceDate,
+  reconcileServiceDatePrecision,
 } from "./normalization";
 
 describe("service-event normalization", () => {
@@ -75,6 +79,47 @@ describe("service-event normalization", () => {
         confidence: 1,
       }).status,
     ).toBe("valid");
+  });
+
+  it("infers date precision from Finnish input and keeps ISO values internally", () => {
+    expect(inferServiceDateInput("29.02.2024")).toEqual({
+      value: "2024-02-29",
+      precision: "day",
+    });
+    expect(inferServiceDateInput("02.2024")).toEqual({
+      value: "2024-02",
+      precision: "month",
+    });
+    expect(inferServiceDateInput("2024")).toEqual({
+      value: "2024",
+      precision: "year",
+    });
+    expect(inferServiceDateInput("kevät 2024")).toEqual({
+      value: "kevät 2024",
+      precision: "unknown",
+    });
+    expect(createServiceDateFromInput("  ", 0.5)).toBeNull();
+  });
+
+  it("formats canonical dates for Finnish editing and corrects contradictory precision", () => {
+    const reconciled = reconcileServiceDatePrecision({
+      value: "2024-03-12",
+      precision: "unknown",
+      confidence: 0.7,
+    });
+
+    expect(reconciled).toEqual({
+      value: "2024-03-12",
+      precision: "day",
+      confidence: 0.7,
+    });
+    expect(formatServiceDateInput(reconciled)).toBe("12.03.2024");
+    expect(
+      createServiceDateFromInput("31.02.2024", 0.7),
+    ).toMatchObject({
+      value: "2024-02-31",
+      precision: "day",
+    });
   });
 
   it("preserves an uncertain date without treating it as validated", () => {
