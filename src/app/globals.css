@@ -208,8 +208,229 @@ nav a {
 .processSection,
 .truthSection,
 .vehicleSection,
-.imageSection {
+.imageSection,
+.maintenanceResearchSection {
   padding-block: clamp(4.5rem, 8vw, 8rem);
+}
+
+.maintenanceResearchSection {
+  border-bottom: 1px solid var(--line);
+}
+
+.maintenanceResearchHeading {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.75fr);
+  gap: clamp(2rem, 7vw, 7rem);
+  align-items: start;
+  margin-bottom: 2rem;
+}
+
+.researchSummary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.researchSummary > div {
+  padding: 1rem 1.15rem;
+  background: var(--forest-soft);
+  border-radius: 0.75rem;
+}
+
+.researchSummary strong,
+.researchSummary span {
+  display: block;
+}
+
+.researchSummary strong {
+  color: var(--forest);
+  font-size: 1.7rem;
+}
+
+.researchSummary span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.researchWarnings {
+  margin-top: 1rem;
+  padding: 1rem 1.15rem;
+  color: #5f4310;
+  background: #fff4d7;
+  border: 1px solid #e8ca81;
+  border-radius: 0.75rem;
+}
+
+.researchWarnings summary {
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.researchWarnings ul {
+  margin-bottom: 0;
+}
+
+.componentResearchList {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.componentResearchCard {
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: 0 12px 35px rgba(23, 35, 31, 0.04);
+}
+
+.componentResearchCard > header {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.componentResearchCard h3 {
+  margin: 0.45rem 0 0;
+  font-size: 1.35rem;
+}
+
+.componentResearchCard code {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.researchResolution {
+  display: inline-flex;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 760;
+}
+
+.researchResolution-resolved {
+  color: #174b33;
+  background: #d9f1df;
+}
+
+.researchResolution-conflicting_sources {
+  color: #66500e;
+  background: #f8edbd;
+}
+
+.researchResolution-insufficient_evidence {
+  color: #7b3024;
+  background: #f8ddd7;
+}
+
+.insufficientEvidence,
+.conflictSummary {
+  margin-bottom: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.65rem;
+}
+
+.insufficientEvidence {
+  color: #6f3026;
+  background: #fbe9e5;
+}
+
+.conflictSummary {
+  color: #5f4310;
+  background: #fff4d7;
+}
+
+.intervalClaimList {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.intervalClaimList > li {
+  padding: 1rem;
+  background: #f4f6f4;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+}
+
+.intervalClaimList > li.recommendedClaim {
+  background: #edf6ef;
+  border-color: #8db79a;
+}
+
+.claimHeading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.claimHeading strong {
+  font-size: 1.15rem;
+}
+
+.claimHeading span {
+  color: #24553e;
+  font-size: 0.72rem;
+  font-weight: 760;
+}
+
+.intervalClaimList dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0.8rem 0;
+}
+
+.intervalClaimList dl div {
+  padding: 0.65rem;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 0.5rem;
+}
+
+.intervalClaimList dt {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.intervalClaimList dd {
+  margin: 0.2rem 0 0;
+  font-size: 0.76rem;
+  font-weight: 680;
+}
+
+.compatibilityNotes {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.claimSource {
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+}
+
+.claimSource a {
+  color: var(--forest);
+  font-weight: 740;
+  overflow-wrap: anywhere;
+  text-underline-offset: 0.2rem;
+}
+
+.claimSource span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.claimSource p {
+  margin-bottom: 0;
+  color: #465d54;
+  font-size: 0.8rem;
 }
 
 .vehicleSection {
@@ -2268,7 +2489,13 @@ h2 {
   .imageWorkspace,
   .extractionHeading,
   .evidenceComparison,
-  .vehicleResolutionHeading {
+  .vehicleResolutionHeading,
+  .maintenanceResearchHeading {
+    grid-template-columns: 1fr;
+  }
+
+  .researchSummary,
+  .intervalClaimList dl {
     grid-template-columns: 1fr;
   }
 

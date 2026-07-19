@@ -248,7 +248,7 @@ test("submits only the sanitized image and renders an editable extraction", asyn
   ).toBeVisible();
 });
 
-test("requires explicit candidate selection and preserves vehicle sources", async ({
+test("requires explicit candidate selection and preserves research sources", async ({
   page,
 }) => {
   await page.goto("/");
@@ -406,6 +406,80 @@ test("requires explicit candidate selection and preserves vehicle sources", asyn
     modelYear: 2015,
     powerKw: 91,
   });
+
+  let submittedResearch: Record<string, unknown> | null = null;
+  await page.route("**/api/research", async (route) => {
+    submittedResearch = route.request().postDataJSON() as Record<
+      string,
+      unknown
+    >;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        vehicle_variant: {
+          make: "Toyota",
+          model: "Avensis",
+          generation: "T27",
+          model_year: 2015,
+          engine: "2.0 D-4D (2WW), 105 kW",
+          transmission: "6-vaihteinen manuaali",
+          market: "Eurooppa",
+          confidence: 0.62,
+          unresolved_fields: ["moottorikoodi"],
+        },
+        components: [
+          {
+            component_code: "engine_oil",
+            component_label: "Moottoriöljy",
+            resolution: "resolved",
+            interval_claims: [
+              {
+                claim_id: "claim-1",
+                interval_km: 15000,
+                interval_months: null,
+                whichever_first: false,
+                conditions: "Normaali käyttö",
+                original_value: 15000,
+                original_unit: "km",
+                source: {
+                  title: "Toyota maintenance schedule",
+                  publisher: "toyota.example",
+                  url: "https://toyota.example/maintenance",
+                  retrieved_at: "2026-07-19",
+                  evidence: "Virallinen taulukko ilmoittaa 15 000 km.",
+                },
+                authority_rank: 1,
+                compatibility: "exact",
+                compatibility_notes:
+                  "Moottori, mallivuosi ja markkina täsmäävät.",
+              },
+            ],
+            recommended_claim_id: "claim-1",
+            conflict_summary: null,
+          },
+        ],
+        global_warnings: [],
+        researched_at: "2026-07-19T12:00:00.000Z",
+      }),
+    });
+  });
+
+  await page
+    .getByRole("button", { name: "Tutki huoltovälit verkosta" })
+    .click();
+  await expect(page.getByText("Lähde löytyi")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Toyota maintenance schedule" }),
+  ).toHaveAttribute("href", "https://toyota.example/maintenance");
+  expect(submittedResearch).toMatchObject({
+    current_odometer_km: 184000,
+    country: "FI",
+    market: "Eurooppa",
+    vehicle_variant: { engine: "2.0 D-4D (2WW), 105 kW" },
+  });
+  expect(JSON.stringify(submittedResearch)).not.toContain("raw_evidence");
+  expect(JSON.stringify(submittedResearch)).not.toContain("source_image_ids");
 });
 
 test("keeps local images available after a provider error", async ({ page }) => {

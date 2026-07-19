@@ -1,4 +1,7 @@
-import type { VehicleVariant } from "@/domain/schemas/maintenance-research";
+import type {
+  MaintenanceResearch,
+  VehicleVariant,
+} from "@/domain/schemas/maintenance-research";
 import type {
   ServiceEvent,
   ServiceHistory,
@@ -18,6 +21,11 @@ export type VehicleResolutionStatus =
   | "submitting"
   | "success"
   | "error";
+export type MaintenanceResearchStatus =
+  | "idle"
+  | "submitting"
+  | "success"
+  | "error";
 
 export interface AnalysisSessionState {
   vehicleDraft: VehicleFormDraft;
@@ -33,6 +41,9 @@ export interface AnalysisSessionState {
   vehicleResolutionError: string | null;
   confirmedVehicleVariant: VehicleVariant | null;
   vehicleResolutionRejected: boolean;
+  maintenanceResearch: MaintenanceResearch | null;
+  maintenanceResearchStatus: MaintenanceResearchStatus;
+  maintenanceResearchError: string | null;
 }
 
 export type AnalysisSessionAction =
@@ -90,6 +101,17 @@ export type AnalysisSessionAction =
     }
   | {
       type: "reject_vehicle_candidates";
+    }
+  | {
+      type: "begin_maintenance_research";
+    }
+  | {
+      type: "complete_maintenance_research";
+      research: MaintenanceResearch;
+    }
+  | {
+      type: "fail_maintenance_research";
+      message: string;
     };
 
 export function createInitialAnalysisSession(
@@ -110,6 +132,9 @@ export function createInitialAnalysisSession(
     vehicleResolutionError: null,
     confirmedVehicleVariant: null,
     vehicleResolutionRejected: false,
+    maintenanceResearch: null,
+    maintenanceResearchStatus: "idle",
+    maintenanceResearchError: null,
   };
 }
 
@@ -133,6 +158,7 @@ export function analysisSessionReducer(
         vehicleResolutionError: null,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: false,
+        ...emptyMaintenanceResearch(),
       };
     case "confirm_vehicle":
       return {
@@ -145,6 +171,7 @@ export function analysisSessionReducer(
         vehicleResolutionError: null,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: false,
+        ...emptyMaintenanceResearch(),
       };
     case "reset_session":
       return createInitialAnalysisSession("reset", state.resetVersion + 1);
@@ -154,6 +181,7 @@ export function analysisSessionReducer(
         serviceHistoryReviewConfirmed: false,
         extractionStatus: "submitting",
         extractionError: null,
+        ...emptyMaintenanceResearch(),
       };
     case "complete_extraction":
       return {
@@ -162,6 +190,7 @@ export function analysisSessionReducer(
         serviceHistoryReviewConfirmed: false,
         extractionStatus: "success",
         extractionError: null,
+        ...emptyMaintenanceResearch(),
       };
     case "fail_extraction":
       return {
@@ -176,12 +205,14 @@ export function analysisSessionReducer(
         serviceHistoryReviewConfirmed: false,
         extractionStatus: "idle",
         extractionError: null,
+        ...emptyMaintenanceResearch(),
       };
     case "replace_service_history":
       return {
         ...state,
         serviceHistory: action.serviceHistory,
         serviceHistoryReviewConfirmed: false,
+        ...emptyMaintenanceResearch(),
       };
     case "update_service_event":
       if (state.serviceHistory === null) {
@@ -190,6 +221,7 @@ export function analysisSessionReducer(
       return {
         ...state,
         serviceHistoryReviewConfirmed: false,
+        ...emptyMaintenanceResearch(),
         serviceHistory: {
           ...state.serviceHistory,
           events: state.serviceHistory.events.map((event) =>
@@ -212,6 +244,7 @@ export function analysisSessionReducer(
         vehicleResolutionError: null,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: false,
+        ...emptyMaintenanceResearch(),
       };
     case "complete_vehicle_resolution":
       return {
@@ -221,12 +254,14 @@ export function analysisSessionReducer(
         vehicleResolutionError: null,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: false,
+        ...emptyMaintenanceResearch(),
       };
     case "fail_vehicle_resolution":
       return {
         ...state,
         vehicleResolutionStatus: "error",
         vehicleResolutionError: action.message,
+        ...emptyMaintenanceResearch(),
       };
     case "confirm_vehicle_candidate": {
       const candidate = state.vehicleResolution?.candidates.find(
@@ -241,6 +276,7 @@ export function analysisSessionReducer(
         ...state,
         confirmedVehicleVariant: candidate.variant,
         vehicleResolutionRejected: false,
+        ...emptyMaintenanceResearch(),
       };
     }
     case "reject_vehicle_candidates":
@@ -248,6 +284,36 @@ export function analysisSessionReducer(
         ...state,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: true,
+        ...emptyMaintenanceResearch(),
+      };
+    case "begin_maintenance_research":
+      return {
+        ...state,
+        maintenanceResearch: null,
+        maintenanceResearchStatus: "submitting",
+        maintenanceResearchError: null,
+      };
+    case "complete_maintenance_research":
+      return {
+        ...state,
+        maintenanceResearch: action.research,
+        maintenanceResearchStatus: "success",
+        maintenanceResearchError: null,
+      };
+    case "fail_maintenance_research":
+      return {
+        ...state,
+        maintenanceResearch: null,
+        maintenanceResearchStatus: "error",
+        maintenanceResearchError: action.message,
       };
   }
+}
+
+function emptyMaintenanceResearch() {
+  return {
+    maintenanceResearch: null,
+    maintenanceResearchStatus: "idle" as const,
+    maintenanceResearchError: null,
+  };
 }

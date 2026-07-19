@@ -59,6 +59,15 @@ export default function PrivacyPage() {
           välitetä tähän hakuun. Ehdokkaat ja hakulähteet säilyvät vain
           nykyisen välilehden muistissa.
         </p>
+        <p>
+          Kun käyttäjä käynnistää huoltovälitutkimuksen, tutkimusmallille
+          välitetään vahvistettu ajoneuvoversio, maa, markkina ja tutkittavat
+          komponenttiluokat. Kuvia, huoltohistorian sisältöä tai nykyistä
+          matkamittarilukemaa ei sisällytetä tutkimusmallin pyyntöihin.
+          Tutkimusmuistio, lähteet ja normalisoitu tulos käsitellään
+          pyyntökohtaisesti, eikä niitä tallenneta sovelluksen omaan
+          tietokantaan tai tiedostovarastoon.
+        </p>
       </section>
 
       <section aria-labelledby="protections-heading">

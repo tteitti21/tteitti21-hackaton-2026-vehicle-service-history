@@ -71,8 +71,8 @@ const validMaintenanceResearch = {
           interval_months: 12,
           whichever_first: true,
           conditions: "Normal use",
-          original_value: 15_000,
-          original_unit: "km",
+          original_value: null,
+          original_unit: "mixed",
           source: {
             title: "Synthetic maintenance schedule",
             publisher: "Example Motors",
@@ -159,8 +159,12 @@ describe("maintenanceResearchSchema", () => {
   it("rejects malformed source URLs", () => {
     const invalid = structuredClone(validMaintenanceResearch);
     invalid.components[0].interval_claims[0].source.url = "not-a-url";
+    const unsafe = structuredClone(validMaintenanceResearch);
+    unsafe.components[0].interval_claims[0].source.url =
+      "javascript:alert(1)";
 
     expect(maintenanceResearchSchema.safeParse(invalid).success).toBe(false);
+    expect(maintenanceResearchSchema.safeParse(unsafe).success).toBe(false);
   });
 
   it("rejects unsupported interval-unit representations", () => {
@@ -168,6 +172,32 @@ describe("maintenanceResearchSchema", () => {
     invalid.components[0].interval_claims[0].original_unit = "miles";
 
     expect(maintenanceResearchSchema.safeParse(invalid).success).toBe(false);
+  });
+
+  it("rejects inconsistent conversions and resolution metadata", () => {
+    const invalidConversion = structuredClone(validMaintenanceResearch);
+    const claim = invalidConversion.components[0].interval_claims[0] as {
+      interval_months: number | null;
+      whichever_first: boolean;
+      interval_km: number | null;
+      original_value: number | null;
+      original_unit: string | null;
+    };
+    claim.interval_months = null;
+    claim.whichever_first = false;
+    claim.interval_km = 16_000;
+    claim.original_value = 10_000;
+    claim.original_unit = "mi";
+
+    const invalidRecommendation = structuredClone(validMaintenanceResearch);
+    invalidRecommendation.components[0].recommended_claim_id = "claim-999";
+
+    expect(
+      maintenanceResearchSchema.safeParse(invalidConversion).success,
+    ).toBe(false);
+    expect(
+      maintenanceResearchSchema.safeParse(invalidRecommendation).success,
+    ).toBe(false);
   });
 
   it("rejects invalid timestamps", () => {

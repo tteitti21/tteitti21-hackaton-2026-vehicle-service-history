@@ -7,7 +7,7 @@ const boundedText = (maximumLength: number) =>
 
 const httpUrlSchema = z
   .url()
-  .refine((value) => ["http:", "https:"].includes(new URL(value).protocol));
+  .refine((value) => /^https?:\/\//i.test(value));
 
 export const vehicleResolutionSourceSchema = z.strictObject({
   title: boundedText(500),

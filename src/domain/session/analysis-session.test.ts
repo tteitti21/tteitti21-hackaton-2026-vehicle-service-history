@@ -33,6 +33,9 @@ describe("analysis session reducer", () => {
       vehicleResolutionError: null,
       confirmedVehicleVariant: null,
       vehicleResolutionRejected: false,
+      maintenanceResearch: null,
+      maintenanceResearchStatus: "idle",
+      maintenanceResearchError: null,
     });
   });
 
@@ -238,6 +241,46 @@ describe("analysis session reducer", () => {
       vehicleResolutionStatus: "idle",
       confirmedVehicleVariant: null,
       vehicleResolutionRejected: false,
+    });
+  });
+
+  it("stores research only in memory and invalidates it when the source history changes", () => {
+    const serviceHistory = {
+      images: [{ image_id: "image-1", readability: 1, notes: null }],
+      events: [],
+      warnings: [],
+    };
+    const research = {
+      vehicle_variant: vehicleResolutionFixture.candidates[0].variant,
+      components: [
+        {
+          component_code: "air_filter" as const,
+          component_label: "Ilmansuodatin",
+          resolution: "insufficient_evidence" as const,
+          interval_claims: [],
+          recommended_claim_id: null,
+          conflict_summary: null,
+        },
+      ],
+      global_warnings: ["Ei riittävää näyttöä."],
+      researched_at: "2026-07-19T12:00:00.000Z",
+    };
+    const completed = analysisSessionReducer(createInitialAnalysisSession(), {
+      type: "complete_maintenance_research",
+      research,
+    });
+    const edited = analysisSessionReducer(completed, {
+      type: "replace_service_history",
+      serviceHistory,
+    });
+
+    expect(completed).toMatchObject({
+      maintenanceResearch: research,
+      maintenanceResearchStatus: "success",
+    });
+    expect(edited).toMatchObject({
+      maintenanceResearch: null,
+      maintenanceResearchStatus: "idle",
     });
   });
 });

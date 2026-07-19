@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ExtractionReview } from "@/components/extraction/extraction-review";
+import { MaintenanceResearchPanel } from "@/components/research/maintenance-research";
 import { ImageRedactionWorkspace } from "@/components/upload/image-redaction-workspace";
 import { VehicleForm } from "@/components/vehicle/vehicle-form";
 import { VehicleResolutionPanel } from "@/components/vehicle/vehicle-resolution";
@@ -52,14 +53,16 @@ export default function Home() {
         <div className="phaseNotice" role="status">
           <span className="statusDot" aria-hidden="true" />
           <div>
-            <strong>Vaihe 5 käytössä</strong>
+            <strong>Vaihe 6 käytössä</strong>
             <p>
               Voit vahvistaa ajoneuvon tiedot sekä muokata ja peittää kuvat
               paikallisesti. Hyväksytyistä lähetysversioista voi poimia
               huoltohistorian, normalisoida yksiköt ja komponentit sekä
               vahvistaa tarkistetut tapahtumat. Sen jälkeen voit hakea
               lähteisiin sidottuja ajoneuvoversioehdokkaita ja vahvistaa
-              oikean vaihtoehdon itse.
+              oikean vaihtoehdon itse. Vahvistetulle versiolle voi tehdä
+              kaksivaiheisen huoltovälitutkimuksen, joka näyttää lähteet,
+              ristiriidat ja riittämättömän näytön arvaamatta puuttuvia välejä.
             </p>
           </div>
         </div>
@@ -76,6 +79,8 @@ export default function Home() {
       <ExtractionReview />
 
       <VehicleResolutionPanel />
+
+      <MaintenanceResearchPanel />
 
       <section className="privacyBand" aria-labelledby="privacy-heading">
         <div>
@@ -97,6 +102,12 @@ export default function Home() {
             Ajoneuvoversion verkkohaku lähettää OpenAI:lle vain vahvistetut
             versiotiedot; kuvia tai matkamittarilukemaa ei käytetä siinä.
             Lähteet ja ehdokkaat säilyvät vain tämän välilehden muistissa.
+          </p>
+          <p>
+            Huoltovälitutkimus lähettää tutkimusmallille vahvistetun version,
+            maan, markkinan ja komponenttiluokat. Kuvia, huoltohistoriaa tai
+            matkamittarilukemaa ei välitetä tutkimusmallille. Tutkimustulos
+            säilyy vain tämän välilehden muistissa.
           </p>
           <Link className="textLink" href="/tietosuoja">
             Miten tietoja käsitellään <span aria-hidden="true">→</span>

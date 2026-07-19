@@ -40,7 +40,7 @@ interface OpenAIVehicleResolutionClient {
   responses: ResponsesClient;
 }
 
-interface TrustedWebSource extends VehicleResolutionSource {
+export interface TrustedWebSource extends VehicleResolutionSource {
   sourceId: string;
 }
 

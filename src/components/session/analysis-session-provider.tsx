@@ -23,6 +23,7 @@ import type {
   ServiceHistory,
 } from "@/domain/schemas/service-history";
 import type { VehicleResolution } from "@/domain/schemas/vehicle-resolution";
+import type { MaintenanceResearch } from "@/domain/schemas/maintenance-research";
 
 interface AnalysisSessionContextValue {
   state: AnalysisSessionState;
@@ -41,6 +42,9 @@ interface AnalysisSessionContextValue {
   failVehicleResolution: (message: string) => void;
   confirmVehicleCandidate: (candidateId: string) => void;
   rejectVehicleCandidates: () => void;
+  beginMaintenanceResearch: () => void;
+  completeMaintenanceResearch: (research: MaintenanceResearch) => void;
+  failMaintenanceResearch: (message: string) => void;
 }
 
 const AnalysisSessionContext =
@@ -124,6 +128,21 @@ export function AnalysisSessionProvider({
     dispatch({ type: "reject_vehicle_candidates" });
   }, []);
 
+  const beginMaintenanceResearch = useCallback(() => {
+    dispatch({ type: "begin_maintenance_research" });
+  }, []);
+
+  const completeMaintenanceResearch = useCallback(
+    (research: MaintenanceResearch) => {
+      dispatch({ type: "complete_maintenance_research", research });
+    },
+    [],
+  );
+
+  const failMaintenanceResearch = useCallback((message: string) => {
+    dispatch({ type: "fail_maintenance_research", message });
+  }, []);
+
   const value = useMemo(
     () => ({
       state,
@@ -142,18 +161,24 @@ export function AnalysisSessionProvider({
       failVehicleResolution,
       confirmVehicleCandidate,
       rejectVehicleCandidates,
+      beginMaintenanceResearch,
+      completeMaintenanceResearch,
+      failMaintenanceResearch,
     }),
     [
       beginVehicleResolution,
+      beginMaintenanceResearch,
       beginExtraction,
       clearExtraction,
       completeExtraction,
       completeVehicleResolution,
+      completeMaintenanceResearch,
       confirmServiceHistoryReview,
       confirmVehicleCandidate,
       confirmVehicle,
       failExtraction,
       failVehicleResolution,
+      failMaintenanceResearch,
       replaceServiceHistory,
       rejectVehicleCandidates,
       resetSession,

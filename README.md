@@ -40,7 +40,7 @@ Tekninen spesifikaatio on englanniksi, koska se on Codexille ja lähdekoodin tuo
 
 ## Nykyinen toteutusvaihe
 
-Phase 5 sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
+Phase 6 sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
 kuvan peittämisen ja tilattoman `/api/extract`-rajapinnan. Käyttäjän
 erikseen hyväksymät uudet PNG-kuvat lähetetään pyyntökohtaisena kuvasisältönä
 OpenAI Responses API:lle. `store: false`, palvelinpuolinen API-avain,
@@ -93,8 +93,27 @@ Ajoneuvohaku käyttää `OPENAI_RESEARCH_MODEL`-mallia ja
 periytyvät poiminnan vastaavista ympäristömuuttujista ja lopulta turvallisista
 oletuksista.
 
-Huoltovälien lähdehaku, huoltojen tilalaskenta ja vientitoiminnot eivät ole
-vielä toteutettuja.
+Vahvistetulle ajoneuvoversiolle `/api/research` tekee kaksivaiheisen
+huoltovälitutkimuksen. Ensimmäinen OpenAI Responses API -pyyntö käyttää
+pakollista web search -työkalua ja tuottaa lähteisiin viittaavan
+tutkimusmuistion. Toinen, ilman verkkotyökalua suoritettava Structured Outputs
+-pyyntö saa vain muistion ja palvelimen talteen ottaman lähdeluettelon.
+Normalisoitu väite hyväksytään vain, jos sen `source_id` kuuluu kyseiseen
+verkkohakuun. Molemmissa pyynnöissä käytetään `store: false` -asetusta.
+
+Sovelluskoodi valitsee huoltovälin deterministisesti lähdehierarkiasta:
+valmistajan virallinen aineisto on ensisijainen, ja heikompi lähde ei voi
+hiljaisesti ohittaa vahvempaa yhteensopivaa näyttöä. Saman parhaan lähdetason
+poikkeavat välit näkyvät ristiriitana ilman automaattista valintaa. Jos
+luotettavaa ja varianttiin sopivaa näyttöä ei ole, tulos on
+`insufficient_evidence`. Mailit muunnetaan kilometreiksi kertoimella
+`1.609344`, ja alkuperäinen arvo sekä yksikkö säilytetään lähdenäytössä.
+
+Tutkimusmallille ei lähetetä kuvia, huoltohistorian sisältöä tai
+matkamittarilukemaa. Tutkimuksen muistio, lähteet ja tulos ovat pyyntökohtaisia
+ja säilyvät käyttöliittymässä vain nykyisen välilehden React-muistissa.
+
+Huoltojen tilalaskenta ja vientitoiminnot eivät ole vielä toteutettuja.
 
 ## Paikallinen kehitys
 

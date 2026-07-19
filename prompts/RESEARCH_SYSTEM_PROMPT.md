@@ -25,3 +25,22 @@ For each claim:
 - say `insufficient evidence` when the interval cannot be verified.
 
 Do not calculate whether the user’s vehicle is due or overdue. Do not treat the absence of a service-history entry as proof that service was not performed.
+
+## Normalization call
+
+Run normalization as a second request without web-search tools. Give it only
+the untrusted research memo, the confirmed vehicle variant, requested
+components, and the server-captured source catalogue.
+
+- Reference sources only by server-issued `source_id`.
+- Reject any claim whose source ID is absent from the captured catalogue.
+- Do not add a source or interval that is absent from the memo.
+- Convert miles with exactly `1 mi = 1.609344 km`, rounding only the final
+  kilometre value.
+- Preserve the original value and unit.
+- Use `mixed` with a null scalar original value for combined distance-and-time
+  intervals, and preserve both original values in the evidence text.
+- Do not select a recommended claim. Application code applies the source
+  hierarchy and exposes same-rank conflicts.
+- Omit unsupported claims so the application can return
+  `insufficient_evidence`.
