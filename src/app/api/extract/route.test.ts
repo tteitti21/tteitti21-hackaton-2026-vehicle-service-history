@@ -224,4 +224,36 @@ describe("POST /api/extract", () => {
     expect(executeExtraction).not.toHaveBeenCalled();
     expect(await response.text()).not.toContain("OPENAI_API_KEY");
   });
+
+  it("rejects an oversized image before checking provider configuration", async () => {
+    const executeExtraction = vi.fn();
+    const handler = createExtractPostHandler({
+      environment: {
+        MAX_UPLOAD_FILES: "1",
+        MAX_UPLOAD_BYTES_PER_FILE: "1024",
+      },
+      rateLimiter: new InMemoryRateLimiter(),
+      executeExtraction,
+    });
+
+    const response = await handler(
+      createExtractionRequest([
+        {
+          id: "image-1",
+          width: 1,
+          height: 1,
+          byteLength: 2_048,
+        },
+      ]),
+    );
+
+    expect(response.status).toBe(413);
+    expect(await response.json()).toMatchObject({
+      error: { code: "payload_too_large" },
+    });
+    expect(
+      Number(response.headers.get("x-autohuolto-request-body-bytes")),
+    ).toBeGreaterThan(2_048);
+    expect(executeExtraction).not.toHaveBeenCalled();
+  });
 });

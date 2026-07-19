@@ -75,16 +75,6 @@ export function createExtractPostHandler(
       });
     }
 
-    let config: OpenAIExtractionConfig;
-    try {
-      config = readOpenAIExtractionConfig(environment);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return errorResponse(503, "service_unavailable", requestId);
-      }
-      return errorResponse(500, "internal_error", requestId);
-    }
-
     let limits: ReturnType<typeof readUploadLimits>;
     try {
       limits = readUploadLimits(environment);
@@ -92,66 +82,22 @@ export function createExtractPostHandler(
       return errorResponse(500, "internal_error", requestId);
     }
 
-    const extractionDiagnosticsHeaders = {
-      ...createRequestSizeResponseHeaders(
-        request.headers,
-        limits.maxRequestBytes,
-      ),
-      ...createExtractionTimeoutResponseHeader(config.timeoutMs),
-    };
+    const requestSizeDiagnosticsHeaders = createRequestSizeResponseHeaders(
+      request.headers,
+      limits.maxRequestBytes,
+    );
+
+    let images: ExtractionInputImage[];
 
     try {
-      const images = await parseExtractionRequest(request, limits);
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), config.timeoutMs);
-
-      try {
-        const serviceHistory = await executeExtraction(
-          images,
-          config,
-          controller.signal,
-        );
-
-        return NextResponse.json(serviceHistory, {
-          status: 200,
-          headers: withNoStoreHeaders(extractionDiagnosticsHeaders),
-        });
-      } catch (error) {
-        if (controller.signal.aborted) {
-          return errorResponse(
-            504,
-            "provider_timeout",
-            requestId,
-            extractionDiagnosticsHeaders,
-            `Kuvien käsittely ylitti ${formatTimeoutSeconds(config.timeoutMs)} sekunnin aikarajan. Kuvat säilyvät selaimessa uutta yritystä varten.`,
-          );
-        }
-
-        if (error instanceof ExtractionOutputValidationError) {
-          return errorResponse(
-            502,
-            "invalid_provider_output",
-            requestId,
-            extractionDiagnosticsHeaders,
-          );
-        }
-
-        return errorResponse(
-          502,
-          "provider_error",
-          requestId,
-          extractionDiagnosticsHeaders,
-        );
-      } finally {
-        clearTimeout(timeout);
-      }
+      images = await parseExtractionRequest(request, limits);
     } catch (error) {
       if (error instanceof ExtractionRequestError) {
         return errorResponse(
           error.status,
           error.code,
           requestId,
-          extractionDiagnosticsHeaders,
+          requestSizeDiagnosticsHeaders,
         );
       }
 
@@ -159,8 +105,76 @@ export function createExtractPostHandler(
         400,
         "invalid_request",
         requestId,
+        requestSizeDiagnosticsHeaders,
+      );
+    }
+
+    let config: OpenAIExtractionConfig;
+    try {
+      config = readOpenAIExtractionConfig(environment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return errorResponse(
+          503,
+          "service_unavailable",
+          requestId,
+          requestSizeDiagnosticsHeaders,
+        );
+      }
+      return errorResponse(
+        500,
+        "internal_error",
+        requestId,
+        requestSizeDiagnosticsHeaders,
+      );
+    }
+
+    const extractionDiagnosticsHeaders = {
+      ...requestSizeDiagnosticsHeaders,
+      ...createExtractionTimeoutResponseHeader(config.timeoutMs),
+    };
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), config.timeoutMs);
+
+    try {
+      const serviceHistory = await executeExtraction(
+        images,
+        config,
+        controller.signal,
+      );
+
+      return NextResponse.json(serviceHistory, {
+        status: 200,
+        headers: withNoStoreHeaders(extractionDiagnosticsHeaders),
+      });
+    } catch (error) {
+      if (controller.signal.aborted) {
+        return errorResponse(
+          504,
+          "provider_timeout",
+          requestId,
+          extractionDiagnosticsHeaders,
+          `Kuvien käsittely ylitti ${formatTimeoutSeconds(config.timeoutMs)} sekunnin aikarajan. Kuvat säilyvät selaimessa uutta yritystä varten.`,
+        );
+      }
+
+      if (error instanceof ExtractionOutputValidationError) {
+        return errorResponse(
+          502,
+          "invalid_provider_output",
+          requestId,
+          extractionDiagnosticsHeaders,
+        );
+      }
+
+      return errorResponse(
+        502,
+        "provider_error",
+        requestId,
         extractionDiagnosticsHeaders,
       );
+    } finally {
+      clearTimeout(timeout);
     }
   };
 }
