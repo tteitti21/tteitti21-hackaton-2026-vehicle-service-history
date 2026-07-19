@@ -40,7 +40,7 @@ Tekninen spesifikaatio on englanniksi, koska se on Codexille ja lähdekoodin tuo
 
 ## Nykyinen toteutusvaihe
 
-Phase 4 sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
+Phase 5 sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
 kuvan peittämisen ja tilattoman `/api/extract`-rajapinnan. Käyttäjän
 erikseen hyväksymät uudet PNG-kuvat lähetetään pyyntökohtaisena kuvasisältönä
 OpenAI Responses API:lle. `store: false`, palvelinpuolinen API-avain,
@@ -73,8 +73,28 @@ Kuvien poiminnan oletusaikaraja on 180 sekuntia, ja sen voi asettaa välille
 Poimintareitti ilmoittaa alustalle 300 sekunnin enimmäissuoritusajan, jotta
 sovellus ehtii palauttaa hallitun aikakatkaisuvirheen.
 
-Ajoneuvovarianttiin perustuva tutkimus, huoltovälien lähdehaku, huoltojen
-tilalaskenta ja vientitoiminnot eivät ole vielä toteutettuja.
+Tarkistetun huoltohistorian jälkeen `/api/resolve-vehicle` hakee verkosta
+mahdollisia ajoneuvoversioita OpenAI Responses API:n web search -työkalulla.
+Ensimmäinen pyyntö säilyttää haussa käytetyt URL-osoitteet, ja erillinen
+Structured Outputs -pyyntö normalisoi enintään viisi ehdokasta. Ehdokkaan
+lähdeviite hyväksytään vain, jos sen palvelimen luoma lähdetunnus kuuluu
+alkuperäiseen verkkohakuun. Molemmissa pyynnöissä käytetään `store: false`
+-asetusta, eikä tausta-ajoa käytetä.
+
+Käyttöliittymä näyttää yhteensopivuuden, täsmäävät ja ristiriitaiset tiedot,
+puuttuvat erottavat kentät sekä napsautettavat lähteet. Ehdokasta ei valita
+automaattisesti luottamuksesta riippumatta: käyttäjän on valittava ja
+vahvistettava versio erikseen. “Mikään näistä” -polku jättää vahvistetun
+version tyhjäksi. Ehdokkaat, lähteet ja valittu tarkka versio säilyvät vain
+React-muistissa nykyisen välilehden ajan.
+
+Ajoneuvohaku käyttää `OPENAI_RESEARCH_MODEL`-mallia ja
+`OPENAI_RESEARCH_TIMEOUT_MS`-aikarajaa. Jos ne ovat tyhjiä, asetukset
+periytyvät poiminnan vastaavista ympäristömuuttujista ja lopulta turvallisista
+oletuksista.
+
+Huoltovälien lähdehaku, huoltojen tilalaskenta ja vientitoiminnot eivät ole
+vielä toteutettuja.
 
 ## Paikallinen kehitys
 

@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VehicleResolution",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidates",
+    "sources",
+    "warnings",
+    "resolved_at"
+  ],
+  "properties": {
+    "candidates": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidate_id",
+          "variant",
+          "compatibility",
+          "compatibility_explanation",
+          "matching_fields",
+          "conflicting_fields",
+          "missing_distinguishing_fields",
+          "sources"
+        ],
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "pattern": "^candidate-[1-9][0-9]*$"
+          },
+          "variant": {
+            "$ref": "#/$defs/vehicle_variant"
+          },
+          "compatibility": {
+            "type": "string",
+            "enum": [
+              "exact",
+              "strong",
+              "partial",
+              "weak",
+              "unknown"
+            ]
+          },
+          "compatibility_explanation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "matching_fields": {
+            "$ref": "#/$defs/field_list"
+          },
+          "conflicting_fields": {
+            "$ref": "#/$defs/field_list"
+          },
+          "missing_distinguishing_fields": {
+            "$ref": "#/$defs/field_list"
+          },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/$defs/candidate_source"
+            }
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      }
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "vehicle_variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "make",
+        "model",
+        "generation",
+        "model_year",
+        "engine",
+        "transmission",
+        "market",
+        "confidence",
+        "unresolved_fields"
+      ],
+      "properties": {
+        "make": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "generation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model_year": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1886,
+          "maximum": 3000
+        },
+        "engine": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "transmission": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "market": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "unresolved_fields": {
+          "$ref": "#/$defs/field_list"
+        }
+      }
+    },
+    "field_list": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "publisher",
+        "url"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "publisher": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https?://"
+        }
+      }
+    },
+    "candidate_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "publisher",
+        "url",
+        "evidence"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "publisher": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https?://"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      }
+    }
+  }
+}

@@ -26,40 +26,54 @@
       ],
       "properties": {
         "make": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
         },
         "model": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
         },
         "generation": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "minLength": 1,
+          "maxLength": 160
         },
         "model_year": {
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "minimum": 1886,
+          "maximum": 3000
         },
         "engine": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "minLength": 1,
+          "maxLength": 240
         },
         "transmission": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "minLength": 1,
+          "maxLength": 240
         },
         "market": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "minLength": 1,
+          "maxLength": 160
         },
         "confidence": {
           "type": "number",
@@ -68,8 +82,11 @@
         },
         "unresolved_fields": {
           "type": "array",
+          "maxItems": 20,
           "items": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
           }
         }
       }

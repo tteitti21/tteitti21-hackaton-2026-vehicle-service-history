@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ExtractionReview } from "@/components/extraction/extraction-review";
 import { ImageRedactionWorkspace } from "@/components/upload/image-redaction-workspace";
 import { VehicleForm } from "@/components/vehicle/vehicle-form";
+import { VehicleResolutionPanel } from "@/components/vehicle/vehicle-resolution";
 import { readUploadLimits } from "@/lib/validation/request-limits";
 
 const steps = [
@@ -51,12 +52,14 @@ export default function Home() {
         <div className="phaseNotice" role="status">
           <span className="statusDot" aria-hidden="true" />
           <div>
-            <strong>Vaihe 4 käytössä</strong>
+            <strong>Vaihe 5 käytössä</strong>
             <p>
               Voit vahvistaa ajoneuvon tiedot sekä muokata ja peittää kuvat
               paikallisesti. Hyväksytyistä lähetysversioista voi poimia
               huoltohistorian, normalisoida yksiköt ja komponentit sekä
-              vahvistaa tarkistetut tapahtumat.
+              vahvistaa tarkistetut tapahtumat. Sen jälkeen voit hakea
+              lähteisiin sidottuja ajoneuvoversioehdokkaita ja vahvistaa
+              oikean vaihtoehdon itse.
             </p>
           </div>
         </div>
@@ -71,6 +74,8 @@ export default function Home() {
       />
 
       <ExtractionReview />
+
+      <VehicleResolutionPanel />
 
       <section className="privacyBand" aria-labelledby="privacy-heading">
         <div>
@@ -87,6 +92,11 @@ export default function Home() {
             Kun käynnistät poiminnan, vain selaimessa peitetyt uudet PNG-kuvat
             lähetetään OpenAI:lle. Palveluntarjoajan säilytys- ja
             väärinkäytön valvontakäytännöt voivat silti koskea käsittelyä.
+          </p>
+          <p>
+            Ajoneuvoversion verkkohaku lähettää OpenAI:lle vain vahvistetut
+            versiotiedot; kuvia tai matkamittarilukemaa ei käytetä siinä.
+            Lähteet ja ehdokkaat säilyvät vain tämän välilehden muistissa.
           </p>
           <Link className="textLink" href="/tietosuoja">
             Miten tietoja käsitellään <span aria-hidden="true">→</span>

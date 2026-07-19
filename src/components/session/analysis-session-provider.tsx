@@ -22,6 +22,7 @@ import type {
   ServiceEvent,
   ServiceHistory,
 } from "@/domain/schemas/service-history";
+import type { VehicleResolution } from "@/domain/schemas/vehicle-resolution";
 
 interface AnalysisSessionContextValue {
   state: AnalysisSessionState;
@@ -35,6 +36,11 @@ interface AnalysisSessionContextValue {
   replaceServiceHistory: (serviceHistory: ServiceHistory) => void;
   updateServiceEvent: (event: ServiceEvent) => void;
   confirmServiceHistoryReview: () => void;
+  beginVehicleResolution: () => void;
+  completeVehicleResolution: (resolution: VehicleResolution) => void;
+  failVehicleResolution: (message: string) => void;
+  confirmVehicleCandidate: (candidateId: string) => void;
+  rejectVehicleCandidates: () => void;
 }
 
 const AnalysisSessionContext =
@@ -95,6 +101,29 @@ export function AnalysisSessionProvider({
     dispatch({ type: "confirm_service_history_review" });
   }, []);
 
+  const beginVehicleResolution = useCallback(() => {
+    dispatch({ type: "begin_vehicle_resolution" });
+  }, []);
+
+  const completeVehicleResolution = useCallback(
+    (resolution: VehicleResolution) => {
+      dispatch({ type: "complete_vehicle_resolution", resolution });
+    },
+    [],
+  );
+
+  const failVehicleResolution = useCallback((message: string) => {
+    dispatch({ type: "fail_vehicle_resolution", message });
+  }, []);
+
+  const confirmVehicleCandidate = useCallback((candidateId: string) => {
+    dispatch({ type: "confirm_vehicle_candidate", candidateId });
+  }, []);
+
+  const rejectVehicleCandidates = useCallback(() => {
+    dispatch({ type: "reject_vehicle_candidates" });
+  }, []);
+
   const value = useMemo(
     () => ({
       state,
@@ -108,15 +137,25 @@ export function AnalysisSessionProvider({
       replaceServiceHistory,
       updateServiceEvent,
       confirmServiceHistoryReview,
+      beginVehicleResolution,
+      completeVehicleResolution,
+      failVehicleResolution,
+      confirmVehicleCandidate,
+      rejectVehicleCandidates,
     }),
     [
+      beginVehicleResolution,
       beginExtraction,
       clearExtraction,
       completeExtraction,
+      completeVehicleResolution,
       confirmServiceHistoryReview,
+      confirmVehicleCandidate,
       confirmVehicle,
       failExtraction,
+      failVehicleResolution,
       replaceServiceHistory,
+      rejectVehicleCandidates,
       resetSession,
       state,
       updateServiceEvent,

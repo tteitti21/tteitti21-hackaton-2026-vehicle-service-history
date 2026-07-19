@@ -248,6 +248,166 @@ test("submits only the sanitized image and renders an editable extraction", asyn
   ).toBeVisible();
 });
 
+test("requires explicit candidate selection and preserves vehicle sources", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("textbox", { name: "Merkki" }).fill("Toyota");
+  await page.getByRole("textbox", { name: "Malli" }).fill("Avensis");
+  await page.getByLabel("Sukupolvi tai alustakoodi").fill("T27");
+  await page.getByLabel("Mallivuosi").fill("2015");
+  await page.getByLabel("Teho").fill("91");
+  await page.selectOption("#vehicle-fuelType", "diesel");
+  await page
+    .getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" })
+    .fill("184000");
+  await page.getByRole("button", { name: "Vahvista ajoneuvotiedot" }).click();
+
+  await prepareApprovedSyntheticImage(page);
+  await page.route("**/api/extract", async (route) => {
+    const requestText = route.request().postDataBuffer()?.toString("utf8") ?? "";
+    const imageId = requestText.match(/"clientId":"([^"]+)"/)?.[1];
+
+    if (imageId === undefined) {
+      throw new Error("The sanitized image manifest is missing.");
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        images: [{ image_id: imageId, readability: 1, notes: null }],
+        events: [],
+        warnings: [],
+      }),
+    });
+  });
+  await page
+    .getByRole("button", { name: "Lähetä OpenAI:lle ja poimi tapahtumat" })
+    .click();
+  await page
+    .getByRole("button", { name: "Vahvista tarkistettu huoltohistoria" })
+    .click();
+
+  let submittedVehicle: unknown = null;
+  await page.route("**/api/resolve-vehicle", async (route) => {
+    submittedVehicle = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        candidates: [
+          {
+            candidate_id: "candidate-1",
+            variant: {
+              make: "Toyota",
+              model: "Avensis",
+              generation: "T27",
+              model_year: 2015,
+              engine: "2.0 D-4D (1AD-FTV), 91 kW",
+              transmission: "6-vaihteinen manuaali",
+              market: "Eurooppa",
+              confidence: 0.92,
+              unresolved_fields: ["vaihteistokoodi"],
+            },
+            compatibility: "strong",
+            compatibility_explanation:
+              "Mallisarja ja teho täsmäävät, mutta vaihteistokoodi puuttuu.",
+            matching_fields: ["T27", "91 kW"],
+            conflicting_fields: [],
+            missing_distinguishing_fields: ["vaihteistokoodi"],
+            sources: [
+              {
+                title: "Toyota technical specification",
+                publisher: "toyota.example",
+                url: "https://toyota.example/t27",
+                evidence: "Lähde yhdistää moottorin ja mallisarjan.",
+              },
+            ],
+          },
+          {
+            candidate_id: "candidate-2",
+            variant: {
+              make: "Toyota",
+              model: "Avensis",
+              generation: "T27",
+              model_year: 2015,
+              engine: "2.0 D-4D (2WW), 105 kW",
+              transmission: "6-vaihteinen manuaali",
+              market: "Eurooppa",
+              confidence: 0.62,
+              unresolved_fields: ["moottorikoodi"],
+            },
+            compatibility: "partial",
+            compatibility_explanation:
+              "Mallisarja täsmää, mutta lähteen teho poikkeaa.",
+            matching_fields: ["T27"],
+            conflicting_fields: ["105 kW vs. 91 kW"],
+            missing_distinguishing_fields: ["moottorikoodi"],
+            sources: [
+              {
+                title: "European engine catalogue",
+                publisher: "catalogue.example",
+                url: "https://catalogue.example/t27",
+                evidence: "Lähde listaa vaihtoehtoisen moottorin.",
+              },
+            ],
+          },
+        ],
+        sources: [
+          {
+            title: "Toyota technical specification",
+            publisher: "toyota.example",
+            url: "https://toyota.example/t27",
+          },
+          {
+            title: "European engine catalogue",
+            publisher: "catalogue.example",
+            url: "https://catalogue.example/t27",
+          },
+        ],
+        warnings: ["Moottorikoodi erottaa ehdokkaat."],
+        resolved_at: "2026-07-19T10:00:00.000Z",
+      }),
+    });
+  });
+
+  await page
+    .getByRole("button", { name: "Etsi ajoneuvoversiot verkosta" })
+    .click();
+
+  const candidateRadios = page.getByRole("radio");
+  await expect(candidateRadios).toHaveCount(2);
+  await expect(candidateRadios.nth(0)).not.toBeChecked();
+  await expect(candidateRadios.nth(1)).not.toBeChecked();
+  await expect(
+    page.getByRole("button", {
+      name: "Vahvista valittu ajoneuvoversio",
+    }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("link", { name: "Toyota technical specification" }).first(),
+  ).toHaveAttribute("href", "https://toyota.example/t27");
+
+  await candidateRadios.nth(1).check();
+  await page
+    .getByRole("button", { name: "Vahvista valittu ajoneuvoversio" })
+    .click();
+  await expect(
+    page.getByText(
+      "Ajoneuvoversio vahvistettu myöhempää tutkimusta varten",
+    ),
+  ).toBeVisible();
+  await expect(page.locator(".confirmedVariant")).toContainText("2WW");
+  expect(submittedVehicle).toMatchObject({
+    make: "Toyota",
+    model: "Avensis",
+    generation: "T27",
+    modelYear: 2015,
+    powerKw: 91,
+  });
+});
+
 test("keeps local images available after a provider error", async ({ page }) => {
   await page.goto("/");
   await prepareApprovedSyntheticImage(page);

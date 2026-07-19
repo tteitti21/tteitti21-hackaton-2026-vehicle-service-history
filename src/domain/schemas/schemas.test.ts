@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { componentStatusSchema } from "./component-status";
 import { maintenanceResearchSchema } from "./maintenance-research";
 import { serviceHistorySchema } from "./service-history";
+import { vehicleResolutionSchema } from "./vehicle-resolution";
+import { vehicleResolutionFixture } from "@/test/vehicle-resolution-fixture";
 
 const validServiceHistory = {
   images: [
@@ -191,6 +193,33 @@ describe("componentStatusSchema", () => {
         ...validComponentStatus,
         status: "probably_ok",
       }).success,
+    ).toBe(false);
+  });
+});
+
+describe("vehicleResolutionSchema", () => {
+  it("accepts source-backed vehicle candidates", () => {
+    expect(vehicleResolutionSchema.parse(vehicleResolutionFixture)).toEqual(
+      vehicleResolutionFixture,
+    );
+  });
+
+  it("rejects a candidate without source evidence", () => {
+    const invalid = structuredClone(vehicleResolutionFixture);
+    invalid.candidates[0].sources = [];
+
+    expect(vehicleResolutionSchema.safeParse(invalid).success).toBe(false);
+  });
+
+  it("rejects unsafe source URL schemes and invalid confidence", () => {
+    const unsafeUrl = structuredClone(vehicleResolutionFixture);
+    unsafeUrl.candidates[0].sources[0].url = "javascript:alert(1)";
+    const invalidConfidence = structuredClone(vehicleResolutionFixture);
+    invalidConfidence.candidates[0].variant.confidence = 1.1;
+
+    expect(vehicleResolutionSchema.safeParse(unsafeUrl).success).toBe(false);
+    expect(
+      vehicleResolutionSchema.safeParse(invalidConfidence).success,
     ).toBe(false);
   });
 });

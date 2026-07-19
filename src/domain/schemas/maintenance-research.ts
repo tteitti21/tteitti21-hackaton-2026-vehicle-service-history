@@ -1,15 +1,15 @@
 import { z } from "zod";
 
 export const vehicleVariantSchema = z.strictObject({
-  make: z.string(),
-  model: z.string(),
-  generation: z.string().nullable(),
-  model_year: z.number().int().nullable(),
-  engine: z.string().nullable(),
-  transmission: z.string().nullable(),
-  market: z.string().nullable(),
+  make: z.string().trim().min(1).max(80),
+  model: z.string().trim().min(1).max(80),
+  generation: z.string().trim().min(1).max(160).nullable(),
+  model_year: z.number().int().min(1886).max(3000).nullable(),
+  engine: z.string().trim().min(1).max(240).nullable(),
+  transmission: z.string().trim().min(1).max(240).nullable(),
+  market: z.string().trim().min(1).max(160).nullable(),
   confidence: z.number().min(0).max(1),
-  unresolved_fields: z.array(z.string()),
+  unresolved_fields: z.array(z.string().trim().min(1).max(120)).max(20),
 });
 
 export const researchSourceSchema = z.strictObject({

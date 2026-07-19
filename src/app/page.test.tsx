@@ -6,7 +6,7 @@ import { AnalysisSessionProvider } from "@/components/session/analysis-session-p
 import Home from "./page";
 import PrivacyPage from "./tietosuoja/page";
 
-describe("Phase 4 shell", () => {
+describe("Phase 5 shell", () => {
   it("renders the Finnish product shell, vehicle form, and image privacy workflow", () => {
     render(
       <AnalysisSessionProvider>
@@ -20,7 +20,7 @@ describe("Phase 4 shell", () => {
         name: /Huoltohistoria selkeäksi/,
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Vaihe 4 käytössä")).toBeVisible();
+    expect(screen.getByText("Vaihe 5 käytössä")).toBeVisible();
     expect(
       screen.getByRole("heading", {
         level: 2,
@@ -44,6 +44,12 @@ describe("Phase 4 shell", () => {
       }),
     ).toBeVisible();
     expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: /Rajaa tarkka ajoneuvoversio lähteiden avulla/,
+      }),
+    ).toBeVisible();
+    expect(
       screen.getByRole("link", { name: /Miten tietoja käsitellään/ }),
     ).toHaveAttribute("href", "/tietosuoja");
   });
@@ -59,6 +65,9 @@ describe("Phase 4 shell", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(/ei tarkoita palveluntarjoajan varmennettua nollasäilytystä/i),
+    ).toBeVisible();
+    expect(
+      screen.getByText(/verkkohakutyökalulle välitetään vahvistetut/i),
     ).toBeVisible();
     expect(
       screen.getByRole("link", { name: /OpenAI Enterprise Privacy/ }),

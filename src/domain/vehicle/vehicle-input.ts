@@ -211,11 +211,56 @@ export function createVehicleInputSchema(
 
 export const vehicleInputSchema = createVehicleInputSchema();
 
-export type VehicleInput = z.output<typeof vehicleInputSchema>;
 export type VehicleFieldName = keyof VehicleFormDraft;
 export type VehicleFieldErrors = Partial<
   Record<VehicleFieldName, string>
 >;
+
+export function createConfirmedVehicleInputSchema(
+  currentYear = new Date().getFullYear(),
+) {
+  return z
+    .strictObject({
+      make: z.string().trim().min(1).max(80),
+      model: z.string().trim().min(1).max(80),
+      generation: z.string().trim().min(1).max(80).optional(),
+      modelYear: z.number().int().min(1886).max(currentYear + 1).optional(),
+      firstRegistrationYear: z
+        .number()
+        .int()
+        .min(1886)
+        .max(currentYear)
+        .optional(),
+      engineDisplacementLitres: z.number().min(0.1).max(20).optional(),
+      engineCode: z.string().trim().min(1).max(40).optional(),
+      powerKw: z.number().int().min(1).max(2_000).optional(),
+      fuelType: z.enum(fuelTypes).optional(),
+      transmissionType: z.enum(transmissionTypes).optional(),
+      transmissionCode: z.string().trim().min(1).max(40).optional(),
+      drivetrain: z.enum(drivetrainTypes).optional(),
+      country: z.enum(countryCodes),
+      market: z.string().trim().min(1).max(80).optional(),
+      currentOdometerKm: z.number().int().min(0).max(10_000_000),
+      additionalDetails: z.string().trim().min(1).max(1_000).optional(),
+    })
+    .superRefine((vehicle, context) => {
+      if (
+        vehicle.modelYear !== undefined &&
+        vehicle.firstRegistrationYear !== undefined &&
+        vehicle.firstRegistrationYear < vehicle.modelYear - 1
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["firstRegistrationYear"],
+          message:
+            "Ensirekisteröintivuosi ei voi olla yli vuotta mallivuotta aikaisempi.",
+        });
+      }
+    });
+}
+
+export const confirmedVehicleInputSchema = createConfirmedVehicleInputSchema();
+export type VehicleInput = z.output<typeof confirmedVehicleInputSchema>;
 
 export function createEmptyVehicleDraft(): VehicleFormDraft {
   return {

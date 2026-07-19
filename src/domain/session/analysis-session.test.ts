@@ -8,6 +8,7 @@ import {
   createEmptyVehicleDraft,
   createVehicleInputSchema,
 } from "../vehicle/vehicle-input";
+import { vehicleResolutionFixture } from "@/test/vehicle-resolution-fixture";
 
 const confirmedVehicle = createVehicleInputSchema(2026).parse({
   ...createEmptyVehicleDraft(),
@@ -27,6 +28,11 @@ describe("analysis session reducer", () => {
       serviceHistoryReviewConfirmed: false,
       extractionStatus: "idle",
       extractionError: null,
+      vehicleResolution: null,
+      vehicleResolutionStatus: "idle",
+      vehicleResolutionError: null,
+      confirmedVehicleVariant: null,
+      vehicleResolutionRejected: false,
     });
   });
 
@@ -170,5 +176,68 @@ describe("analysis session reducer", () => {
 
     expect(vehicleConfirmed.serviceHistoryReviewConfirmed).toBe(false);
     expect(vehicleEdited.serviceHistoryReviewConfirmed).toBe(false);
+  });
+
+  it("never auto-selects a returned candidate, including a strong match", () => {
+    const submitting = analysisSessionReducer(createInitialAnalysisSession(), {
+      type: "begin_vehicle_resolution",
+    });
+    const completed = analysisSessionReducer(submitting, {
+      type: "complete_vehicle_resolution",
+      resolution: vehicleResolutionFixture,
+    });
+
+    expect(submitting.vehicleResolutionStatus).toBe("submitting");
+    expect(completed.vehicleResolutionStatus).toBe("success");
+    expect(completed.vehicleResolution).toEqual(vehicleResolutionFixture);
+    expect(completed.confirmedVehicleVariant).toBeNull();
+  });
+
+  it("stores only the explicitly confirmed exact candidate for later research", () => {
+    const resolved = analysisSessionReducer(createInitialAnalysisSession(), {
+      type: "complete_vehicle_resolution",
+      resolution: vehicleResolutionFixture,
+    });
+    const invalidSelection = analysisSessionReducer(resolved, {
+      type: "confirm_vehicle_candidate",
+      candidateId: "candidate-999",
+    });
+    const confirmed = analysisSessionReducer(resolved, {
+      type: "confirm_vehicle_candidate",
+      candidateId: "candidate-2",
+    });
+
+    expect(invalidSelection).toBe(resolved);
+    expect(confirmed.confirmedVehicleVariant).toEqual(
+      vehicleResolutionFixture.candidates[1].variant,
+    );
+  });
+
+  it("supports none-of-these and invalidates resolution when vehicle fields change", () => {
+    const resolved = analysisSessionReducer(createInitialAnalysisSession(), {
+      type: "complete_vehicle_resolution",
+      resolution: vehicleResolutionFixture,
+    });
+    const confirmed = analysisSessionReducer(resolved, {
+      type: "confirm_vehicle_candidate",
+      candidateId: "candidate-1",
+    });
+    const rejected = analysisSessionReducer(confirmed, {
+      type: "reject_vehicle_candidates",
+    });
+    const edited = analysisSessionReducer(rejected, {
+      type: "update_vehicle_field",
+      field: "engineCode",
+      value: "1AD-FTV",
+    });
+
+    expect(rejected.confirmedVehicleVariant).toBeNull();
+    expect(rejected.vehicleResolutionRejected).toBe(true);
+    expect(edited).toMatchObject({
+      vehicleResolution: null,
+      vehicleResolutionStatus: "idle",
+      confirmedVehicleVariant: null,
+      vehicleResolutionRejected: false,
+    });
   });
 });

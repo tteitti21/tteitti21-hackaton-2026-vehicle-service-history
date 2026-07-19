@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  confirmedVehicleInputSchema,
   createEmptyVehicleDraft,
   createVehicleInputSchema,
 } from "./vehicle-input";
@@ -127,5 +128,17 @@ describe("vehicle input schema", () => {
         "Malli on pakollinen.",
       );
     }
+  });
+
+  it("validates the parsed API representation without accepting extra fields", () => {
+    const vehicle = createVehicleInputSchema(2026).parse(validDraft());
+
+    expect(confirmedVehicleInputSchema.parse(vehicle)).toEqual(vehicle);
+    expect(
+      confirmedVehicleInputSchema.safeParse({
+        ...vehicle,
+        registrationNumber: "SECRET-123",
+      }).success,
+    ).toBe(false);
   });
 });

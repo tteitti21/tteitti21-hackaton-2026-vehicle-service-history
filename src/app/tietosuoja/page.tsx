@@ -52,6 +52,13 @@ export default function PrivacyPage() {
           kouluttamiseen, mutta palveluntarjoajan tietojen säilytys- ja
           väärinkäytön valvontakäytännöt voivat silti olla voimassa.
         </p>
+        <p>
+          Kun käyttäjä käynnistää ajoneuvoversion haun, OpenAI:lle ja sen
+          verkkohakutyökalulle välitetään vahvistetut, version erottamiseen
+          tarvittavat ajoneuvotiedot. Kuvia ja nykyistä matkamittarilukemaa ei
+          välitetä tähän hakuun. Ehdokkaat ja hakulähteet säilyvät vain
+          nykyisen välilehden muistissa.
+        </p>
       </section>
 
       <section aria-labelledby="protections-heading">
