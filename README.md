@@ -40,7 +40,15 @@ Tekninen spesifikaatio on englanniksi, koska se on Codexille ja lähdekoodin tuo
 
 ## Nykyinen toteutusvaihe
 
-Phase 8 sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
+Phase 9 viimeistelee MVP:n kovennetuilla selainotsakkeilla, rajatulla
+prosessikohtaisella väärinkäytön estolla, turvallisilla virhetiloilla,
+automaattisella yksityisyystarkistuksella, mobiilinäkymillä, saavutettavuuden
+selainarvioinnilla ja kattavalla Playwright-työnkululla. Sisäänrakennettu
+Nordica Aurora -demo on täysin kuvitteellinen, toimii ilman API-kutsuja ja
+sisältää kolme synteettistä asiakirjaviitettä, mailimuunnoksen,
+epäselvän tapahtuman, lähderistiriidan sekä puuttuvan huoltomerkinnän.
+
+MVP sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
 kuvan peittämisen ja tilattoman `/api/extract`-rajapinnan. Käyttäjän
 erikseen hyväksymät uudet PNG-kuvat lähetetään pyyntökohtaisena kuvasisältönä
 OpenAI Responses API:lle. `store: false`, palvelinpuolinen API-avain,
@@ -162,6 +170,7 @@ API-avainta lähdekoodiin tai selaimelle näkyvään `NEXT_PUBLIC_`-muuttujaan.
 
 ```bash
 npm run lint
+npm run privacy:audit
 npm run typecheck
 npm test
 npm run test:e2e
@@ -173,3 +182,7 @@ Playwright tarvitsee paikallisen Chromium-asennuksen:
 ```bash
 npx playwright install chromium
 ```
+
+Tuotantoympäristön vaatimukset, välityspalvelimen tietosuojarajaukset,
+ympäristömuuttujat, synteettinen smoke-testi ja tunnetut käyttörajat on kuvattu
+tiedostossa [`docs/09_DEPLOYMENT.md`](docs/09_DEPLOYMENT.md).

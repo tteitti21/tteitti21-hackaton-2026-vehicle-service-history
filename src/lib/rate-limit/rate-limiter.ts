@@ -34,6 +34,14 @@ interface WindowState {
 export class InMemoryRateLimiter implements RateLimiter {
   private readonly windows = new Map<string, WindowState>();
 
+  constructor(private readonly maxWindows = 10_000) {
+    if (!Number.isSafeInteger(maxWindows) || maxWindows <= 0) {
+      throw new Error(
+        "Rate-limit maxWindows must be a positive safe integer.",
+      );
+    }
+  }
+
   consume(
     key: string,
     policy: RateLimitPolicy,
@@ -42,6 +50,10 @@ export class InMemoryRateLimiter implements RateLimiter {
     assertValidInput(key, policy, now);
 
     const current = this.windows.get(key);
+    if (current === undefined) {
+      this.makeRoomForNewWindow(now);
+    }
+
     const window =
       current === undefined || now >= current.resetAt
         ? { count: 0, resetAt: now + policy.windowMs }
@@ -67,6 +79,36 @@ export class InMemoryRateLimiter implements RateLimiter {
       remaining: policy.limit - window.count,
       retryAfterMs: 0,
     };
+  }
+
+  private makeRoomForNewWindow(now: number): void {
+    if (this.windows.size < this.maxWindows) {
+      return;
+    }
+
+    for (const [key, window] of this.windows) {
+      if (now >= window.resetAt) {
+        this.windows.delete(key);
+      }
+    }
+
+    if (this.windows.size < this.maxWindows) {
+      return;
+    }
+
+    let oldestKey: string | null = null;
+    let oldestResetAt = Number.POSITIVE_INFINITY;
+
+    for (const [key, window] of this.windows) {
+      if (window.resetAt < oldestResetAt) {
+        oldestKey = key;
+        oldestResetAt = window.resetAt;
+      }
+    }
+
+    if (oldestKey !== null) {
+      this.windows.delete(oldestKey);
+    }
   }
 }
 

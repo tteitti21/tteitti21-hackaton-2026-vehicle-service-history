@@ -356,17 +356,22 @@ export function VehicleForm() {
           </fieldset>
 
           <div className="formActions">
-            <button className="primaryButton" type="submit">
-              Vahvista ajoneuvotiedot
-            </button>
-            <button
-              className="secondaryButton"
-              type="button"
-              onClick={handleReset}
-              disabled={resetDisabled}
-            >
-              Tyhjennä istunto
-            </button>
+            <div>
+              <button className="primaryButton" type="submit">
+                Vahvista ajoneuvotiedot
+              </button>
+            </div>
+            <div className="resetAction">
+              <p>Vie valmis raportti ennen tyhjennystä tai sivulta poistumista.</p>
+              <button
+                className="secondaryButton"
+                type="button"
+                onClick={handleReset}
+                disabled={resetDisabled}
+              >
+                Tyhjennä istunto
+              </button>
+            </div>
           </div>
         </form>
 

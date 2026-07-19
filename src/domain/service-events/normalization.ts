@@ -4,6 +4,7 @@ import type {
 } from "@/domain/schemas/service-history";
 
 export const MILES_TO_KILOMETRES = 1.609344;
+const DISTANCE_DECIMAL_SCALE = 1_000_000;
 
 export interface NormalizedServiceDate {
   status: "missing" | "valid" | "unverified" | "invalid";
@@ -247,9 +248,17 @@ export function normalizeOdometer(
     originalUnit: odometer.unit,
     kilometres:
       odometer.unit === "mi"
-        ? odometer.value * MILES_TO_KILOMETRES
+        ? convertMilesToKilometres(odometer.value)
         : odometer.value,
   };
+}
+
+export function convertMilesToKilometres(miles: number): number {
+  return (
+    Math.round(
+      miles * MILES_TO_KILOMETRES * DISTANCE_DECIMAL_SCALE,
+    ) / DISTANCE_DECIMAL_SCALE
+  );
 }
 
 function validDate(

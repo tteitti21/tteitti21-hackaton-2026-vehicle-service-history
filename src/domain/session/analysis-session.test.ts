@@ -9,6 +9,7 @@ import {
   createVehicleInputSchema,
 } from "../vehicle/vehicle-input";
 import { vehicleResolutionFixture } from "@/test/vehicle-resolution-fixture";
+import { syntheticDemoSession } from "@/demo/synthetic-demo";
 
 const confirmedVehicle = createVehicleInputSchema(2026).parse({
   ...createEmptyVehicleDraft(),
@@ -37,6 +38,7 @@ describe("analysis session reducer", () => {
       maintenanceResearch: null,
       maintenanceResearchStatus: "idle",
       maintenanceResearchError: null,
+      demoMode: false,
     });
   });
 
@@ -77,6 +79,32 @@ describe("analysis session reducer", () => {
     });
 
     expect(resetState).toEqual(createInitialAnalysisSession("reset", 1));
+  });
+
+  it("loads a complete synthetic demo atomically and clears it on reset", () => {
+    const loaded = analysisSessionReducer(createInitialAnalysisSession(), {
+      type: "load_demo_session",
+      demo: syntheticDemoSession,
+    });
+
+    expect(loaded).toMatchObject({
+      status: "confirmed",
+      demoMode: true,
+      confirmedVehicle: { make: "Nordica", model: "Aurora" },
+      extractionStatus: "success",
+      serviceHistoryReviewConfirmed: true,
+      vehicleResolutionStatus: "success",
+      confirmedVehicleCandidateId: "candidate-1",
+      maintenanceResearchStatus: "success",
+    });
+    expect(loaded.vehicleDraft).toMatchObject({
+      make: "Nordica",
+      model: "Aurora",
+      currentOdometerKm: "180000",
+    });
+    expect(
+      analysisSessionReducer(loaded, { type: "reset_session" }),
+    ).toEqual(createInitialAnalysisSession("reset", 1));
   });
 
   it("tracks extraction progress, result, safe failure, and clearing in memory", () => {

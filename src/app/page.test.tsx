@@ -6,7 +6,7 @@ import { AnalysisSessionProvider } from "@/components/session/analysis-session-p
 import Home from "./page";
 import PrivacyPage from "./tietosuoja/page";
 
-describe("Phase 8 shell", () => {
+describe("Phase 9 shell", () => {
   it("renders the Finnish product shell, vehicle form, and image privacy workflow", () => {
     render(
       <AnalysisSessionProvider>
@@ -20,7 +20,10 @@ describe("Phase 8 shell", () => {
         name: /Huoltohistoria selkeäksi/,
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Vaihe 8 käytössä")).toBeVisible();
+    expect(screen.getByText("Vaihe 9 / MVP käytössä")).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Lataa synteettinen demo" }),
+    ).toBeVisible();
     expect(
       screen.getByRole("heading", {
         level: 2,

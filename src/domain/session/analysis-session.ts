@@ -49,6 +49,15 @@ export interface AnalysisSessionState {
   maintenanceResearch: MaintenanceResearch | null;
   maintenanceResearchStatus: MaintenanceResearchStatus;
   maintenanceResearchError: string | null;
+  demoMode: boolean;
+}
+
+export interface DemoSessionData {
+  vehicle: VehicleInput;
+  serviceHistory: ServiceHistory;
+  vehicleResolution: VehicleResolution;
+  confirmedVehicleCandidateId: string;
+  maintenanceResearch: MaintenanceResearch;
 }
 
 export type AnalysisSessionAction =
@@ -117,6 +126,10 @@ export type AnalysisSessionAction =
   | {
       type: "fail_maintenance_research";
       message: string;
+    }
+  | {
+      type: "load_demo_session";
+      demo: DemoSessionData;
     };
 
 export function createInitialAnalysisSession(
@@ -141,6 +154,7 @@ export function createInitialAnalysisSession(
     maintenanceResearch: null,
     maintenanceResearchStatus: "idle",
     maintenanceResearchError: null,
+    demoMode: false,
   };
 }
 
@@ -165,6 +179,7 @@ export function analysisSessionReducer(
         confirmedVehicleCandidateId: null,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: false,
+        demoMode: false,
         ...emptyMaintenanceResearch(),
       };
     case "confirm_vehicle":
@@ -179,6 +194,7 @@ export function analysisSessionReducer(
         confirmedVehicleCandidateId: null,
         confirmedVehicleVariant: null,
         vehicleResolutionRejected: false,
+        demoMode: false,
         ...emptyMaintenanceResearch(),
       };
     case "reset_session":
@@ -189,6 +205,7 @@ export function analysisSessionReducer(
         serviceHistoryReviewConfirmed: false,
         extractionStatus: "submitting",
         extractionError: null,
+        demoMode: false,
         ...emptyMaintenanceResearch(),
       };
     case "complete_extraction":
@@ -200,6 +217,7 @@ export function analysisSessionReducer(
         serviceHistoryReviewConfirmed: false,
         extractionStatus: "success",
         extractionError: null,
+        demoMode: false,
         ...emptyMaintenanceResearch(),
       };
     case "fail_extraction":
@@ -332,7 +350,57 @@ export function analysisSessionReducer(
         maintenanceResearchStatus: "error",
         maintenanceResearchError: action.message,
       };
+    case "load_demo_session": {
+      const candidate = action.demo.vehicleResolution.candidates.find(
+        (item) =>
+          item.candidate_id === action.demo.confirmedVehicleCandidateId,
+      );
+
+      if (candidate === undefined) {
+        return state;
+      }
+
+      return {
+        ...createInitialAnalysisSession("confirmed", state.resetVersion),
+        vehicleDraft: createVehicleDraft(action.demo.vehicle),
+        confirmedVehicle: action.demo.vehicle,
+        serviceHistory: reconcileServiceHistoryDatePrecisions(
+          action.demo.serviceHistory,
+        ),
+        serviceHistoryReviewConfirmed: true,
+        extractionStatus: "success",
+        vehicleResolution: action.demo.vehicleResolution,
+        vehicleResolutionStatus: "success",
+        confirmedVehicleCandidateId: candidate.candidate_id,
+        confirmedVehicleVariant: candidate.variant,
+        maintenanceResearch: action.demo.maintenanceResearch,
+        maintenanceResearchStatus: "success",
+        demoMode: true,
+      };
+    }
   }
+}
+
+function createVehicleDraft(vehicle: VehicleInput): VehicleFormDraft {
+  return {
+    make: vehicle.make,
+    model: vehicle.model,
+    generation: vehicle.generation ?? "",
+    modelYear: vehicle.modelYear?.toString() ?? "",
+    firstRegistrationYear: vehicle.firstRegistrationYear?.toString() ?? "",
+    engineDisplacementLitres:
+      vehicle.engineDisplacementLitres?.toString() ?? "",
+    engineCode: vehicle.engineCode ?? "",
+    powerKw: vehicle.powerKw?.toString() ?? "",
+    fuelType: vehicle.fuelType ?? "",
+    transmissionType: vehicle.transmissionType ?? "",
+    transmissionCode: vehicle.transmissionCode ?? "",
+    drivetrain: vehicle.drivetrain ?? "",
+    country: vehicle.country,
+    market: vehicle.market ?? "",
+    currentOdometerKm: vehicle.currentOdometerKm.toString(),
+    additionalDetails: vehicle.additionalDetails ?? "",
+  };
 }
 
 function emptyMaintenanceResearch() {

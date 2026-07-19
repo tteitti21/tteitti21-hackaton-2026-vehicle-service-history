@@ -9,6 +9,7 @@ import type {
 } from "@/domain/schemas/vehicle-resolution";
 import { vehicleResolutionSchema } from "@/domain/schemas/vehicle-resolution";
 import type { VehicleVariant } from "@/domain/schemas/maintenance-research";
+import { readSafeApiError } from "@/lib/http/safe-client-error";
 
 const compatibilityLabels: Record<
   VehicleCandidate["compatibility"],
@@ -20,6 +21,23 @@ const compatibilityLabels: Record<
   weak: "Heikko osuma",
   unknown: "Yhteensopivuus epäselvä",
 };
+
+const vehicleResolutionErrorMessages = {
+  forbidden: "Ajoneuvohakupyyntö estettiin. Päivitä sivu ja yritä uudelleen.",
+  rate_limited:
+    "Ajoneuvohakuja on tehty liian monta. Odota hetki ja yritä uudelleen.",
+  provider_timeout:
+    "Ajoneuvoversion verkkohaku aikakatkaistiin. Voit yrittää uudelleen.",
+  invalid_provider_output:
+    "Ajoneuvohausta saatuja ehdokkaita tai lähteitä ei voitu varmistaa.",
+  provider_error:
+    "Ajoneuvoversion verkkohaku epäonnistui palveluntarjoajalla.",
+  service_unavailable:
+    "Ajoneuvoversion verkkohaku ei ole tällä hetkellä käytettävissä.",
+  payload_too_large: "Ajoneuvotietojen pyyntö ylittää sallitun kokorajan.",
+  unsupported_media_type: "Ajoneuvotiedot on lähetettävä JSON-muodossa.",
+  invalid_request: "Ajoneuvotietoja ei voitu käsitellä.",
+} as const;
 
 export function VehicleResolutionPanel() {
   const {
@@ -58,7 +76,13 @@ export function VehicleResolutionPanel() {
       const payload: unknown = await response.json();
 
       if (!response.ok) {
-        failVehicleResolution(readSafeError(payload));
+        failVehicleResolution(
+          readSafeApiError(
+            payload,
+            vehicleResolutionErrorMessages,
+            "Ajoneuvoversioita ei voitu hakea. Yritä uudelleen.",
+          ),
+        );
         return;
       }
 
@@ -416,20 +440,4 @@ function formatConfidence(value: number): string {
     style: "percent",
     maximumFractionDigits: 0,
   }).format(value);
-}
-
-function readSafeError(payload: unknown): string {
-  if (
-    typeof payload === "object" &&
-    payload !== null &&
-    "error" in payload &&
-    typeof payload.error === "object" &&
-    payload.error !== null &&
-    "message" in payload.error &&
-    typeof payload.error.message === "string"
-  ) {
-    return payload.error.message;
-  }
-
-  return "Ajoneuvoversioita ei voitu hakea. Yritä uudelleen.";
 }

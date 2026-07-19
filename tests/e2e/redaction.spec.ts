@@ -619,7 +619,7 @@ test("keeps local images available after a provider error", async ({ page }) => 
       body: JSON.stringify({
         error: {
           code: "provider_error",
-          message: "Poimintapalvelu ei vastannut turvallisesti.",
+          message: "<script>untrusted provider detail</script>",
           request_id: "synthetic-request",
         },
       }),
@@ -631,8 +631,9 @@ test("keeps local images available after a provider error", async ({ page }) => 
     .click();
 
   await expect(page.locator(".extractionError")).toContainText(
-    "Poimintapalvelu ei vastannut turvallisesti.",
+    "Kuvien käsittely epäonnistui palveluntarjoajalla.",
   );
+  await expect(page.locator(".extractionError")).not.toContainText("<script>");
   await expect(
     page.getByRole("img", {
       name: "Lähetettävä esikatselu: synthetic-registration.png",

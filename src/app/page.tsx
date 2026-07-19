@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SyntheticDemoPanel } from "@/components/demo/synthetic-demo-panel";
 import { ExtractionReview } from "@/components/extraction/extraction-review";
 import { MaintenanceResearchPanel } from "@/components/research/maintenance-research";
 import { VehicleReportPanel } from "@/components/report/vehicle-report";
@@ -55,24 +56,19 @@ export default function Home() {
         <div className="phaseNotice" role="status">
           <span className="statusDot" aria-hidden="true" />
           <div>
-            <strong>Vaihe 8 käytössä</strong>
+            <strong>Vaihe 9 / MVP käytössä</strong>
             <p>
-              Voit vahvistaa ajoneuvon tiedot sekä muokata ja peittää kuvat
-              paikallisesti. Hyväksytyistä lähetysversioista voi poimia
-              huoltohistorian, normalisoida yksiköt ja komponentit sekä
-              vahvistaa tarkistetut tapahtumat. Sen jälkeen voit hakea
-              lähteisiin sidottuja ajoneuvoversioehdokkaita ja vahvistaa
-              oikean vaihtoehdon itse. Vahvistetulle versiolle voi tehdä
-              kaksivaiheisen huoltovälitutkimuksen, joka näyttää lähteet,
-              ristiriidat ja riittämättömän näytön arvaamatta puuttuvia välejä.
-              Tutkimuksen jälkeen sovelluskoodi laskee komponenttien tilat,
-              jäljellä olevat rajat ja erääntymisarviot deterministisesti.
-              Valmiin raportin voi tarkistaa ja ladata JSON- tai
-              Excel-tiedostona suoraan selaimesta.
+              Koko tilaton työnkulku kuvien paikallisesta peittämisestä
+              lähdevarmennukseen, deterministiseen tilalaskentaan ja
+              paikalliseen vientiin on käytettävissä. Mukana ovat myös
+              synteettinen demo, turvalliset virhetilat, yksityisyystarkistukset
+              ja mobiililaitteille mukautettu käyttöliittymä.
             </p>
           </div>
         </div>
       </section>
+
+      <SyntheticDemoPanel />
 
       <VehicleForm />
 

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("shows the Phase 8 vehicle, research, status, and report controls", async ({
+test("shows the Phase 9 MVP, demo, workflow, and report controls", async ({
   page,
 }) => {
   await page.goto("/");
@@ -11,7 +11,10 @@ test("shows the Phase 8 vehicle, research, status, and report controls", async (
       name: /Huoltohistoria selkeäksi/,
     }),
   ).toBeVisible();
-  await expect(page.getByText("Vaihe 8 käytössä")).toBeVisible();
+  await expect(page.getByText("Vaihe 9 / MVP käytössä")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Lataa synteettinen demo" }),
+  ).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Merkki" })).toBeVisible();
   await expect(
     page.getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" }),
@@ -173,6 +176,51 @@ test("disables response caching and content sniffing", async ({ request }) => {
   expect(response.headers()["pragma"]).toBe("no-cache");
   expect(response.headers()["x-content-type-options"]).toBe("nosniff");
   expect(response.headers()["x-powered-by"]).toBeUndefined();
+  expect(response.headers()["content-security-policy"]).toContain(
+    "default-src 'self'",
+  );
+  expect(response.headers()["content-security-policy"]).toContain(
+    "connect-src 'self' blob:",
+  );
+  expect(response.headers()["permissions-policy"]).toContain("camera=()");
+  expect(response.headers()["cross-origin-opener-policy"]).toBe("same-origin");
+  expect(response.headers()["strict-transport-security"]).toContain(
+    "max-age=31536000",
+  );
+});
+
+test("loads the complete synthetic demo locally and clears it on reload", async ({
+  page,
+}) => {
+  const apiRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().includes("/api/")) {
+      apiRequests.push(request.url());
+    }
+  });
+  await page.goto("/");
+
+  await page
+    .getByRole("button", { name: "Lataa synteettinen demo" })
+    .click();
+
+  await expect(page.getByTestId("confirmed-vehicle")).toContainText(
+    "Nordica Aurora",
+  );
+  await expect(
+    page
+      .getByRole("complementary", { name: "Normalisoidut arvot" })
+      .getByText("160 934,4 km", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Nordica Aurora", level: 3 }),
+  ).toBeVisible();
+  await expect(page.getByText("Lähteissä ristiriita").first()).toBeVisible();
+  expect(apiRequests).toEqual([]);
+
+  await page.reload();
+  await expect(page.getByRole("textbox", { name: "Merkki" })).toHaveValue("");
+  await expect(page.getByTestId("confirmed-vehicle")).toHaveCount(0);
 });
 
 test("lets the extraction route reject a body above the proxy buffer limit", async ({

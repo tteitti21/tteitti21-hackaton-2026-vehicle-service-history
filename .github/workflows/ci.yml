@@ -28,6 +28,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Audit privacy invariants
+        run: npm run privacy:audit
+
       - name: Type-check
         run: npm run typecheck
 

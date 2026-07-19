@@ -8,6 +8,7 @@ import {
   type ComponentResearch,
   type IntervalClaim,
 } from "@/domain/schemas/maintenance-research";
+import { readSafeApiError } from "@/lib/http/safe-client-error";
 
 const resolutionLabels: Record<ComponentResearch["resolution"], string> = {
   resolved: "Lähde löytyi",
@@ -22,6 +23,23 @@ const compatibilityLabels: Record<IntervalClaim["compatibility"], string> = {
   weak: "Heikko yhteensopivuus",
   unknown: "Yhteensopivuus tuntematon",
 };
+
+const maintenanceResearchErrorMessages = {
+  forbidden: "Tutkimuspyyntö estettiin. Päivitä sivu ja yritä uudelleen.",
+  rate_limited:
+    "Huoltovälitutkimuksia on tehty liian monta. Odota hetki ja yritä uudelleen.",
+  provider_timeout:
+    "Huoltovälien verkkotutkimus aikakatkaistiin. Voit yrittää uudelleen.",
+  invalid_provider_output:
+    "Tutkimustulosta tai sen lähteitä ei voitu varmistaa turvallisesti.",
+  provider_error:
+    "Huoltovälien verkkotutkimus epäonnistui palveluntarjoajalla.",
+  service_unavailable:
+    "Huoltovälien verkkotutkimus ei ole tällä hetkellä käytettävissä.",
+  payload_too_large: "Tutkimuspyyntö ylittää sallitun kokorajan.",
+  unsupported_media_type: "Tutkimuspyyntö on lähetettävä JSON-muodossa.",
+  invalid_request: "Tutkimuspyyntöä ei voitu käsitellä.",
+} as const;
 
 export function MaintenanceResearchPanel() {
   const {
@@ -67,7 +85,13 @@ export function MaintenanceResearchPanel() {
       });
       const payload: unknown = await response.json();
       if (!response.ok) {
-        failMaintenanceResearch(readSafeError(payload));
+        failMaintenanceResearch(
+          readSafeApiError(
+            payload,
+            maintenanceResearchErrorMessages,
+            "Huoltovälitutkimus epäonnistui. Yritä uudelleen.",
+          ),
+        );
         return;
       }
 
@@ -333,19 +357,4 @@ function formatOriginalValue(claim: IntervalClaim): string {
     return "Ei ilmoitettu";
   }
   return `${claim.original_value} ${claim.original_unit}`;
-}
-
-function readSafeError(payload: unknown): string {
-  if (
-    typeof payload === "object" &&
-    payload !== null &&
-    "error" in payload &&
-    typeof payload.error === "object" &&
-    payload.error !== null &&
-    "message" in payload.error &&
-    typeof payload.error.message === "string"
-  ) {
-    return payload.error.message;
-  }
-  return "Huoltovälitutkimus epäonnistui. Yritä uudelleen.";
 }

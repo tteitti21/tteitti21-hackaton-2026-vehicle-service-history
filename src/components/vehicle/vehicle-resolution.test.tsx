@@ -155,7 +155,7 @@ describe("VehicleResolutionPanel", () => {
         JSON.stringify({
           error: {
             code: "provider_error",
-            message: "Turvallinen ajoneuvohaun virhe.",
+            message: "<script>untrusted response detail</script>",
           },
         }),
         {
@@ -169,8 +169,9 @@ describe("VehicleResolutionPanel", () => {
     );
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "Turvallinen ajoneuvohaun virhe.",
+      "Ajoneuvoversion verkkohaku epäonnistui palveluntarjoajalla.",
     );
+    expect(screen.getByRole("alert")).not.toHaveTextContent("<script>");
   });
 });
 

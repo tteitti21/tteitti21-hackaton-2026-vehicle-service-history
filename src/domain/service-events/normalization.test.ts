@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  convertMilesToKilometres,
   createServiceDateFromInput,
   formatServiceDateInput,
   inferServiceDateInput,
@@ -25,6 +26,7 @@ describe("service-event normalization", () => {
       originalUnit: "mi",
       kilometres: 160.9344,
     });
+    expect(convertMilesToKilometres(100_000)).toBe(160_934.4);
   });
 
   it("does not reinterpret an unknown unit as kilometres", () => {

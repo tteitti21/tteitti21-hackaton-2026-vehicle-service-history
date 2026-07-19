@@ -39,6 +39,7 @@ import {
   readRequestSizeResponseHeaders,
   type RequestSizeResponseDetails,
 } from "@/lib/http/request-size-headers";
+import { readSafeApiError } from "@/lib/http/safe-client-error";
 
 interface ImageRedactionWorkspaceProps {
   maxFiles: number;
@@ -67,6 +68,24 @@ interface PreparedImage {
 type EditorMode = "redact" | "crop";
 
 const MINIMUM_SELECTION_SIZE = 4;
+
+const extractionErrorMessages = {
+  forbidden: "Poimintapyyntö estettiin. Päivitä sivu ja yritä uudelleen.",
+  rate_limited:
+    "Poimintapyyntöjä on tehty liian monta. Odota hetki ja yritä uudelleen.",
+  provider_timeout:
+    "Kuvien käsittely aikakatkaistiin. Kuvat säilyvät selaimessa uutta yritystä varten.",
+  invalid_provider_output:
+    "Kuvista saatu vastaus ei ollut turvallisesti käsiteltävässä muodossa. Kuvat säilyvät selaimessa.",
+  provider_error:
+    "Kuvien käsittely epäonnistui palveluntarjoajalla. Kuvat säilyvät selaimessa uutta yritystä varten.",
+  service_unavailable:
+    "Kuvien poimintapalvelu ei ole tällä hetkellä käytettävissä.",
+  payload_too_large: "Lähetyspaketti ylittää sallitun kokorajan.",
+  unsupported_media_type:
+    "Lähetyspaketti sisältää tiedostomuodon, jota ei hyväksytä.",
+  invalid_request: "Lähetyspakettia ei voitu käsitellä.",
+} as const;
 
 export function ImageRedactionWorkspace({
   maxFiles,
@@ -536,7 +555,13 @@ export function ImageRedactionWorkspace({
       const payload: unknown = await response.json();
 
       if (!response.ok) {
-        failExtraction(readExtractionError(payload));
+        failExtraction(
+          readSafeApiError(
+            payload,
+            extractionErrorMessages,
+            "Kuvien poiminta epäonnistui. Kuvat säilyvät selaimessa uutta yritystä varten.",
+          ),
+        );
         setWorkspaceMessage(
           "Poiminta epäonnistui. Paikalliset kuvat ja lähetysversiot säilyvät selaimessa.",
         );
@@ -1028,20 +1053,4 @@ function RequestSizeDebug({
       </p>
     </aside>
   );
-}
-
-function readExtractionError(payload: unknown): string {
-  if (
-    typeof payload === "object" &&
-    payload !== null &&
-    "error" in payload &&
-    typeof payload.error === "object" &&
-    payload.error !== null &&
-    "message" in payload.error &&
-    typeof payload.error.message === "string"
-  ) {
-    return payload.error.message;
-  }
-
-  return "Kuvien poiminta epäonnistui. Kuvat säilyvät selaimessa uutta yritystä varten.";
 }

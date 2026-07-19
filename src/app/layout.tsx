@@ -41,6 +41,7 @@ export default function RootLayout({
                 <span>AutoHuolto AI</span>
               </Link>
               <nav aria-label="Päänavigaatio">
+                <Link href="/#demo">Demo</Link>
                 <Link href="/tietosuoja">Tietosuoja</Link>
               </nav>
             </div>

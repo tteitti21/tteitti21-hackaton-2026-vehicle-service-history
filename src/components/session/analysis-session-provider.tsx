@@ -13,6 +13,7 @@ import {
   analysisSessionReducer,
   createInitialAnalysisSession,
   type AnalysisSessionState,
+  type DemoSessionData,
 } from "@/domain/session/analysis-session";
 import type {
   VehicleFieldName,
@@ -45,6 +46,7 @@ interface AnalysisSessionContextValue {
   beginMaintenanceResearch: () => void;
   completeMaintenanceResearch: (research: MaintenanceResearch) => void;
   failMaintenanceResearch: (message: string) => void;
+  loadDemoSession: (demo: DemoSessionData) => void;
 }
 
 const AnalysisSessionContext =
@@ -143,6 +145,10 @@ export function AnalysisSessionProvider({
     dispatch({ type: "fail_maintenance_research", message });
   }, []);
 
+  const loadDemoSession = useCallback((demo: DemoSessionData) => {
+    dispatch({ type: "load_demo_session", demo });
+  }, []);
+
   const value = useMemo(
     () => ({
       state,
@@ -164,6 +170,7 @@ export function AnalysisSessionProvider({
       beginMaintenanceResearch,
       completeMaintenanceResearch,
       failMaintenanceResearch,
+      loadDemoSession,
     }),
     [
       beginVehicleResolution,
@@ -179,6 +186,7 @@ export function AnalysisSessionProvider({
       failExtraction,
       failVehicleResolution,
       failMaintenanceResearch,
+      loadDemoSession,
       replaceServiceHistory,
       rejectVehicleCandidates,
       resetSession,
