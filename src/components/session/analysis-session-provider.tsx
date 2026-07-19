@@ -34,6 +34,7 @@ interface AnalysisSessionContextValue {
   clearExtraction: () => void;
   replaceServiceHistory: (serviceHistory: ServiceHistory) => void;
   updateServiceEvent: (event: ServiceEvent) => void;
+  confirmServiceHistoryReview: () => void;
 }
 
 const AnalysisSessionContext =
@@ -90,6 +91,10 @@ export function AnalysisSessionProvider({
     dispatch({ type: "update_service_event", event });
   }, []);
 
+  const confirmServiceHistoryReview = useCallback(() => {
+    dispatch({ type: "confirm_service_history_review" });
+  }, []);
+
   const value = useMemo(
     () => ({
       state,
@@ -102,11 +107,13 @@ export function AnalysisSessionProvider({
       clearExtraction,
       replaceServiceHistory,
       updateServiceEvent,
+      confirmServiceHistoryReview,
     }),
     [
       beginExtraction,
       clearExtraction,
       completeExtraction,
+      confirmServiceHistoryReview,
       confirmVehicle,
       failExtraction,
       replaceServiceHistory,

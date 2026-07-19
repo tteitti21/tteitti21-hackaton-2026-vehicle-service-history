@@ -1213,6 +1213,50 @@ nav a {
   padding-left: 1.2rem;
 }
 
+.reviewDiagnostics {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.reviewDiagnosticsClean,
+.reviewIssueGroup {
+  padding: 1rem 1.1rem;
+  border-radius: 0.75rem;
+}
+
+.reviewDiagnosticsClean {
+  color: #24553e;
+  background: #e5f3e9;
+  border: 1px solid #a7ceb4;
+}
+
+.reviewDiagnosticsClean p,
+.reviewIssueGroup ul {
+  margin: 0.4rem 0 0;
+}
+
+.reviewDiagnosticsClean p {
+  font-size: 0.82rem;
+}
+
+.reviewIssueGroup ul {
+  padding-left: 1.2rem;
+  font-size: 0.82rem;
+}
+
+.reviewIssueErrors {
+  color: #78291f;
+  background: #fbe9e5;
+  border: 1px solid #e5a99e;
+}
+
+.reviewIssueWarnings {
+  color: #5f4310;
+  background: #fff4d7;
+  border: 1px solid #e8ca81;
+}
+
 .readabilityGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -1335,6 +1379,17 @@ nav a {
   gap: 0.25rem;
 }
 
+.odometerSummary {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.odometerSummary small {
+  color: #466258;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
 .rowActions {
   display: flex;
   gap: 0.4rem;
@@ -1382,6 +1437,63 @@ nav a {
   margin-bottom: 0.35rem;
 }
 
+.evidenceComparison {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.evidenceComparison > label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.evidenceComparison > label > span {
+  color: #3b554b;
+  font-size: 0.75rem;
+  font-weight: 720;
+}
+
+.normalizationPreview {
+  padding: 1rem;
+  color: #234b3b;
+  background: var(--forest-soft);
+  border: 1px solid #b5d0c0;
+  border-radius: 0.7rem;
+}
+
+.normalizationPreview dl {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.8rem 0 0;
+}
+
+.normalizationPreview dl div {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.45fr) minmax(0, 1fr);
+  gap: 0.6rem;
+}
+
+.normalizationPreview dt {
+  color: #557265;
+  font-size: 0.7rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.normalizationPreview dd {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.normalizationPreview p {
+  margin: 0.8rem 0 0;
+  color: #526b60;
+  font-size: 0.72rem;
+}
+
 .eventEditorGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1419,6 +1531,17 @@ nav a {
 
 .eventEditor textarea {
   resize: vertical;
+}
+
+.eventEditor input[aria-invalid="true"] {
+  border-color: #ad3e2d;
+  box-shadow: 0 0 0 2px rgba(173, 62, 45, 0.12);
+}
+
+.eventEditor .fieldError {
+  color: #9c3224;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .wideEditorField {
@@ -1474,6 +1597,95 @@ nav a {
 .actionEditorRow .dangerButton {
   padding: 0.65rem;
   white-space: nowrap;
+}
+
+.componentSuggestion {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.75rem;
+  color: #4d3c0d;
+  background: #fff4d7;
+  border: 1px solid #e8ca81;
+  border-radius: 0.5rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.componentSuggestion button {
+  padding: 0.4rem 0.55rem;
+  color: #3d300d;
+  background: #fffaf0;
+  border: 1px solid #caa957;
+  border-radius: 0.4rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.reviewConfirmation {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: clamp(1.2rem, 4vw, 2rem);
+  color: white;
+  background: var(--forest);
+  border-radius: 1rem;
+}
+
+.reviewConfirmation h3 {
+  margin: 0.3rem 0 0;
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+}
+
+.reviewConfirmation p {
+  margin: 0.55rem 0 0;
+  color: #cfddd6;
+  font-size: 0.84rem;
+}
+
+.reviewConfirmation .sectionLabel {
+  color: var(--lime);
+}
+
+.warningAcknowledgement {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  padding: 0.85rem;
+  color: #17392d;
+  background: #f8f0d1;
+  border-radius: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.warningAcknowledgement input {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: 0 0 auto;
+  margin-top: 0.05rem;
+  accent-color: var(--forest);
+}
+
+.reviewConfirmation .primaryButton {
+  width: fit-content;
+}
+
+.reviewConfirmation .primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.reviewConfirmationConfirmed {
+  box-shadow: inset 0 0 0 2px var(--lime);
+}
+
+.reviewConfirmation .confirmationBlocker {
+  margin: 0;
+  color: #ffd7cf;
+  font-weight: 700;
 }
 
 .privacyBand {
@@ -1717,7 +1929,8 @@ h2 {
   .vehicleWorkspace,
   .imageSectionIntro,
   .imageWorkspace,
-  .extractionHeading {
+  .extractionHeading,
+  .evidenceComparison {
     grid-template-columns: 1fr;
   }
 
@@ -1796,7 +2009,8 @@ h2 {
 
   .reviewActions,
   .eventEditorHeading,
-  .actionEditorHeading {
+  .actionEditorHeading,
+  .componentSuggestion {
     align-items: stretch;
     flex-direction: column;
   }
@@ -1812,6 +2026,10 @@ h2 {
 
   .primaryButton,
   .secondaryButton {
+    width: 100%;
+  }
+
+  .reviewConfirmation .primaryButton {
     width: 100%;
   }
 

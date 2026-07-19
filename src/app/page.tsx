@@ -51,11 +51,12 @@ export default function Home() {
         <div className="phaseNotice" role="status">
           <span className="statusDot" aria-hidden="true" />
           <div>
-            <strong>Vaihe 3 käytössä</strong>
+            <strong>Vaihe 4 käytössä</strong>
             <p>
               Voit vahvistaa ajoneuvon tiedot sekä muokata ja peittää kuvat
               paikallisesti. Hyväksytyistä lähetysversioista voi poimia
-              muokattavan huoltohistorian OpenAI:n avulla.
+              huoltohistorian, normalisoida yksiköt ja komponentit sekä
+              vahvistaa tarkistetut tapahtumat.
             </p>
           </div>
         </div>

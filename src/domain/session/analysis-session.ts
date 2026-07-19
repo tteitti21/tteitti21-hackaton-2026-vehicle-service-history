@@ -18,6 +18,7 @@ export interface AnalysisSessionState {
   status: SessionStatus;
   resetVersion: number;
   serviceHistory: ServiceHistory | null;
+  serviceHistoryReviewConfirmed: boolean;
   extractionStatus: ExtractionStatus;
   extractionError: string | null;
 }
@@ -56,6 +57,9 @@ export type AnalysisSessionAction =
   | {
       type: "update_service_event";
       event: ServiceEvent;
+    }
+  | {
+      type: "confirm_service_history_review";
     };
 
 export function createInitialAnalysisSession(
@@ -68,6 +72,7 @@ export function createInitialAnalysisSession(
     status,
     resetVersion,
     serviceHistory: null,
+    serviceHistoryReviewConfirmed: false,
     extractionStatus: "idle",
     extractionError: null,
   };
@@ -86,12 +91,14 @@ export function analysisSessionReducer(
           [action.field]: action.value,
         },
         confirmedVehicle: null,
+        serviceHistoryReviewConfirmed: false,
         status: "editing",
       };
     case "confirm_vehicle":
       return {
         ...state,
         confirmedVehicle: action.vehicle,
+        serviceHistoryReviewConfirmed: false,
         status: "confirmed",
       };
     case "reset_session":
@@ -99,6 +106,7 @@ export function analysisSessionReducer(
     case "begin_extraction":
       return {
         ...state,
+        serviceHistoryReviewConfirmed: false,
         extractionStatus: "submitting",
         extractionError: null,
       };
@@ -106,6 +114,7 @@ export function analysisSessionReducer(
       return {
         ...state,
         serviceHistory: action.serviceHistory,
+        serviceHistoryReviewConfirmed: false,
         extractionStatus: "success",
         extractionError: null,
       };
@@ -119,6 +128,7 @@ export function analysisSessionReducer(
       return {
         ...state,
         serviceHistory: null,
+        serviceHistoryReviewConfirmed: false,
         extractionStatus: "idle",
         extractionError: null,
       };
@@ -126,6 +136,7 @@ export function analysisSessionReducer(
       return {
         ...state,
         serviceHistory: action.serviceHistory,
+        serviceHistoryReviewConfirmed: false,
       };
     case "update_service_event":
       if (state.serviceHistory === null) {
@@ -133,12 +144,21 @@ export function analysisSessionReducer(
       }
       return {
         ...state,
+        serviceHistoryReviewConfirmed: false,
         serviceHistory: {
           ...state.serviceHistory,
           events: state.serviceHistory.events.map((event) =>
             event.event_id === action.event.event_id ? action.event : event,
           ),
         },
+      };
+    case "confirm_service_history_review":
+      if (state.serviceHistory === null) {
+        return state;
+      }
+      return {
+        ...state,
+        serviceHistoryReviewConfirmed: true,
       };
   }
 }

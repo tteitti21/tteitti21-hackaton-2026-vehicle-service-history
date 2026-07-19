@@ -173,8 +173,8 @@ test("submits only the sanitized image and renders an editable extraction", asyn
               confidence: 0.93,
             },
             odometer: {
-              value: 120000,
-              unit: "km",
+              value: 100,
+              unit: "mi",
               confidence: 0.91,
             },
             actions: [
@@ -203,13 +203,16 @@ test("submits only the sanitized image and renders an editable extraction", asyn
 
   await expect(
     page.getByRole("heading", {
-      name: "Tarkista jokainen kuvista poimittu tapahtuma.",
+      name: "Tarkista, normalisoi ja vahvista huoltohistoria.",
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("cell", { name: "Öljy ja suodatin vaihdettu" }),
+    page.getByRole("cell", { name: /Öljy ja suodatin vaihdettu/ }),
   ).toBeVisible();
   await expect(page.getByText(/Korkea \(88 %\)/).first()).toBeVisible();
+  await expect(
+    page.getByRole("complementary", { name: "Normalisoidut arvot" }),
+  ).toContainText("160,9344 km");
   const requestSizeDebug = page.getByRole("complementary", {
     name: "Lähetyksen kokotiedot",
   });
@@ -224,6 +227,14 @@ test("submits only the sanitized image and renders an editable extraction", asyn
 
   await page.getByRole("button", { name: "Lisää tapahtuma" }).click();
   await expect(page.getByRole("row")).toHaveCount(3);
+  await page
+    .getByRole("button", { name: "Vahvista tarkistettu huoltohistoria" })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Huoltohistoria on vahvistettu.",
+    }),
+  ).toBeVisible();
 
   expect(submittedBytes).not.toBeNull();
   const multipart = submittedBytes as unknown as Buffer;

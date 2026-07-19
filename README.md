@@ -40,8 +40,8 @@ Tekninen spesifikaatio on englanniksi, koska se on Codexille ja lähdekoodin tuo
 
 ## Nykyinen toteutusvaihe
 
-Phase 3 sisältää aiempien vaiheiden ajoneuvolomakkeen ja selaimessa tehtävän
-kuvan peittämisen lisäksi tilattoman `/api/extract`-rajapinnan. Käyttäjän
+Phase 4 sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
+kuvan peittämisen ja tilattoman `/api/extract`-rajapinnan. Käyttäjän
 erikseen hyväksymät uudet PNG-kuvat lähetetään pyyntökohtaisena kuvasisältönä
 OpenAI Responses API:lle. `store: false`, palvelinpuolinen API-avain,
 rakenteinen tulos, skeemavalidointi, yksi rajattu skeemakorjausyritys,
@@ -53,6 +53,16 @@ yhdistää tapahtumia. Tyhjä tai lukukelvoton aineisto esitetään rehellisenä
 tyhjänä tuloksena, ja palveluvirhe säilyttää paikalliset kuvat uutta yritystä
 varten.
 
+Tarkistusnäkymä näyttää alkuperäisen kuvanäytön rinnalla normalisoidun
+päivämäärän, kilometreiksi muunnetun mittarilukeman ja kanonisen
+komponenttiluokituksen. Mailit muunnetaan laskentaa varten täsmällisellä
+kertoimella `1.609344`, mutta alkuperäinen arvo ja yksikkö säilyvät.
+Sovelluskoodi havaitsee virheelliset päivämäärät ja mittarilukemat,
+mahdolliset kaksoiskappaleet sekä aikajärjestyksen ristiriidat. Käyttäjän on
+korjattava virheet, kuitattava näkyvät epävarmuudet ja vahvistettava
+huoltohistoria erikseen. Jokainen muokkaus poistaa vahvistuksen
+automaattisesti.
+
 `/api/extract` ohittaa Next.js-proxyn pyyntörungon puskuroinnin. Rajapinta
 validoi itse enintään 10 kuvaa, 20 Mt kuvaa kohden ja noin 201 Mt koko
 multipart-pyyntöä oletusasetuksilla. Lähetysesikatselu näyttää peitettyjen
@@ -63,8 +73,8 @@ Kuvien poiminnan oletusaikaraja on 180 sekuntia, ja sen voi asettaa välille
 Poimintareitti ilmoittaa alustalle 300 sekunnin enimmäissuoritusajan, jotta
 sovellus ehtii palauttaa hallitun aikakatkaisuvirheen.
 
-Ajoneuvovarianttiin perustuva tutkimus, tapahtumien Phase 4 -normalisointi,
-huoltojen tilalaskenta ja vientitoiminnot eivät ole vielä toteutettuja.
+Ajoneuvovarianttiin perustuva tutkimus, huoltovälien lähdehaku, huoltojen
+tilalaskenta ja vientitoiminnot eivät ole vielä toteutettuja.
 
 ## Paikallinen kehitys
 

@@ -24,6 +24,7 @@ describe("analysis session reducer", () => {
       status: "empty",
       resetVersion: 0,
       serviceHistory: null,
+      serviceHistoryReviewConfirmed: false,
       extractionStatus: "idle",
       extractionError: null,
     });
@@ -104,6 +105,70 @@ describe("analysis session reducer", () => {
       extractionStatus: "idle",
       extractionError: null,
       serviceHistory: null,
+      serviceHistoryReviewConfirmed: false,
     });
+  });
+
+  it("requires review confirmation again after any service-history edit", () => {
+    const serviceHistory = {
+      images: [{ image_id: "image-1", readability: 1, notes: null }],
+      events: [],
+      warnings: [],
+    };
+    const completed = analysisSessionReducer(createInitialAnalysisSession(), {
+      type: "complete_extraction",
+      serviceHistory,
+    });
+    const confirmed = analysisSessionReducer(completed, {
+      type: "confirm_service_history_review",
+    });
+    const edited = analysisSessionReducer(confirmed, {
+      type: "replace_service_history",
+      serviceHistory: {
+        ...serviceHistory,
+        warnings: ["Reviewed warning"],
+      },
+    });
+
+    expect(completed.serviceHistoryReviewConfirmed).toBe(false);
+    expect(confirmed.serviceHistoryReviewConfirmed).toBe(true);
+    expect(edited.serviceHistoryReviewConfirmed).toBe(false);
+  });
+
+  it("cannot confirm a review before extraction exists", () => {
+    const initial = createInitialAnalysisSession();
+
+    expect(
+      analysisSessionReducer(initial, {
+        type: "confirm_service_history_review",
+      }),
+    ).toBe(initial);
+  });
+
+  it("invalidates review confirmation when vehicle data changes", () => {
+    const serviceHistory = {
+      images: [{ image_id: "image-1", readability: 1, notes: null }],
+      events: [],
+      warnings: [],
+    };
+    const confirmedReview = analysisSessionReducer(
+      analysisSessionReducer(
+        createInitialAnalysisSession(),
+        { type: "complete_extraction", serviceHistory },
+      ),
+      { type: "confirm_service_history_review" },
+    );
+    const vehicleConfirmed = analysisSessionReducer(confirmedReview, {
+      type: "confirm_vehicle",
+      vehicle: confirmedVehicle,
+    });
+    const vehicleEdited = analysisSessionReducer(vehicleConfirmed, {
+      type: "update_vehicle_field",
+      field: "currentOdometerKm",
+      value: "185000",
+    });
+
+    expect(vehicleConfirmed.serviceHistoryReviewConfirmed).toBe(false);
+    expect(vehicleEdited.serviceHistoryReviewConfirmed).toBe(false);
   });
 });

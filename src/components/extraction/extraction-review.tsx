@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useAnalysisSession } from "@/components/session/analysis-session-provider";
 import {
@@ -12,9 +12,23 @@ import {
 } from "@/domain/extraction/event-review";
 import {
   componentCodeSchema,
+  type ComponentCode,
   type ServiceAction,
   type ServiceEvent,
 } from "@/domain/schemas/service-history";
+import {
+  COMPONENT_TAXONOMY,
+  getComponentLabel,
+  resolveActionComponentCode,
+} from "@/domain/service-events/component-taxonomy";
+import {
+  normalizeOdometer,
+  normalizeServiceDate,
+} from "@/domain/service-events/normalization";
+import {
+  analyzeServiceEvents,
+  type ReviewIssue,
+} from "@/domain/service-events/review-analysis";
 
 const actionTypes = [
   "replaced",
@@ -47,12 +61,39 @@ const precisionLabels: Record<(typeof precisionOptions)[number], string> = {
 export function ExtractionReview() {
   const {
     state,
+    confirmServiceHistoryReview,
     replaceServiceHistory,
     updateServiceEvent,
   } = useAnalysisSession();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [mergeSelection, setMergeSelection] = useState<Set<string>>(new Set());
+  const [warningAcknowledgement, setWarningAcknowledgement] = useState<{
+    history: NonNullable<typeof state.serviceHistory>;
+    currentOdometerKm: number | undefined;
+    warningSignature: string;
+  } | null>(null);
   const history = state.serviceHistory;
+  const reviewAnalysis = useMemo(
+    () =>
+      history === null
+        ? { errors: [], warnings: [] }
+        : analyzeServiceEvents(history.events, {
+            currentOdometerKm: state.confirmedVehicle?.currentOdometerKm,
+          }),
+    [history, state.confirmedVehicle?.currentOdometerKm],
+  );
+  const warningSignature = [
+    ...reviewAnalysis.warnings.map((warning) => warning.id),
+    ...(history?.warnings.map(
+      (warning, index) => `provider:${index}:${warning}`,
+    ) ?? []),
+  ].join("\u0000");
+  const warningsAcknowledged =
+    history !== null &&
+    warningAcknowledgement?.history === history &&
+    warningAcknowledgement.currentOdometerKm ===
+      state.confirmedVehicle?.currentOdometerKm &&
+    warningAcknowledgement.warningSignature === warningSignature;
 
   if (state.extractionStatus === "idle" && history === null) {
     return (
@@ -60,9 +101,9 @@ export function ExtractionReview() {
         className="extractionSection"
         aria-labelledby="extraction-review-heading"
       >
-        <p className="sectionLabel">Vaihe 3 / Poiminnan tarkistus</p>
+        <p className="sectionLabel">Vaihe 4 / Normalisointi ja vahvistus</p>
         <h2 id="extraction-review-heading">
-          Poimitut huoltotapahtumat näkyvät tässä.
+          Poimitut huoltotapahtumat normalisoidaan tässä.
         </h2>
         <div className="emptyExtractionState">
           <span aria-hidden="true">03</span>
@@ -81,7 +122,7 @@ export function ExtractionReview() {
         className="extractionSection"
         aria-labelledby="extraction-review-heading"
       >
-        <p className="sectionLabel">Vaihe 3 / Poiminnan tarkistus</p>
+        <p className="sectionLabel">Vaihe 4 / Normalisointi ja vahvistus</p>
         <h2 id="extraction-review-heading">Kuvia käsitellään OpenAI:lla…</h2>
         <div className="extractionProgress" role="status" aria-live="polite">
           <span aria-hidden="true" />
@@ -104,7 +145,7 @@ export function ExtractionReview() {
         className="extractionSection"
         aria-labelledby="extraction-review-heading"
       >
-        <p className="sectionLabel">Vaihe 3 / Poiminnan tarkistus</p>
+        <p className="sectionLabel">Vaihe 4 / Normalisointi ja vahvistus</p>
         <h2 id="extraction-review-heading">Poiminta ei onnistunut.</h2>
         <div className="extractionError" role="alert">
           <strong>Kuvat säilyvät selaimen muistissa.</strong>
@@ -163,9 +204,9 @@ export function ExtractionReview() {
     >
       <div className="extractionHeading">
         <div>
-          <p className="sectionLabel">Vaihe 3 / Poiminnan tarkistus</p>
+          <p className="sectionLabel">Vaihe 4 / Normalisointi ja vahvistus</p>
           <h2 id="extraction-review-heading">
-            Tarkista jokainen kuvista poimittu tapahtuma.
+            Tarkista, normalisoi ja vahvista huoltohistoria.
           </h2>
         </div>
         <div className="extractionSummary">
@@ -188,6 +229,11 @@ export function ExtractionReview() {
           </ul>
         </div>
       ) : null}
+
+      <ReviewDiagnostics
+        errors={reviewAnalysis.errors}
+        warnings={reviewAnalysis.warnings}
+      />
 
       <div className="reviewActions">
         <button className="primaryButton" type="button" onClick={addManualEvent}>
@@ -258,14 +304,20 @@ export function ExtractionReview() {
                   </td>
                   <td>{event.service_date?.value || "Ei tiedossa"}</td>
                   <td>
-                    {event.odometer
-                      ? `${event.odometer.value.toLocaleString("fi-FI")} ${event.odometer.unit}`
-                      : "Ei tiedossa"}
+                    <OdometerSummary event={event} />
                   </td>
                   <td>
                     {event.actions.length > 0
                       ? event.actions
-                          .map((action) => action.description)
+                          .map(
+                            (action) =>
+                              `${getComponentLabel(
+                                resolveActionComponentCode(
+                                  action,
+                                  event.raw_evidence,
+                                ),
+                              )}: ${action.description}`,
+                          )
                           .join(", ")
                       : "Ei tunnistettu"}
                   </td>
@@ -302,7 +354,103 @@ export function ExtractionReview() {
           onChange={updateServiceEvent}
         />
       ) : null}
+
+      <ReviewConfirmation
+        confirmed={state.serviceHistoryReviewConfirmed}
+        errors={reviewAnalysis.errors}
+        warningCount={
+          reviewAnalysis.warnings.length + history.warnings.length
+        }
+        warningsAcknowledged={warningsAcknowledged}
+        onWarningsAcknowledged={(acknowledged) =>
+          setWarningAcknowledgement(
+            acknowledged
+              ? {
+                  history,
+                  currentOdometerKm:
+                    state.confirmedVehicle?.currentOdometerKm,
+                  warningSignature,
+                }
+              : null,
+          )
+        }
+        onConfirm={confirmServiceHistoryReview}
+      />
     </section>
+  );
+}
+
+function ReviewDiagnostics({
+  errors,
+  warnings,
+}: Readonly<{ errors: ReviewIssue[]; warnings: ReviewIssue[] }>) {
+  if (errors.length === 0 && warnings.length === 0) {
+    return (
+      <div className="reviewDiagnostics reviewDiagnosticsClean" role="status">
+        <strong>Ei rakenteellisia ristiriitoja.</strong>
+        <p>
+          Päivämäärät ja mittarilukemat ovat validissa muodossa, eikä
+          mahdollisia kaksoiskappaleita tai aikajärjestyksen ristiriitoja
+          löytynyt.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="reviewDiagnostics" aria-label="Tarkistuksen havainnot">
+      {errors.length > 0 ? (
+        <div className="reviewIssueGroup reviewIssueErrors" role="alert">
+          <strong>
+            Korjaa ennen vahvistusta ({errors.length})
+          </strong>
+          <ul>
+            {errors.map((issue) => (
+              <li key={issue.id}>{issue.message}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {warnings.length > 0 ? (
+        <div className="reviewIssueGroup reviewIssueWarnings" role="status">
+          <strong>
+            Tarkista ja kuittaa ({warnings.length})
+          </strong>
+          <ul>
+            {warnings.map((issue) => (
+              <li key={issue.id}>{issue.message}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function OdometerSummary({ event }: Readonly<{ event: ServiceEvent }>) {
+  const normalized = normalizeOdometer(event.odometer);
+
+  if (event.odometer === null) {
+    return <>Ei tiedossa</>;
+  }
+
+  return (
+    <span className="odometerSummary">
+      <span>
+        {event.odometer.value.toLocaleString("fi-FI")} {event.odometer.unit}
+      </span>
+      {normalized.status === "valid" &&
+      normalized.kilometres !== null &&
+      event.odometer.unit === "mi" ? (
+        <small>{formatKilometres(normalized.kilometres)} km laskentaan</small>
+      ) : null}
+      {normalized.status === "unverified" ? (
+        <small>Yksikkö tarkistettava</small>
+      ) : null}
+      {normalized.status === "invalid" ? (
+        <small>Virheellinen lukema</small>
+      ) : null}
+    </span>
   );
 }
 
@@ -326,6 +474,63 @@ function ImageReadability({
   );
 }
 
+function NormalizationPreview({ event }: Readonly<{ event: ServiceEvent }>) {
+  const date = normalizeServiceDate(event.service_date);
+  const odometer = normalizeOdometer(event.odometer);
+  const components = event.actions.map((action) => {
+    const resolvedCode = resolveActionComponentCode(
+      action,
+      event.raw_evidence,
+    );
+
+    return {
+      originalCode: action.component_code,
+      resolvedCode,
+      label: getComponentLabel(resolvedCode),
+    };
+  });
+
+  return (
+    <aside className="normalizationPreview" aria-label="Normalisoidut arvot">
+      <strong>Normalisoidut arvot laskentaa varten</strong>
+      <dl>
+        <div>
+          <dt>Päivämäärä</dt>
+          <dd>{normalizedDateDescription(date)}</dd>
+        </div>
+        <div>
+          <dt>Matkamittari</dt>
+          <dd>
+            {odometer.kilometres === null
+              ? odometer.status === "missing"
+                ? "Ei tiedossa"
+                : "Ei käytetä ennen yksikön tai arvon korjausta"
+              : `${formatKilometres(odometer.kilometres)} km`}
+          </dd>
+        </div>
+        <div>
+          <dt>Komponentit</dt>
+          <dd>
+            {components.length === 0
+              ? "Ei tunnistettua komponenttia"
+              : components
+                  .map(({ label, originalCode, resolvedCode }) =>
+                    originalCode === resolvedCode
+                      ? label
+                      : `${label} (tekstiehdotus)`,
+                  )
+                  .join(", ")}
+          </dd>
+        </div>
+      </dl>
+      <p>
+        Alkuperäinen näyttö, lukema ja yksikkö säilyvät tapahtumassa.
+        Muunnos ei muuta lähdearvoa.
+      </p>
+    </aside>
+  );
+}
+
 function EventEditor({
   event,
   availableImageIds,
@@ -344,6 +549,8 @@ function EventEditor({
     );
     patchEvent({ actions });
   };
+  const normalizedDate = normalizeServiceDate(event.service_date);
+  const normalizedOdometer = normalizeOdometer(event.odometer);
 
   return (
     <div className="eventEditor" aria-labelledby="event-editor-heading">
@@ -355,7 +562,7 @@ function EventEditor({
         <ConfidenceBadge value={event.confidence} label="Kokonaisluottamus" />
       </div>
 
-      <div className="eventEditorGrid">
+      <div className="evidenceComparison">
         <label className="wideEditorField">
           <span>Raaka kuvasta luettu näyttö</span>
           <textarea
@@ -366,25 +573,47 @@ function EventEditor({
             }
           />
         </label>
+        <NormalizationPreview event={event} />
+      </div>
 
+      <div className="eventEditorGrid">
         <label>
           <span>Päivämäärä</span>
           <input
             value={event.service_date?.value ?? ""}
             placeholder="VVVV-KK-PP tai osittainen arvo"
+            aria-invalid={
+              normalizedDate.status === "invalid" ? "true" : undefined
+            }
+            aria-describedby={
+              normalizedDate.status === "invalid"
+                ? "service-date-validation-error"
+                : undefined
+            }
             onChange={(changeEvent) =>
               patchEvent({
                 service_date:
-                  changeEvent.target.value === ""
-                    ? null
-                    : {
-                        value: changeEvent.target.value,
-                        precision: event.service_date?.precision ?? "unknown",
-                        confidence: event.service_date?.confidence ?? 0.5,
-                      },
+                  {
+                    value: changeEvent.target.value,
+                    precision: event.service_date?.precision ?? "unknown",
+                    confidence: event.service_date?.confidence ?? 0.5,
+                  },
               })
             }
+            onBlur={(blurEvent) => {
+              if (blurEvent.target.value === "") {
+                patchEvent({ service_date: null });
+              }
+            }}
           />
+          {normalizedDate.status === "invalid" ? (
+            <span
+              className="fieldError"
+              id="service-date-validation-error"
+            >
+              Päivämäärän muoto ei vastaa valittua tarkkuutta.
+            </span>
+          ) : null}
         </label>
 
         <label>
@@ -413,25 +642,79 @@ function EventEditor({
         </label>
 
         <label>
+          <span>Päivämäärän luottamus 0–1</span>
+          <input
+            type="number"
+            min="0"
+            max="1"
+            step="0.01"
+            value={event.service_date?.confidence ?? ""}
+            disabled={event.service_date === null}
+            onChange={(changeEvent) => {
+              if (event.service_date !== null) {
+                patchEvent({
+                  service_date: {
+                    ...event.service_date,
+                    confidence: clampConfidence(
+                      Number(changeEvent.target.value),
+                    ),
+                  },
+                });
+              }
+            }}
+          />
+        </label>
+
+        <label>
           <span>Matkamittarilukema</span>
           <input
             type="number"
             min="0"
             step="1"
-            value={event.odometer?.value ?? ""}
+            value={
+              event.odometer === null ||
+              Number.isNaN(event.odometer.value)
+                ? ""
+                : event.odometer.value
+            }
+            aria-invalid={
+              normalizedOdometer.status === "invalid" ? "true" : undefined
+            }
+            aria-describedby={
+              normalizedOdometer.status === "invalid"
+                ? "odometer-validation-error"
+                : undefined
+            }
             onChange={(changeEvent) =>
               patchEvent({
                 odometer:
                   changeEvent.target.value === ""
-                    ? null
+                    ? {
+                        value: Number.NaN,
+                        unit: event.odometer?.unit ?? "unknown",
+                        confidence: event.odometer?.confidence ?? 0.5,
+                      }
                     : {
-                        value: Math.max(0, Number(changeEvent.target.value)),
+                        value: Number(changeEvent.target.value),
                         unit: event.odometer?.unit ?? "unknown",
                         confidence: event.odometer?.confidence ?? 0.5,
                       },
               })
             }
+            onBlur={() => {
+              if (
+                event.odometer !== null &&
+                Number.isNaN(event.odometer.value)
+              ) {
+                patchEvent({ odometer: null });
+              }
+            }}
           />
+          {normalizedOdometer.status === "invalid" ? (
+            <span className="fieldError" id="odometer-validation-error">
+              Anna nolla tai positiivinen kokonaisluku.
+            </span>
+          ) : null}
         </label>
 
         <label>
@@ -457,6 +740,30 @@ function EventEditor({
               </option>
             ))}
           </select>
+        </label>
+
+        <label>
+          <span>Mittarilukeman luottamus 0–1</span>
+          <input
+            type="number"
+            min="0"
+            max="1"
+            step="0.01"
+            value={event.odometer?.confidence ?? ""}
+            disabled={event.odometer === null}
+            onChange={(changeEvent) => {
+              if (event.odometer !== null) {
+                patchEvent({
+                  odometer: {
+                    ...event.odometer,
+                    confidence: clampConfidence(
+                      Number(changeEvent.target.value),
+                    ),
+                  },
+                });
+              }
+            }}
+          />
         </label>
 
         <label>
@@ -492,6 +799,22 @@ function EventEditor({
             rows={2}
             onChange={(changeEvent) =>
               patchEvent({ notes: changeEvent.target.value || null })
+            }
+          />
+        </label>
+
+        <label className="wideEditorField">
+          <span>Epäselvyydet, yksi rivi kutakin huomiota kohti</span>
+          <textarea
+            value={event.ambiguities.join("\n")}
+            rows={2}
+            onChange={(changeEvent) =>
+              patchEvent({
+                ambiguities: changeEvent.target.value
+                  .split("\n")
+                  .map((value) => value.trim())
+                  .filter(Boolean),
+              })
             }
           />
         </label>
@@ -544,17 +867,18 @@ function EventEditor({
               <select
                 value={action.component_code}
                 onChange={(changeEvent) =>
-                  updateAction(index, {
-                    ...action,
-                    component_code: componentCodeSchema.parse(
-                      changeEvent.target.value,
+                  updateAction(
+                    index,
+                    updateActionComponent(
+                      action,
+                      componentCodeSchema.parse(changeEvent.target.value),
                     ),
-                  })
+                  )
                 }
               >
-                {componentCodeSchema.options.map((componentCode) => (
-                  <option key={componentCode} value={componentCode}>
-                    {componentCode}
+                {COMPONENT_TAXONOMY.map((component) => (
+                  <option key={component.code} value={component.code}>
+                    {component.label} ({component.code})
                   </option>
                 ))}
               </select>
@@ -633,9 +957,127 @@ function EventEditor({
             >
               Poista toimenpide
             </button>
+            <ComponentMappingSuggestion
+              action={action}
+              rawEvidence={event.raw_evidence}
+              onApply={(componentCode) =>
+                updateAction(
+                  index,
+                  updateActionComponent(action, componentCode),
+                )
+              }
+            />
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function ComponentMappingSuggestion({
+  action,
+  rawEvidence,
+  onApply,
+}: Readonly<{
+  action: ServiceAction;
+  rawEvidence: string;
+  onApply: (componentCode: ComponentCode) => void;
+}>) {
+  const suggestion = resolveActionComponentCode(action, rawEvidence);
+
+  if (
+    suggestion === "other" ||
+    suggestion === action.component_code
+  ) {
+    return null;
+  }
+
+  const label = getComponentLabel(suggestion);
+
+  return (
+    <div className="componentSuggestion">
+      <span>Teksti vastaa komponenttia: {label}</span>
+      <button type="button" onClick={() => onApply(suggestion)}>
+        Käytä ehdotusta {label}
+      </button>
+    </div>
+  );
+}
+
+function ReviewConfirmation({
+  confirmed,
+  errors,
+  warningCount,
+  warningsAcknowledged,
+  onWarningsAcknowledged,
+  onConfirm,
+}: Readonly<{
+  confirmed: boolean;
+  errors: ReviewIssue[];
+  warningCount: number;
+  warningsAcknowledged: boolean;
+  onWarningsAcknowledged: (acknowledged: boolean) => void;
+  onConfirm: () => void;
+}>) {
+  const needsAcknowledgement = warningCount > 0;
+  const blocked =
+    errors.length > 0 ||
+    (needsAcknowledgement && !warningsAcknowledged);
+
+  return (
+    <div
+      className={`reviewConfirmation ${
+        confirmed ? "reviewConfirmationConfirmed" : ""
+      }`}
+      aria-labelledby="review-confirmation-heading"
+    >
+      <div>
+        <p className="sectionLabel">Käyttäjän vahvistus</p>
+        <h3 id="review-confirmation-heading">
+          {confirmed
+            ? "Huoltohistoria on vahvistettu."
+            : "Vahvista tiedot ennen seuraavaa vaihetta."}
+        </h3>
+        <p>
+          Vahvistus koskee vain tämän välilehden muistissa olevaa,
+          tarkistettua huoltohistoriaa. Muokkaus poistaa vahvistuksen
+          automaattisesti.
+        </p>
+      </div>
+
+      {needsAcknowledgement ? (
+        <label className="warningAcknowledgement">
+          <input
+            type="checkbox"
+            checked={warningsAcknowledged}
+            disabled={confirmed}
+            onChange={(event) =>
+              onWarningsAcknowledged(event.target.checked)
+            }
+          />
+          Olen tarkistanut {warningCount}{" "}
+          {warningCount === 1 ? "varoituksen" : "varoitusta"} ja hyväksyn
+          epävarmuuksien säilyttämisen.
+        </label>
+      ) : null}
+
+      <button
+        className="primaryButton"
+        type="button"
+        disabled={confirmed || blocked}
+        onClick={onConfirm}
+      >
+        {confirmed
+          ? "Huoltohistoria vahvistettu"
+          : "Vahvista tarkistettu huoltohistoria"}
+      </button>
+
+      {errors.length > 0 ? (
+        <p className="confirmationBlocker" role="alert">
+          Korjaa {errors.length}{" "}
+          {errors.length === 1 ? "virhe" : "virhettä"} ennen vahvistusta.
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -661,4 +1103,43 @@ function clampConfidence(value: number): number {
     return 0;
   }
   return Math.min(1, Math.max(0, value));
+}
+
+function updateActionComponent(
+  action: ServiceAction,
+  componentCode: ComponentCode,
+): ServiceAction {
+  const currentTaxonomyLabel = getComponentLabel(action.component_code);
+  const shouldUpdateLabel =
+    action.component_label.trim() === "" ||
+    action.component_label === currentTaxonomyLabel;
+
+  return {
+    ...action,
+    component_code: componentCode,
+    component_label: shouldUpdateLabel
+      ? getComponentLabel(componentCode)
+      : action.component_label,
+  };
+}
+
+function normalizedDateDescription(
+  date: ReturnType<typeof normalizeServiceDate>,
+): string {
+  switch (date.status) {
+    case "missing":
+      return "Ei tiedossa";
+    case "valid":
+      return date.value ?? "Ei tiedossa";
+    case "unverified":
+      return `${date.value ?? "Ei tiedossa"} (tarkkuus epäselvä)`;
+    case "invalid":
+      return "Virheellinen päivämäärä";
+  }
+}
+
+function formatKilometres(value: number): string {
+  return new Intl.NumberFormat("fi-FI", {
+    maximumFractionDigits: 6,
+  }).format(value);
 }

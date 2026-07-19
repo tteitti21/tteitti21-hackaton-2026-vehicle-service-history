@@ -113,6 +113,126 @@ describe("ExtractionReview", () => {
       "Turvallinen virheilmoitus",
     );
   });
+
+  it("shows exact mile normalization and applies a taxonomy suggestion", async () => {
+    const user = userEvent.setup();
+    const mileHistory = structuredClone(history);
+    mileHistory.warnings = [];
+    mileHistory.events[0].odometer = {
+      value: 100,
+      unit: "mi",
+      confidence: 0.91,
+    };
+    mileHistory.events[0].actions[0] = {
+      ...mileHistory.events[0].actions[0],
+      component_code: "other",
+      component_label: "ATF",
+      description: "ATF vaihdettu",
+    };
+
+    render(
+      <AnalysisSessionProvider>
+        <SessionControls history={mileHistory} />
+        <ExtractionReview />
+      </AnalysisSessionProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Lataa tulos" }));
+
+    expect(
+      within(screen.getByRole("complementary", { name: "Normalisoidut arvot" }))
+        .getByText("160,9344 km"),
+    ).toBeVisible();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Käytä ehdotusta Vaihteistoöljy",
+      }),
+    );
+
+    expect(screen.getByLabelText("Komponentti")).toHaveValue(
+      "transmission_fluid",
+    );
+  });
+
+  it("blocks confirmation for invalid values and invalidates confirmation after an edit", async () => {
+    const user = userEvent.setup();
+    render(
+      <AnalysisSessionProvider>
+        <SessionControls history={{ ...history, warnings: [] }} />
+        <ExtractionReview />
+      </AnalysisSessionProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Lataa tulos" }));
+
+    const dateInput = screen.getByLabelText("Päivämäärä");
+    await user.clear(dateInput);
+    await user.type(dateInput, "2024-02-31");
+
+    expect(dateInput).toHaveAttribute("aria-invalid", "true");
+    expect(
+      screen.getByRole("button", {
+        name: "Vahvista tarkistettu huoltohistoria",
+      }),
+    ).toBeDisabled();
+
+    await user.clear(dateInput);
+    await user.type(dateInput, "2024-02-29");
+    await user.click(
+      screen.getByRole("button", {
+        name: "Vahvista tarkistettu huoltohistoria",
+      }),
+    );
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Huoltohistoria on vahvistettu.",
+      }),
+    ).toBeVisible();
+
+    await user.type(screen.getByLabelText("Muistiinpanot"), "Tarkistettu");
+
+    expect(
+      screen.getByRole("button", {
+        name: "Vahvista tarkistettu huoltohistoria",
+      }),
+    ).toBeEnabled();
+  });
+
+  it("requires chronology and duplicate warnings to be acknowledged", async () => {
+    const user = userEvent.setup();
+    const duplicateHistory = structuredClone(history);
+    duplicateHistory.warnings = [];
+    duplicateHistory.events.push({
+      ...structuredClone(duplicateHistory.events[0]),
+      event_id: "event-2",
+      source_image_ids: ["synthetic-image-1"],
+    });
+
+    render(
+      <AnalysisSessionProvider>
+        <SessionControls history={duplicateHistory} />
+        <ExtractionReview />
+      </AnalysisSessionProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Lataa tulos" }));
+
+    expect(screen.getByText(/voivat kuvata samaa huoltokäyntiä/)).toBeVisible();
+    const confirmButton = screen.getByRole("button", {
+      name: "Vahvista tarkistettu huoltohistoria",
+    });
+    expect(confirmButton).toBeDisabled();
+
+    await user.click(
+      screen.getByRole("checkbox", {
+        name: /Olen tarkistanut 1 varoituksen/,
+      }),
+    );
+
+    expect(confirmButton).toBeEnabled();
+  });
 });
 
 function SessionControls({ history: result }: Readonly<{ history: ServiceHistory }>) {
