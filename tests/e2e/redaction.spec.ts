@@ -472,6 +472,18 @@ test("requires explicit candidate selection and preserves research sources", asy
   await expect(
     page.getByRole("link", { name: "Toyota maintenance schedule" }),
   ).toHaveAttribute("href", "https://toyota.example/maintenance");
+  const calculatedStatus = page.locator(".componentStatusCard").filter({
+    hasText: "Moottoriöljy",
+  });
+  await expect(calculatedStatus.getByText("Epäselvä")).toBeVisible();
+  await expect(
+    calculatedStatus.getByText(
+      "Huoltohistoriasta ei löytynyt merkintää.",
+    ),
+  ).toBeVisible();
+  await expect(
+    calculatedStatus.getByText("Sovelluskoodin laskema"),
+  ).toBeVisible();
   expect(submittedResearch).toMatchObject({
     current_odometer_km: 184000,
     country: "FI",

@@ -12,11 +12,34 @@
     "distance_used_km",
     "distance_remaining_km",
     "months_used",
-    "months_remaining"
+    "months_remaining",
+    "due_odometer_km",
+    "due_date"
   ],
   "properties": {
     "component_code": {
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "engine_oil",
+        "oil_filter",
+        "air_filter",
+        "cabin_filter",
+        "fuel_filter",
+        "spark_plugs",
+        "timing_belt",
+        "timing_chain",
+        "water_pump",
+        "transmission_fluid",
+        "transmission_filter",
+        "brake_fluid",
+        "coolant",
+        "brakes",
+        "suspension",
+        "battery",
+        "tires",
+        "inspection",
+        "other"
+      ]
     },
     "status": {
       "type": "string",
@@ -32,27 +55,59 @@
     },
     "reason_codes": {
       "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "source_conflict",
+          "insufficient_source_evidence",
+          "interval_claim_missing",
+          "no_service_history_entry",
+          "no_qualifying_service_event",
+          "inspection_only",
+          "low_confidence_service_event",
+          "ambiguous_last_service",
+          "future_service_date",
+          "service_odometer_above_current",
+          "odometer_chronology_conflict",
+          "missing_service_date",
+          "imprecise_service_date",
+          "invalid_service_date",
+          "unverified_service_date",
+          "missing_service_odometer",
+          "invalid_service_odometer",
+          "unverified_service_odometer",
+          "distance_overdue",
+          "time_overdue",
+          "distance_due",
+          "time_due",
+          "distance_due_soon",
+          "time_due_soon",
+          "within_interval"
+        ]
       }
     },
     "last_service_event_id": {
       "type": [
         "string",
         "null"
-      ]
+      ],
+      "minLength": 1
     },
     "interval_claim_id": {
       "type": [
         "string",
         "null"
-      ]
+      ],
+      "pattern": "^claim-[1-9]\\d*$"
     },
     "distance_used_km": {
       "type": [
         "integer",
         "null"
-      ]
+      ],
+      "minimum": 0
     },
     "distance_remaining_km": {
       "type": [
@@ -64,13 +119,28 @@
       "type": [
         "integer",
         "null"
-      ]
+      ],
+      "minimum": 0
     },
     "months_remaining": {
       "type": [
         "integer",
         "null"
       ]
+    },
+    "due_odometer_km": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "due_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
     }
   }
 }

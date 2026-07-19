@@ -103,6 +103,8 @@ const validComponentStatus = {
   distance_remaining_km: 10_000,
   months_used: 4,
   months_remaining: 8,
+  due_odometer_km: 135_000,
+  due_date: "2027-03-12",
 };
 
 describe("serviceHistorySchema", () => {
@@ -222,6 +224,21 @@ describe("componentStatusSchema", () => {
       componentStatusSchema.safeParse({
         ...validComponentStatus,
         status: "probably_ok",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects invented reason codes and malformed projections", () => {
+    expect(
+      componentStatusSchema.safeParse({
+        ...validComponentStatus,
+        reason_codes: ["model_says_probably_due"],
+      }).success,
+    ).toBe(false);
+    expect(
+      componentStatusSchema.safeParse({
+        ...validComponentStatus,
+        due_date: "next spring",
       }).success,
     ).toBe(false);
   });

@@ -40,7 +40,7 @@ Tekninen spesifikaatio on englanniksi, koska se on Codexille ja lähdekoodin tuo
 
 ## Nykyinen toteutusvaihe
 
-Phase 6 sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
+Phase 7 sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
 kuvan peittämisen ja tilattoman `/api/extract`-rajapinnan. Käyttäjän
 erikseen hyväksymät uudet PNG-kuvat lähetetään pyyntökohtaisena kuvasisältönä
 OpenAI Responses API:lle. `store: false`, palvelinpuolinen API-avain,
@@ -113,7 +113,20 @@ Tutkimusmallille ei lähetetä kuvia, huoltohistorian sisältöä tai
 matkamittarilukemaa. Tutkimuksen muistio, lähteet ja tulos ovat pyyntökohtaisia
 ja säilyvät käyttöliittymässä vain nykyisen välilehden React-muistissa.
 
-Huoltojen tilalaskenta ja vientitoiminnot eivät ole vielä toteutettuja.
+Huoltovälitutkimuksen jälkeen komponenttien tilat lasketaan puhtailla
+TypeScript-funktioilla selaimessa. Tekoälyltä saatua tekstiä ei tulkita tilaksi.
+Laskenta valitsee viimeisimmän riittävän luotettavan vaihto- tai
+huoltomerkinnän, torjuu tulevaisuuden päivämäärät ja mahdottoman
+mittarijärjestyksen sekä käyttää lähdekonfliktin ja riittämättömän näytön
+tiloja ennen numeerista laskentaa.
+
+Kilometri- ja kuukausirajat käyttävät konfiguroitavia välittömän tarpeen,
+varoituksen ja ylitystoleranssin kynnyksiä. Kun tiedot riittävät, tulos sisältää
+käytetyn ja jäljellä olevan matkan/ajan sekä arvioidun erääntymislukeman ja
+-päivän. Jos huoltomerkintää ei löydy, käyttöliittymä kertoo
+“Huoltohistoriasta ei löytynyt merkintää” eikä väitä, ettei huoltoa ole tehty.
+
+Vientitoiminnot eivät ole vielä toteutettuja.
 
 ## Paikallinen kehitys
 

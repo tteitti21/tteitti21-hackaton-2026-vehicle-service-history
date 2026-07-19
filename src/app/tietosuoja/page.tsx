@@ -68,6 +68,12 @@ export default function PrivacyPage() {
           pyyntökohtaisesti, eikä niitä tallenneta sovelluksen omaan
           tietokantaan tai tiedostovarastoon.
         </p>
+        <p>
+          Komponenttien huoltotilat, jäljellä olevat rajat ja
+          erääntymisarviot lasketaan tämän jälkeen selaimessa
+          sovelluskoodilla. Tilalaskenta ei lähetä uutta pyyntöä
+          palveluntarjoajalle eikä tallenna tulosta pysyvästi.
+        </p>
       </section>
 
       <section aria-labelledby="protections-heading">

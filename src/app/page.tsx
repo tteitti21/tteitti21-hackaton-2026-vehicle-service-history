@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ExtractionReview } from "@/components/extraction/extraction-review";
 import { MaintenanceResearchPanel } from "@/components/research/maintenance-research";
+import { ComponentStatusSummaryPanel } from "@/components/status/component-status-summary";
 import { ImageRedactionWorkspace } from "@/components/upload/image-redaction-workspace";
 import { VehicleForm } from "@/components/vehicle/vehicle-form";
 import { VehicleResolutionPanel } from "@/components/vehicle/vehicle-resolution";
@@ -53,7 +54,7 @@ export default function Home() {
         <div className="phaseNotice" role="status">
           <span className="statusDot" aria-hidden="true" />
           <div>
-            <strong>Vaihe 6 käytössä</strong>
+            <strong>Vaihe 7 käytössä</strong>
             <p>
               Voit vahvistaa ajoneuvon tiedot sekä muokata ja peittää kuvat
               paikallisesti. Hyväksytyistä lähetysversioista voi poimia
@@ -63,6 +64,8 @@ export default function Home() {
               oikean vaihtoehdon itse. Vahvistetulle versiolle voi tehdä
               kaksivaiheisen huoltovälitutkimuksen, joka näyttää lähteet,
               ristiriidat ja riittämättömän näytön arvaamatta puuttuvia välejä.
+              Tutkimuksen jälkeen sovelluskoodi laskee komponenttien tilat,
+              jäljellä olevat rajat ja erääntymisarviot deterministisesti.
             </p>
           </div>
         </div>
@@ -81,6 +84,8 @@ export default function Home() {
       <VehicleResolutionPanel />
 
       <MaintenanceResearchPanel />
+
+      <ComponentStatusSummaryPanel />
 
       <section className="privacyBand" aria-labelledby="privacy-heading">
         <div>
