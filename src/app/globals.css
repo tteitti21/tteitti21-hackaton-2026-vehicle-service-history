@@ -65,6 +65,7 @@ textarea:focus-visible,
 main > section,
 .privacyPage {
   width: min(1180px, calc(100% - 2rem));
+  max-width: calc(100vw - 2rem);
   margin-inline: auto;
 }
 
