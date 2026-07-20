@@ -182,6 +182,9 @@ test("disables response caching and content sniffing", async ({ request }) => {
   expect(response.headers()["content-security-policy"]).toContain(
     "connect-src 'self' blob:",
   );
+  expect(response.headers()["content-security-policy"]).not.toContain(
+    "'unsafe-eval'",
+  );
   expect(response.headers()["permissions-policy"]).toContain("camera=()");
   expect(response.headers()["cross-origin-opener-policy"]).toBe("same-origin");
   expect(response.headers()["strict-transport-security"]).toContain(

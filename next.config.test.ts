@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { applicationHeaders } from "./next.config";
+import {
+  applicationHeaders,
+  createApplicationHeaders,
+} from "./next.config";
+
+function mapHeaders(headers: Array<{ key: string; value: string }>) {
+  return new Map(headers.map(({ key, value }) => [key.toLowerCase(), value]));
+}
 
 describe("application response headers", () => {
-  const headers = new Map(
-    applicationHeaders.map(({ key, value }) => [key.toLowerCase(), value]),
-  );
+  const headers = mapHeaders(applicationHeaders);
 
   it("prevents persistence, framing, sniffing, and referrer leakage", () => {
     expect(headers.get("cache-control")).toContain("no-store");
@@ -29,5 +34,21 @@ describe("application response headers", () => {
     expect(policy).toContain("connect-src 'self' blob:");
     expect(policy).toContain("img-src 'self' blob: data:");
     expect(policy).toContain("object-src 'none'");
+  });
+
+  it("allows React evaluation only for the development server", () => {
+    const developmentPolicy = mapHeaders(
+      createApplicationHeaders("development"),
+    ).get("content-security-policy");
+    const productionPolicy = mapHeaders(
+      createApplicationHeaders("production"),
+    ).get("content-security-policy");
+    const testPolicy = mapHeaders(createApplicationHeaders("test")).get(
+      "content-security-policy",
+    );
+
+    expect(developmentPolicy).toContain("'unsafe-eval'");
+    expect(productionPolicy).not.toContain("'unsafe-eval'");
+    expect(testPolicy).not.toContain("'unsafe-eval'");
   });
 });
