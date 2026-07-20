@@ -317,11 +317,33 @@ The demo uses reserved `.invalid` source domains. They are deliberately
 non-resolving citations and must not be represented as real manufacturer
 pages.
 
-To demonstrate upload and redaction, use only generated fictional images in a
-test or non-production environment. Cover the synthetic identifiers, create
-the exact submission preview, confirm it, and submit only if exercising the
-live API is intentional. Never use a real registration, VIN, name, address,
-invoice, or workshop customer record for a smoke test.
+To demonstrate upload and redaction, use the identifier-free samples in
+[`maintenance-image-samples/`](maintenance-image-samples/) or generated
+fictional images in a test or non-production environment. Create the exact
+submission preview, review it, and submit only if exercising the live API is
+intentional. Never use a real registration, VIN, name, address, invoice, or
+workshop customer record for a smoke test.
+
+### Maintenance image samples
+
+The root-level `maintenance-image-samples/` directory is intentionally easy to
+reach from the browser file picker:
+
+| File | Demonstration content |
+|---|---|
+| [`maintenance-demo-1.png`](maintenance-image-samples/maintenance-demo-1.png) | An anonymized maintenance table with dates, kilometre readings, and Finnish service descriptions from 2015–2020. |
+| [`maintenance-demo-2.png`](maintenance-image-samples/maintenance-demo-2.png) | The continuation of the anonymized table with entries from 2021–2025. |
+
+These PNGs contain no visible name, registration number, VIN, address, or
+customer number, and no embedded text or EXIF metadata. They can be selected
+together to demonstrate multi-image upload, local Canvas editing, sanitized
+preview creation, structured extraction, and event review.
+
+The files do not identify a vehicle variant, so pair them with fictional
+vehicle-form data rather than presenting a guessed make or model as fact. If
+the sanitized previews are submitted, they are transmitted to OpenAI and the
+configured provider-retention policies and API costs apply. The no-network
+**Load synthetic demo** workflow above remains the safest general smoke test.
 
 ## Synthetic sample data and fixtures
 
@@ -349,8 +371,9 @@ intervals, an interval originally expressed in miles, and insufficient
 evidence for engine coolant. This deliberately exercises uncertainty instead
 of presenting a perfectly complete history.
 
-The repository does not store real or reusable personal document images.
-Playwright creates synthetic PNGs in browser memory:
+The root-level PNGs are anonymized demonstration inputs, not application
+fixtures containing personal data. Playwright separately creates fully
+synthetic PNGs in browser memory:
 
 - [`tests/e2e/full-workflow.spec.ts`](tests/e2e/full-workflow.spec.ts) generates
   three service-document images and runs the complete mocked workflow;
