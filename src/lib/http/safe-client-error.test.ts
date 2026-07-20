@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { readSafeApiError } from "./safe-client-error";
 
 const messages = {
-  rate_limited: "Odota hetki ja yritä uudelleen.",
-  provider_error: "Palvelupyyntö epäonnistui turvallisesti.",
+  rate_limited: "Wait a moment and try again.",
+  provider_error: "The service request failed safely.",
 } as const;
 
 describe("readSafeApiError", () => {
@@ -18,9 +18,9 @@ describe("readSafeApiError", () => {
           },
         },
         messages,
-        "Pyyntö epäonnistui.",
+        "The request failed.",
       ),
-    ).toBe("Odota hetki ja yritä uudelleen.");
+    ).toBe("Wait a moment and try again.");
   });
 
   it("does not expose unknown or markup-bearing response messages", () => {
@@ -33,8 +33,8 @@ describe("readSafeApiError", () => {
           },
         },
         messages,
-        "Pyyntö epäonnistui.",
+        "The request failed.",
       ),
-    ).toBe("Pyyntö epäonnistui.");
+    ).toBe("The request failed.");
   });
 });

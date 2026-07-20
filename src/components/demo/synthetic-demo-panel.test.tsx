@@ -19,7 +19,7 @@ describe("SyntheticDemoPanel", () => {
     );
 
     await user.click(
-      screen.getByRole("button", { name: "Lataa synteettinen demo" }),
+      screen.getByRole("button", { name: "Load synthetic demo" }),
     );
 
     expect(screen.getByTestId("demo-vehicle")).toHaveTextContent(
@@ -29,9 +29,9 @@ describe("SyntheticDemoPanel", () => {
     expect(screen.getByTestId("demo-candidate")).toHaveTextContent(
       "candidate-1",
     );
-    expect(screen.getByText(/Demo on ladattu/)).toBeVisible();
+    expect(screen.getByText(/The demo is loaded/)).toBeVisible();
 
-    await user.click(screen.getByRole("button", { name: "Tyhjennä demo" }));
+    await user.click(screen.getByRole("button", { name: "Clear demo" }));
     expect(screen.getByTestId("demo-vehicle")).toHaveTextContent("empty");
     expect(screen.getByTestId("demo-images")).toHaveTextContent("0");
   });

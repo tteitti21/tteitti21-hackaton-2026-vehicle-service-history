@@ -17,7 +17,7 @@ export function createReportFilename(
   extension: "json" | "xlsx",
 ): string {
   const vehicle = slugify(`${report.vehicle.make}-${report.vehicle.model}`);
-  return `autohuolto-${vehicle || "ajoneuvo"}-${report.metadata.analysis_date}.${extension}`;
+  return `autohuolto-${vehicle || "vehicle"}-${report.metadata.analysis_date}.${extension}`;
 }
 
 export function downloadBlobLocally(blob: Blob, filename: string): void {

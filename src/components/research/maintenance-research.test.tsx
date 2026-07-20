@@ -25,15 +25,15 @@ describe("MaintenanceResearchPanel", () => {
     renderPanel();
 
     expect(
-      screen.getByText(/Huoltovälitutkimus odottaa vahvistettua versiota/),
+      screen.getByText(/Maintenance interval research is waiting for a confirmed variant/),
     ).toBeVisible();
     expect(
-      screen.queryByRole("button", { name: "Tutki huoltovälit verkosta" }),
+      screen.queryByRole("button", { name: "Research maintenance intervals online" }),
     ).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Valmistele vaihe 6" }));
+    await user.click(screen.getByRole("button", { name: "Prepare Phase 6" }));
     expect(
-      screen.getByRole("button", { name: "Tutki huoltovälit verkosta" }),
+      screen.getByRole("button", { name: "Research maintenance intervals online" }),
     ).toBeEnabled();
   });
 
@@ -47,26 +47,26 @@ describe("MaintenanceResearchPanel", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
     renderPanel();
-    await user.click(screen.getByRole("button", { name: "Valmistele vaihe 6" }));
+    await user.click(screen.getByRole("button", { name: "Prepare Phase 6" }));
     await user.click(
-      screen.getByRole("button", { name: "Tutki huoltovälit verkosta" }),
+      screen.getByRole("button", { name: "Research maintenance intervals online" }),
     );
 
-    expect(await screen.findByText("Lähde löytyi")).toBeVisible();
-    expect(screen.getByText("Lähteissä ristiriita")).toBeVisible();
-    expect(screen.getAllByText("Ei riittävää tietoa")[0]).toBeVisible();
+    expect(await screen.findByText("Source found")).toBeVisible();
+    expect(screen.getByText("Conflicting sources")).toBeVisible();
+    expect(screen.getAllByText("Insufficient evidence")[0]).toBeVisible();
     expect(
-      screen.getByText(/Väliä ei valittu automaattisesti/),
+      screen.getByText(/No interval was selected automatically/),
     ).toBeVisible();
     expect(
-      screen.getAllByText(/Tarkkaa vaihtoväliä ei voitu varmistaa/)[0],
+      screen.getAllByText(/The exact replacement interval could not be verified/)[0],
     ).toBeVisible();
     expect(
       screen.getAllByRole("link", {
         name: "Official maintenance schedule",
       })[0],
     ).toHaveAttribute("href", "https://manufacturer.example/maintenance");
-    expect(screen.getAllByText("Korkea (high)")[0]).toBeVisible();
+    expect(screen.getAllByText("High (high)")[0]).toBeVisible();
 
     const body = JSON.parse(
       vi.mocked(fetchMock).mock.calls[0]?.[1]?.body as string,
@@ -84,7 +84,7 @@ describe("MaintenanceResearchPanel", () => {
         expect.objectContaining({ component_code: "coolant" }),
       ]),
     );
-    expect(JSON.stringify(body)).not.toContain("Akku vaihdettu 2024");
+    expect(JSON.stringify(body)).not.toContain("Battery replaced in 2024");
     expect(JSON.stringify(body)).not.toContain("image-1");
   });
 });
@@ -120,15 +120,15 @@ function SessionControls() {
             {
               event_id: "event-1",
               source_image_ids: ["image-1"],
-              raw_evidence: "Akku vaihdettu 2024",
+              raw_evidence: "Battery replaced in 2024",
               service_date: null,
               odometer: null,
               actions: [
                 {
                   component_code: "battery",
-                  component_label: "Akku",
+                  component_label: "Battery",
                   action_type: "replaced",
-                  description: "Akku vaihdettu",
+                  description: "Battery replaced",
                   confidence: 1,
                 },
               ],
@@ -145,7 +145,7 @@ function SessionControls() {
         confirmVehicleCandidate("candidate-1");
       }}
     >
-      Valmistele vaihe 6
+      Prepare Phase 6
     </button>
   );
 }

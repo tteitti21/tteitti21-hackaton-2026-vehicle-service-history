@@ -5,12 +5,12 @@ import type {
 import type { ComponentCode } from "@/domain/schemas/service-history";
 
 export const SOURCE_AUTHORITY_LABELS: Readonly<Record<number, string>> = {
-  1: "Valmistajan virallinen dokumentaatio",
-  2: "Valmistajan, maahantuojan tai jälleenmyyjän dokumentaatio",
-  3: "Tekninen tietokanta tai korjausopas",
-  4: "Osaluettelo soveltuvuustiedolla",
-  5: "Korjaamon tekninen artikkeli",
-  6: "Heikko täydentävä lähde",
+  1: "Official manufacturer documentation",
+  2: "Manufacturer, importer, or dealer documentation",
+  3: "Technical database or repair guide",
+  4: "Parts catalogue with compatibility information",
+  5: "Workshop technical article",
+  6: "Weak supplementary source",
 };
 
 export type TrustworthinessLevel = "high" | "medium" | "low";
@@ -18,9 +18,9 @@ export type TrustworthinessLevel = "high" | "medium" | "low";
 export const TRUSTWORTHINESS_LABELS_FI: Readonly<
   Record<TrustworthinessLevel, string>
 > = {
-  high: "Korkea",
-  medium: "Keskitaso",
-  low: "Matala",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
 };
 
 export interface TrustworthinessAssessment {
@@ -45,7 +45,7 @@ export function assessSourceTrustworthiness(
     return {
       level: "high",
       note_fi:
-        "Lähde on ensisijainen ja sen yhteensopivuus ajoneuvoversioon on vahva.",
+        "The source is primary and has strong compatibility with the vehicle variant.",
     };
   }
 
@@ -60,14 +60,14 @@ export function assessSourceTrustworthiness(
     return {
       level: "medium",
       note_fi:
-        "Lähde on käyttökelpoinen, mutta lähdetaso tai ajoneuvoyhteensopivuus sisältää epävarmuutta.",
+        "The source is usable, but its source tier or vehicle compatibility contains uncertainty.",
     };
   }
 
   return {
     level: "low",
     note_fi:
-      "Lähdetaso tai ajoneuvoyhteensopivuus ei riitä yksin vahvaan huoltosuositukseen.",
+      "The source tier or vehicle compatibility is not sufficient on its own for a strong maintenance recommendation.",
   };
 }
 
@@ -78,7 +78,7 @@ export function assessComponentTrustworthiness(
     return {
       level: "low",
       note_fi:
-        "Huoltosuosituksen luotettavuus on matala, koska yhteensopivat lähteet ilmoittavat eri huoltovälejä. Jokaisen väitteen oma luotettavuus näytetään lähdetiedoissa.",
+        "The maintenance recommendation has low trustworthiness because compatible sources report different maintenance intervals. Each claim's trustworthiness is shown in the source details.",
     };
   }
 
@@ -86,7 +86,7 @@ export function assessComponentTrustworthiness(
     return {
       level: "low",
       note_fi:
-        "Huoltosuositusta ei voitu varmistaa riittävästä ajoneuvoversioon sopivasta lähdenäytöstä.",
+        "The maintenance recommendation could not be verified from sufficient source evidence compatible with the vehicle variant.",
     };
   }
 
@@ -96,7 +96,7 @@ export function assessComponentTrustworthiness(
   if (claim === undefined) {
     return {
       level: "low",
-      note_fi: "Valittua huoltoväliväitettä ei löytynyt.",
+      note_fi: "The selected maintenance interval claim was not found.",
     };
   }
 
@@ -138,7 +138,7 @@ export function resolveComponentEvidence(
       resolution: "conflicting_sources",
       recommended_claim_id: null,
       conflict_summary:
-        "Parhaan lähdetason kesken on ristiriitaisia huoltovälejä. Väliä ei valittu automaattisesti.",
+        "The best source tier contains conflicting maintenance intervals. No interval was selected automatically.",
     };
   }
 

@@ -44,22 +44,22 @@ const actionTypes = [
 const odometerUnits = ["km", "mi", "unknown"] as const;
 
 const actionTypeLabels: Record<(typeof actionTypes)[number], string> = {
-  replaced: "Vaihdettu",
-  serviced: "Huollettu",
-  repaired: "Korjattu",
-  inspected: "Tarkastettu",
-  adjusted: "Säädetty",
-  unknown: "Epäselvä",
+  replaced: "Replaced",
+  serviced: "Serviced",
+  repaired: "Repaired",
+  inspected: "Inspected",
+  adjusted: "Adjusted",
+  unknown: "Unknown",
 };
 
 const precisionLabels: Record<
   NonNullable<ServiceEvent["service_date"]>["precision"],
   string
 > = {
-  day: "Päivä",
-  month: "Kuukausi",
-  year: "Vuosi",
-  unknown: "Epäselvä",
+  day: "Day",
+  month: "Month",
+  year: "Year",
+  unknown: "Unknown",
 };
 
 export function ExtractionReview() {
@@ -105,15 +105,16 @@ export function ExtractionReview() {
         className="extractionSection"
         aria-labelledby="extraction-review-heading"
       >
-        <p className="sectionLabel">Vaihe 4 / Normalisointi ja vahvistus</p>
+        <p className="sectionLabel">Phase 4 / Normalization and confirmation</p>
         <h2 id="extraction-review-heading">
-          Poimitut huoltotapahtumat normalisoidaan tässä.
+          Extracted service events are normalized here.
         </h2>
         <div className="emptyExtractionState">
           <span aria-hidden="true">03</span>
           <p>
-            Luo ja hyväksy peitetyt lähetysversiot yllä. Poiminta käynnistyy
-            vain erillisestä painikkeesta, eikä tulosta tallenneta pysyvästi.
+            Create and approve the sanitized submission versions above.
+            Extraction starts only from a separate button, and the result is
+            not stored permanently.
           </p>
         </div>
       </section>
@@ -126,16 +127,16 @@ export function ExtractionReview() {
         className="extractionSection"
         aria-labelledby="extraction-review-heading"
       >
-        <p className="sectionLabel">Vaihe 4 / Normalisointi ja vahvistus</p>
-        <h2 id="extraction-review-heading">Kuvia käsitellään OpenAI:lla…</h2>
+        <p className="sectionLabel">Phase 4 / Normalization and confirmation</p>
+        <h2 id="extraction-review-heading">Images are being processed by OpenAI…</h2>
         <div className="extractionProgress" role="status" aria-live="polite">
           <span aria-hidden="true" />
           <div>
-            <strong>Poimitaan näkyvää huoltohistoriaa</strong>
+            <strong>Extracting the visible service history</strong>
             <p>
-              Usean suuren kuvan käsittely voi kestää muutaman minuutin.
-              Selaimen paikalliset kuvat ja lähetysversiot säilyvät muistissa
-              myös virheen aikana.
+              Processing several large images may take a few minutes. Local
+              browser images and submission versions remain in memory even if
+              an error occurs.
             </p>
           </div>
         </div>
@@ -149,12 +150,12 @@ export function ExtractionReview() {
         className="extractionSection"
         aria-labelledby="extraction-review-heading"
       >
-        <p className="sectionLabel">Vaihe 4 / Normalisointi ja vahvistus</p>
-        <h2 id="extraction-review-heading">Poiminta ei onnistunut.</h2>
+        <p className="sectionLabel">Phase 4 / Normalization and confirmation</p>
+        <h2 id="extraction-review-heading">Extraction failed.</h2>
         <div className="extractionError" role="alert">
-          <strong>Kuvat säilyvät selaimen muistissa.</strong>
+          <strong>Images remain in browser memory.</strong>
           <p>{state.extractionError}</p>
-          <p>Voit tarkistaa lähetysversiot ja yrittää uudelleen yllä.</p>
+          <p>You can review the submission versions and try again above.</p>
         </div>
       </section>
     );
@@ -208,15 +209,15 @@ export function ExtractionReview() {
     >
       <div className="extractionHeading">
         <div>
-          <p className="sectionLabel">Vaihe 4 / Normalisointi ja vahvistus</p>
+          <p className="sectionLabel">Phase 4 / Normalization and confirmation</p>
           <h2 id="extraction-review-heading">
-            Tarkista, normalisoi ja vahvista huoltohistoria.
+            Review, normalize, and confirm the service history.
           </h2>
         </div>
         <div className="extractionSummary">
           <strong>{history.events.length}</strong>
           <span>
-            {history.events.length === 1 ? "tapahtuma" : "tapahtumaa"}
+            {history.events.length === 1 ? "event" : "events"}
           </span>
         </div>
       </div>
@@ -225,7 +226,7 @@ export function ExtractionReview() {
 
       {history.warnings.length > 0 ? (
         <div className="extractionWarnings" role="status">
-          <strong>Poiminnan varoitukset</strong>
+          <strong>Extraction warnings</strong>
           <ul>
             {history.warnings.map((warning, index) => (
               <li key={`${index}-${warning}`}>{warning}</li>
@@ -241,7 +242,7 @@ export function ExtractionReview() {
 
       <div className="reviewActions">
         <button className="primaryButton" type="button" onClick={addManualEvent}>
-          Lisää tapahtuma
+          Add event
         </button>
         <button
           className="secondaryButton"
@@ -249,17 +250,16 @@ export function ExtractionReview() {
           disabled={mergeSelection.size < 2}
           onClick={mergeEvents}
         >
-          Yhdistä valitut ({mergeSelection.size})
+          Merge selected ({mergeSelection.size})
         </button>
       </div>
 
       {history.events.length === 0 ? (
         <div className="honestEmptyResult">
-          <strong>Kuvista ei löytynyt varmistettavaa huoltotapahtumaa.</strong>
+          <strong>No verifiable service event was found in the images.</strong>
           <p>
-            Tämä ei tarkoita, ettei huoltoja olisi tehty. Tarkista kuvien
-            luettavuus ja lisää tarvittaessa käyttäjän tiedossa oleva tapahtuma
-            itse.
+            This does not mean no maintenance was performed. Check image
+            readability and manually add an event known to the user if needed.
           </p>
         </div>
       ) : (
@@ -267,15 +267,15 @@ export function ExtractionReview() {
           <table className="reviewTable">
             <thead>
               <tr>
-                <th scope="col">Yhdistä</th>
-                <th scope="col">Tapahtuma</th>
-                <th scope="col">Lähdekuva</th>
-                <th scope="col">Päivä</th>
-                <th scope="col">Mittari</th>
-                <th scope="col">Toimenpiteet</th>
-                <th scope="col">Luottamus</th>
+                <th scope="col">Merge</th>
+                <th scope="col">Event</th>
+                <th scope="col">Source image</th>
+                <th scope="col">Date</th>
+                <th scope="col">Odometer</th>
+                <th scope="col">Actions</th>
+                <th scope="col">Confidence</th>
                 <th scope="col">
-                  <span className="visuallyHidden">Toiminnot</span>
+                  <span className="visuallyHidden">Controls</span>
                 </th>
               </tr>
             </thead>
@@ -296,7 +296,7 @@ export function ExtractionReview() {
                     <td>
                       <input
                         type="checkbox"
-                        aria-label={`Valitse tapahtuma ${event.event_id} yhdistettäväksi`}
+                        aria-label={`Select event ${event.event_id} for merging`}
                         checked={mergeSelection.has(event.event_id)}
                         onChange={(changeEvent) =>
                           setMergeSelection((current) => {
@@ -316,7 +316,7 @@ export function ExtractionReview() {
                         <code>{event.event_id}</code>
                         {isActive ? (
                           <span className="activeEventBadge">
-                            Muokattavana
+                            Editing
                           </span>
                         ) : null}
                       </div>
@@ -330,7 +330,7 @@ export function ExtractionReview() {
                     </td>
                     <td>
                       {formatServiceDateInput(event.service_date) ||
-                        "Ei tiedossa"}
+                        "Unknown"}
                     </td>
                     <td>
                       <OdometerSummary event={event} />
@@ -348,7 +348,7 @@ export function ExtractionReview() {
                                 )}: ${action.description}`,
                             )
                             .join(", ")
-                        : "Ei tunnistettu"}
+                        : "Not identified"}
                     </td>
                     <td>
                       <ConfidenceBadge value={event.confidence} />
@@ -359,8 +359,8 @@ export function ExtractionReview() {
                           aria-controls="event-editor"
                           aria-label={
                             isActive
-                              ? `Tapahtuma ${event.event_id} on muokattavana`
-                              : `Muokkaa tapahtumaa ${event.event_id}`
+                              ? `Event ${event.event_id} is being edited`
+                              : `Edit event ${event.event_id}`
                           }
                           aria-pressed={isActive}
                           className={
@@ -371,13 +371,13 @@ export function ExtractionReview() {
                           type="button"
                           onClick={() => setSelectedEventId(event.event_id)}
                         >
-                          {isActive ? "Muokattavana" : "Muokkaa"}
+                          {isActive ? "Editing" : "Edit"}
                         </button>
                         <button
                           type="button"
                           onClick={() => deleteEvent(event.event_id)}
                         >
-                          Poista
+                          Remove
                         </button>
                       </div>
                     </td>
@@ -429,22 +429,21 @@ function ReviewDiagnostics({
   if (errors.length === 0 && warnings.length === 0) {
     return (
       <div className="reviewDiagnostics reviewDiagnosticsClean" role="status">
-        <strong>Ei rakenteellisia ristiriitoja.</strong>
+        <strong>No structural conflicts.</strong>
         <p>
-          Päivämäärät ja mittarilukemat ovat validissa muodossa, eikä
-          mahdollisia kaksoiskappaleita tai aikajärjestyksen ristiriitoja
-          löytynyt.
+          Dates and odometer readings are in a valid format, and no possible
+          duplicates or chronology conflicts were found.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="reviewDiagnostics" aria-label="Tarkistuksen havainnot">
+    <div className="reviewDiagnostics" aria-label="Review findings">
       {errors.length > 0 ? (
         <div className="reviewIssueGroup reviewIssueErrors" role="alert">
           <strong>
-            Korjaa ennen vahvistusta ({errors.length})
+            Correct before confirmation ({errors.length})
           </strong>
           <ul>
             {errors.map((issue) => (
@@ -456,7 +455,7 @@ function ReviewDiagnostics({
       {warnings.length > 0 ? (
         <div className="reviewIssueGroup reviewIssueWarnings" role="status">
           <strong>
-            Tarkista ja kuittaa ({warnings.length})
+            Review and acknowledge ({warnings.length})
           </strong>
           <ul>
             {warnings.map((issue) => (
@@ -473,7 +472,7 @@ function OdometerSummary({ event }: Readonly<{ event: ServiceEvent }>) {
   const normalized = normalizeOdometer(event.odometer);
 
   if (event.odometer === null) {
-    return <>Ei tiedossa</>;
+    return <>Unknown</>;
   }
 
   return (
@@ -484,13 +483,13 @@ function OdometerSummary({ event }: Readonly<{ event: ServiceEvent }>) {
       {normalized.status === "valid" &&
       normalized.kilometres !== null &&
       event.odometer.unit === "mi" ? (
-        <small>{formatKilometres(normalized.kilometres)} km laskentaan</small>
+        <small>{formatKilometres(normalized.kilometres)} km for calculations</small>
       ) : null}
       {normalized.status === "unverified" ? (
-        <small>Yksikkö tarkistettava</small>
+        <small>Unit must be reviewed</small>
       ) : null}
       {normalized.status === "invalid" ? (
-        <small>Virheellinen lukema</small>
+        <small>Invalid reading</small>
       ) : null}
     </span>
   );
@@ -504,12 +503,12 @@ function ImageReadability({
   >;
 }>) {
   return (
-    <div className="readabilityGrid" aria-label="Lähdekuvien luettavuus">
+    <div className="readabilityGrid" aria-label="Source image readability">
       {history.images.map((image) => (
         <article key={image.image_id}>
           <code>{image.image_id}</code>
-          <ConfidenceBadge value={image.readability} label="Luettavuus" />
-          <p>{image.notes ?? "Ei erillistä huomiota."}</p>
+          <ConfidenceBadge value={image.readability} label="Readability" />
+          <p>{image.notes ?? "No separate note."}</p>
         </article>
       ))}
     </div>
@@ -533,41 +532,41 @@ function NormalizationPreview({ event }: Readonly<{ event: ServiceEvent }>) {
   });
 
   return (
-    <aside className="normalizationPreview" aria-label="Normalisoidut arvot">
-      <strong>Normalisoidut arvot laskentaa varten</strong>
+    <aside className="normalizationPreview" aria-label="Normalized values">
+      <strong>Normalized values for calculations</strong>
       <dl>
         <div>
-          <dt>Päivämäärä</dt>
+          <dt>Date</dt>
           <dd>{normalizedDateDescription(date)}</dd>
         </div>
         <div>
-          <dt>Matkamittari</dt>
+          <dt>Odometer</dt>
           <dd>
             {odometer.kilometres === null
               ? odometer.status === "missing"
-                ? "Ei tiedossa"
-                : "Ei käytetä ennen yksikön tai arvon korjausta"
+                ? "Unknown"
+                : "Not used until the unit or value is corrected"
               : `${formatKilometres(odometer.kilometres)} km`}
           </dd>
         </div>
         <div>
-          <dt>Komponentit</dt>
+          <dt>Components</dt>
           <dd>
             {components.length === 0
-              ? "Ei tunnistettua komponenttia"
+              ? "No identified component"
               : components
                   .map(({ label, originalCode, resolvedCode }) =>
                     originalCode === resolvedCode
                       ? label
-                      : `${label} (tekstiehdotus)`,
+                      : `${label} (text suggestion)`,
                   )
                   .join(", ")}
           </dd>
         </div>
       </dl>
       <p>
-        Alkuperäinen näyttö, lukema ja yksikkö säilyvät tapahtumassa.
-        Muunnos ei muuta lähdearvoa.
+        The original evidence, reading, and unit are preserved in the event.
+        Conversion does not change the source value.
       </p>
     </aside>
   );
@@ -603,24 +602,24 @@ function EventEditor({
     >
       <div className="eventEditorHeading">
         <div>
-          <p className="sectionLabel">Muokattavana juuri nyt</p>
+          <p className="sectionLabel">Currently being edited</p>
           <h3 id="event-editor-heading">{event.event_id}</h3>
         </div>
         <div className="activeEditorStatus">
           <span className="activeEditIndicator">
             <span aria-hidden="true" />
-            Aktiivinen muokkaus
+            Active edit
           </span>
           <ConfidenceBadge
             value={event.confidence}
-            label="Kokonaisluottamus"
+            label="Overall confidence"
           />
         </div>
       </div>
 
       <div className="evidenceComparison">
         <label className="wideEditorField">
-          <span>Raaka kuvasta luettu näyttö</span>
+          <span>Raw evidence read from the image</span>
           <textarea
             value={event.raw_evidence}
             rows={3}
@@ -634,11 +633,11 @@ function EventEditor({
 
       <div className="eventEditorGrid">
         <label>
-          <span>Päivämäärä</span>
+          <span>Date</span>
           <input
-            aria-label="Päivämäärä"
+            aria-label="Date"
             value={formatServiceDateInput(event.service_date)}
-            placeholder="PP.KK.VVVV, KK.VVVV tai VVVV"
+            placeholder="DD.MM.YYYY, MM.YYYY, or YYYY"
             aria-invalid={
               normalizedDate.status === "invalid" ? "true" : undefined
             }
@@ -657,16 +656,15 @@ function EventEditor({
             }
           />
           <small className="dateInputHelp" id="service-date-input-help">
-            Tarkkuus päätellään automaattisesti syötetystä muodosta. Myös
-            ISO-muodot VVVV-KK-PP ja VVVV-KK hyväksytään.
+            Precision is inferred automatically from the entered format. ISO
+            formats YYYY-MM-DD and YYYY-MM are also accepted.
           </small>
           {normalizedDate.status === "invalid" ? (
             <span
               className="fieldError"
               id="service-date-validation-error"
             >
-              Tarkista, että päivämäärä on mahdollinen ja käyttää annettua
-              muotoa.
+              Check that the date is possible and uses the specified format.
             </span>
           ) : null}
         </label>
@@ -676,10 +674,10 @@ function EventEditor({
           role="status"
           aria-live="polite"
         >
-          <span>Automaattinen tarkkuus</span>
+          <span>Automatic precision</span>
           <strong>
             {event.service_date === null
-              ? "Ei päivämäärää"
+              ? "No date"
               : precisionLabels[event.service_date.precision]}
           </strong>
           <small>
@@ -688,7 +686,7 @@ function EventEditor({
         </div>
 
         <label>
-          <span>Päivämäärän luottamus 0–1</span>
+          <span>Date confidence 0–1</span>
           <input
             type="number"
             min="0"
@@ -712,7 +710,7 @@ function EventEditor({
         </label>
 
         <label>
-          <span>Matkamittarilukema</span>
+          <span>Odometer reading</span>
           <input
             type="number"
             min="0"
@@ -758,13 +756,13 @@ function EventEditor({
           />
           {normalizedOdometer.status === "invalid" ? (
             <span className="fieldError" id="odometer-validation-error">
-              Anna nolla tai positiivinen kokonaisluku.
+              Enter zero or a positive integer.
             </span>
           ) : null}
         </label>
 
         <label>
-          <span>Mittarin yksikkö</span>
+          <span>Odometer unit</span>
           <select
             value={event.odometer?.unit ?? "unknown"}
             disabled={event.odometer === null}
@@ -789,7 +787,7 @@ function EventEditor({
         </label>
 
         <label>
-          <span>Mittarilukeman luottamus 0–1</span>
+          <span>Odometer confidence 0–1</span>
           <input
             type="number"
             min="0"
@@ -813,7 +811,7 @@ function EventEditor({
         </label>
 
         <label>
-          <span>Korjaamo</span>
+          <span>Workshop</span>
           <input
             value={event.workshop ?? ""}
             onChange={(changeEvent) =>
@@ -823,7 +821,7 @@ function EventEditor({
         </label>
 
         <label>
-          <span>Tapahtuman luottamus 0–1</span>
+          <span>Event confidence 0–1</span>
           <input
             type="number"
             min="0"
@@ -839,7 +837,7 @@ function EventEditor({
         </label>
 
         <label className="wideEditorField">
-          <span>Muistiinpanot</span>
+          <span>Notes</span>
           <textarea
             value={event.notes ?? ""}
             rows={2}
@@ -850,7 +848,7 @@ function EventEditor({
         </label>
 
         <label className="wideEditorField">
-          <span>Epäselvyydet, yksi rivi kutakin huomiota kohti</span>
+          <span>Ambiguities, one observation per line</span>
           <textarea
             value={event.ambiguities.join("\n")}
             rows={2}
@@ -867,7 +865,7 @@ function EventEditor({
       </div>
 
       <fieldset className="sourceSelector">
-        <legend>Lähdekuvat</legend>
+        <legend>Source images</legend>
         {availableImageIds.map((imageId) => (
           <label key={imageId}>
             <input
@@ -892,7 +890,7 @@ function EventEditor({
 
       <div className="actionEditor">
         <div className="actionEditorHeading">
-          <h4>Toimenpiteet</h4>
+          <h4>Actions</h4>
           <button
             className="secondaryButton"
             type="button"
@@ -902,14 +900,14 @@ function EventEditor({
               })
             }
           >
-            Lisää toimenpide
+            Add action
           </button>
         </div>
 
         {event.actions.map((action, index) => (
           <div className="actionEditorRow" key={`${event.event_id}-${index}`}>
             <label>
-              <span>Komponentti</span>
+              <span>Component</span>
               <select
                 value={action.component_code}
                 onChange={(changeEvent) =>
@@ -930,7 +928,7 @@ function EventEditor({
               </select>
             </label>
             <label>
-              <span>Nimi</span>
+              <span>Name</span>
               <input
                 value={action.component_label}
                 onChange={(changeEvent) =>
@@ -942,7 +940,7 @@ function EventEditor({
               />
             </label>
             <label>
-              <span>Toiminto</span>
+              <span>Action</span>
               <select
                 value={action.action_type}
                 onChange={(changeEvent) =>
@@ -961,7 +959,7 @@ function EventEditor({
               </select>
             </label>
             <label className="actionDescription">
-              <span>Kuvaus</span>
+              <span>Description</span>
               <input
                 value={action.description}
                 onChange={(changeEvent) =>
@@ -973,7 +971,7 @@ function EventEditor({
               />
             </label>
             <label>
-              <span>Luottamus</span>
+              <span>Confidence</span>
               <input
                 type="number"
                 min="0"
@@ -1001,7 +999,7 @@ function EventEditor({
                 })
               }
             >
-              Poista toimenpide
+              Remove action
             </button>
             <ComponentMappingSuggestion
               action={action}
@@ -1042,9 +1040,9 @@ function ComponentMappingSuggestion({
 
   return (
     <div className="componentSuggestion">
-      <span>Teksti vastaa komponenttia: {label}</span>
+      <span>The text matches component: {label}</span>
       <button type="button" onClick={() => onApply(suggestion)}>
-        Käytä ehdotusta {label}
+        Use suggestion {label}
       </button>
     </div>
   );
@@ -1078,16 +1076,15 @@ function ReviewConfirmation({
       aria-labelledby="review-confirmation-heading"
     >
       <div>
-        <p className="sectionLabel">Käyttäjän vahvistus</p>
+        <p className="sectionLabel">User confirmation</p>
         <h3 id="review-confirmation-heading">
           {confirmed
-            ? "Huoltohistoria on vahvistettu."
-            : "Vahvista tiedot ennen seuraavaa vaihetta."}
+            ? "The service history is confirmed."
+            : "Confirm the details before the next phase."}
         </h3>
         <p>
-          Vahvistus koskee vain tämän välilehden muistissa olevaa,
-          tarkistettua huoltohistoriaa. Muokkaus poistaa vahvistuksen
-          automaattisesti.
+          Confirmation applies only to the reviewed service history in this
+          tab&apos;s memory. Editing automatically removes confirmation.
         </p>
       </div>
 
@@ -1101,9 +1098,9 @@ function ReviewConfirmation({
               onWarningsAcknowledged(event.target.checked)
             }
           />
-          Olen tarkistanut {warningCount}{" "}
-          {warningCount === 1 ? "varoituksen" : "varoitusta"} ja hyväksyn
-          epävarmuuksien säilyttämisen.
+          I have reviewed {warningCount}{" "}
+          {warningCount === 1 ? "warning" : "warnings"} and accept preserving
+          the uncertainties.
         </label>
       ) : null}
 
@@ -1114,14 +1111,14 @@ function ReviewConfirmation({
         onClick={onConfirm}
       >
         {confirmed
-          ? "Huoltohistoria vahvistettu"
-          : "Vahvista tarkistettu huoltohistoria"}
+          ? "Service history confirmed"
+          : "Confirm reviewed service history"}
       </button>
 
       {errors.length > 0 ? (
         <p className="confirmationBlocker" role="alert">
-          Korjaa {errors.length}{" "}
-          {errors.length === 1 ? "virhe" : "virhettä"} ennen vahvistusta.
+          Correct {errors.length}{" "}
+          {errors.length === 1 ? "error" : "errors"} before confirmation.
         </p>
       ) : null}
     </div>
@@ -1134,7 +1131,7 @@ function ConfidenceBadge({
 }: Readonly<{ value: number; label?: string }>) {
   const level = value >= 0.8 ? "high" : value >= 0.5 ? "medium" : "low";
   const text =
-    level === "high" ? "Korkea" : level === "medium" ? "Keskitaso" : "Matala";
+    level === "high" ? "High" : level === "medium" ? "Medium" : "Low";
 
   return (
     <span className={`confidenceBadge confidence-${level}`}>
@@ -1174,13 +1171,13 @@ function normalizedDateDescription(
 ): string {
   switch (date.status) {
     case "missing":
-      return "Ei tiedossa";
+      return "Unknown";
     case "valid":
-      return date.value ?? "Ei tiedossa";
+      return date.value ?? "Unknown";
     case "unverified":
-      return `${date.value ?? "Ei tiedossa"} (tarkkuus epäselvä)`;
+      return `${date.value ?? "Unknown"} (precision unclear)`;
     case "invalid":
-      return "Virheellinen päivämäärä";
+      return "Invalid date";
   }
 }
 
@@ -1191,15 +1188,15 @@ function datePrecisionDescription(
 ): string {
   switch (precision) {
     case "day":
-      return "Päivä, kuukausi ja vuosi tunnistettiin.";
+      return "Day, month, and year were identified.";
     case "month":
-      return "Kuukausi ja vuosi tunnistettiin.";
+      return "Month and year were identified.";
     case "year":
-      return "Vain vuosi tunnistettiin.";
+      return "Only the year was identified.";
     case "unknown":
-      return "Täydennä päivämäärä tuettuun muotoon.";
+      return "Complete the date in a supported format.";
     default:
-      return "Syötä päivämäärä, jos se on tiedossa.";
+      return "Enter the date if it is known.";
   }
 }
 

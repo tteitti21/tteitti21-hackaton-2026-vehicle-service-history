@@ -28,8 +28,8 @@ The extraction model returns both evidence as read from the document and normali
 
 Examples:
 
-- “jakopää”, “jakohihnasarja”, and “timing belt kit” can map to `timing_belt`,
-- “ATF”, “automaattiöljy”, and “gearbox oil” can map to `transmission_fluid`,
+- “timing drive”, “timing belt kit”, and “cam belt kit” can map to `timing_belt`,
+- “ATF”, “automatic transmission oil”, and “gearbox oil” can map to `transmission_fluid`,
 - uncertain wording maps to `other` plus a label.
 
 ## Unit conversion
@@ -115,8 +115,8 @@ When one dimension is overdue and another is not, overdue wins.
 
 Absence of a row is not proof that work was not performed. Wording must be:
 
-- “Huoltohistoriasta ei löytynyt merkintää”
-- not “Huoltoa ei ole tehty”.
+- “No service-history entry was found”
+- not “The service was not performed”.
 
 ## Powertrain component inventory
 

@@ -13,27 +13,27 @@ import { readUploadLimits } from "@/lib/validation/request-limits";
 const steps = [
   {
     number: "01",
-    title: "Kuvaile ajoneuvo",
+    title: "Describe the vehicle",
     description:
-      "Ajoneuvon tarkka versio varmistetaan ennen huoltovälien tutkimista.",
+      "The exact vehicle variant is confirmed before maintenance intervals are researched.",
   },
   {
     number: "02",
-    title: "Peitä arkaluonteiset tiedot",
+    title: "Redact sensitive information",
     description:
-      "Kuvat muokataan selaimessa ja vain uusi, peitetty kuvatiedosto lähetetään.",
+      "Images are edited in the browser, and only a new sanitized image file is submitted.",
   },
   {
     number: "03",
-    title: "Tarkista huoltohistoria",
+    title: "Review the service history",
     description:
-      "Kuvista poimitut tapahtumat voi tarkistaa ja korjata ennen analyysiä.",
+      "Events extracted from images can be reviewed and corrected before analysis.",
   },
   {
     number: "04",
-    title: "Tutki tulokset ja lähteet",
+    title: "Inspect results and sources",
     description:
-      "Huoltojen tila lasketaan sovelluskoodissa ja suositukset sidotaan lähteisiin.",
+      "Maintenance status is calculated in application code, and recommendations are linked to sources.",
   },
 ];
 
@@ -45,24 +45,24 @@ export default function Home() {
       <section className="hero">
         <div className="eyebrow">
           <span aria-hidden="true" />
-          Yksityisyys ensin
+          Privacy first
         </div>
-        <h1>Huoltohistoria selkeäksi – ilman pysyvää tallennusta.</h1>
+        <h1>A clear service history – without permanent storage.</h1>
         <p className="heroLead">
-          AutoHuolto AI kokoaa käyttäjän tarkistaman huoltohistorian, etsii
-          ajoneuvoversioon sopivat lähteet ja auttaa näkemään, mitä kannattaa
-          tarkistaa seuraavaksi.
+          AutoHuolto AI compiles the service history reviewed by the user,
+          finds sources compatible with the vehicle variant, and helps identify
+          what should be checked next.
         </p>
         <div className="phaseNotice" role="status">
           <span className="statusDot" aria-hidden="true" />
           <div>
-            <strong>Vaihe 9 / MVP käytössä</strong>
+            <strong>Phase 9 / MVP available</strong>
             <p>
-              Koko tilaton työnkulku kuvien paikallisesta peittämisestä
-              lähdevarmennukseen, deterministiseen tilalaskentaan ja
-              paikalliseen vientiin on käytettävissä. Mukana ovat myös
-              synteettinen demo, turvalliset virhetilat, yksityisyystarkistukset
-              ja mobiililaitteille mukautettu käyttöliittymä.
+              The complete stateless workflow is available, from local image
+              redaction to source verification, deterministic status
+              calculation, and local export. It also includes a synthetic demo,
+              safe error states, privacy checks, and a responsive mobile
+              interface.
             </p>
           </div>
         </div>
@@ -90,33 +90,32 @@ export default function Home() {
 
       <section className="privacyBand" aria-labelledby="privacy-heading">
         <div>
-          <p className="sectionLabel">Tietosuojalupaus</p>
-          <h2 id="privacy-heading">Sinä päätät, mitä lähetetään.</h2>
+          <p className="sectionLabel">Privacy promise</p>
+          <h2 id="privacy-heading">You decide what is submitted.</h2>
         </div>
         <div className="privacyCopy">
           <p>
-            Sovellus ei tallenna kuvia, ajoneuvotietoja, poimittuja
-            huoltotapahtumia tai raportteja omaan tietokantaan tai
-            tiedostovarastoon.
+            The application does not store images, vehicle details, extracted
+            service events, or reports in its own database or file storage.
           </p>
           <p>
-            Kun käynnistät poiminnan, vain selaimessa peitetyt uudet PNG-kuvat
-            lähetetään OpenAI:lle. Palveluntarjoajan säilytys- ja
-            väärinkäytön valvontakäytännöt voivat silti koskea käsittelyä.
+            When you start extraction, only the new PNG images sanitized in the
+            browser are submitted to OpenAI. Provider retention and abuse
+            monitoring policies may still apply to the processing.
           </p>
           <p>
-            Ajoneuvoversion verkkohaku lähettää OpenAI:lle vain vahvistetut
-            versiotiedot; kuvia tai matkamittarilukemaa ei käytetä siinä.
-            Lähteet ja ehdokkaat säilyvät vain tämän välilehden muistissa.
+            Vehicle-variant web search sends only confirmed variant details to
+            OpenAI; images and the odometer reading are not used. Sources and
+            candidates remain only in this tab&apos;s memory.
           </p>
           <p>
-            Huoltovälitutkimus lähettää tutkimusmallille vahvistetun version,
-            maan, markkinan ja komponenttiluokat. Kuvia, huoltohistoriaa tai
-            matkamittarilukemaa ei välitetä tutkimusmallille. Tutkimustulos
-            säilyy vain tämän välilehden muistissa.
+            Maintenance interval research sends the confirmed variant, country,
+            market, and component categories to the research model. Images,
+            service history, and odometer reading are not sent to the research
+            model. The research result remains only in this tab&apos;s memory.
           </p>
           <Link className="textLink" href="/tietosuoja">
-            Miten tietoja käsitellään <span aria-hidden="true">→</span>
+            How data is handled <span aria-hidden="true">→</span>
           </Link>
         </div>
       </section>
@@ -124,12 +123,12 @@ export default function Home() {
       <section className="processSection" aria-labelledby="process-heading">
         <div className="sectionHeading">
           <div>
-            <p className="sectionLabel">Suunniteltu työnkulku</p>
-            <h2 id="process-heading">Neljä hallittua vaihetta</h2>
+            <p className="sectionLabel">Designed workflow</p>
+            <h2 id="process-heading">Four controlled steps</h2>
           </div>
           <p>
-            Mitään ei lähetetä automaattisesti. Käyttäjä tarkistaa sisällön
-            ennen jokaista analyysipyyntöä.
+            Nothing is submitted automatically. The user reviews the content
+            before every analysis request.
           </p>
         </div>
         <ol className="stepGrid">
@@ -144,18 +143,18 @@ export default function Home() {
       </section>
 
       <section className="truthSection" aria-labelledby="truth-heading">
-        <p className="sectionLabel">Luotettavuus ennen varmuutta</p>
+        <p className="sectionLabel">Reliability before certainty</p>
         <h2 id="truth-heading">
-          Jos näyttö ei riitä, sovellus kertoo sen suoraan.
+          If the evidence is insufficient, the application says so directly.
         </h2>
         <blockquote>
-          “Tarkkaa vaihtoväliä ei voitu varmistaa riittävän luotettavista, tähän
-          ajoneuvovarianttiin sopivista lähteistä.”
+          “The exact replacement interval could not be verified from
+          sufficiently reliable sources compatible with this vehicle variant.”
         </blockquote>
         <p>
-          Tekoälyä käytetään näytön poimintaan ja lähteiden tutkimiseen.
-          Huoltojen ajankohtaisuus lasketaan erikseen, deterministisesti
-          sovelluskoodissa.
+          AI is used to extract evidence and research sources. Maintenance
+          timing is calculated separately and deterministically in application
+          code.
         </p>
       </section>
     </main>

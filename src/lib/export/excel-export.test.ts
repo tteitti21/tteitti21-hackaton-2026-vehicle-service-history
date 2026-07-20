@@ -59,10 +59,10 @@ describe("Excel report export", () => {
 
     expect(bytes.byteLength).toBeGreaterThan(10_000);
     expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
-      "Yhteenveto",
-      "Huoltohistoria",
-      "Komponentit",
-      "Lähteet",
+      "Summary",
+      "Service history",
+      "Components",
+      "Sources",
     ]);
     workbook.eachSheet((sheet) => {
       expect(sheet.actualColumnCount).toBeLessThanOrEqual(2);
@@ -77,22 +77,22 @@ describe("Excel report export", () => {
       assertDetailRowsHaveValues(sheet);
     });
 
-    const serviceSheet = workbook.getWorksheet("Huoltohistoria")!;
-    const odometerCell = findValueCell(serviceSheet, "Mittarilukema (km)");
+    const serviceSheet = workbook.getWorksheet("Service history")!;
+    const odometerCell = findValueCell(serviceSheet, "Odometer reading (km)");
     expect(odometerCell.value).toBe(168_998.822784);
     expect(odometerCell.numFmt).toBe("#,##0.####");
 
-    const componentSheet = workbook.getWorksheet("Komponentit")!;
-    expect(findValueCell(componentSheet, "Huoltoväli (km)").value).toBe(
+    const componentSheet = workbook.getWorksheet("Components")!;
+    expect(findValueCell(componentSheet, "Maintenance interval (km)").value).toBe(
       15_000,
     );
     expect(
       findAllValueCells(componentSheet, "trustworthiness_level").map(
         (cell) => cell.value,
       ),
-    ).toEqual(expect.arrayContaining(["Korkea (high)", "Matala (low)"]));
+    ).toEqual(expect.arrayContaining(["High (high)", "Low (low)"]));
     expect(
-      findAllValueCells(componentSheet, "Komponenttikoodi").map(
+      findAllValueCells(componentSheet, "Component code").map(
         (cell) => cell.value,
       ),
     ).toEqual(
@@ -108,12 +108,12 @@ describe("Excel report export", () => {
       ]),
     );
 
-    const sourceSheet = workbook.getWorksheet("Lähteet")!;
+    const sourceSheet = workbook.getWorksheet("Sources")!;
     expect(
       findAllValueCells(sourceSheet, "URL").map((cell) => cell.value),
     ).toContain("https://toyota.example/avensis-t27");
     expect(
-      findAllValueCells(sourceSheet, "Väite-ID").map((cell) => cell.value),
+      findAllValueCells(sourceSheet, "Claim ID").map((cell) => cell.value),
     ).toEqual(expect.arrayContaining(["claim-2", "claim-3"]));
 
     const formulas: string[] = [];
@@ -138,7 +138,7 @@ describe("Excel report export", () => {
     expect(formulas).toEqual(
       expect.arrayContaining([
         expect.stringMatching(
-          /^COUNTIF\('Komponentit'!\$B\$1:\$B\$\d+,"overdue"\)$/,
+          /^COUNTIF\('Components'!\$B\$1:\$B\$\d+,"overdue"\)$/,
         ),
       ]),
     );
@@ -171,19 +171,19 @@ describe("Excel report export", () => {
 
     expect(dangerousStrings).toEqual([]);
     expect(
-      findValueCell(loaded.getWorksheet("Yhteenveto")!, "Merkki").value,
+      findValueCell(loaded.getWorksheet("Summary")!, "Make").value,
     ).toBe("'=malicious-make");
     expect(
       findValueCell(
-        loaded.getWorksheet("Huoltohistoria")!,
-        "Raaka näyttö",
+        loaded.getWorksheet("Service history")!,
+        "Raw evidence",
       ).value,
     ).toBe("'=HYPERLINK(\"https://attacker.example\")");
     expect(
-      findValueCell(loaded.getWorksheet("Lähteet")!, "Otsikko").value,
+      findValueCell(loaded.getWorksheet("Sources")!, "Title").value,
     ).toBe("'+malicious-source-title");
     expect(
-      findValueCell(loaded.getWorksheet("Lähteet")!, "Lähdenäyttö").value,
+      findValueCell(loaded.getWorksheet("Sources")!, "Source evidence").value,
     ).toBe("'@malicious-source-evidence");
     expect(JSON.stringify(workbook.model)).not.toContain("original-image.png");
     workbook.eachSheet((sheet) => expect(sheet.getImages()).toEqual([]));

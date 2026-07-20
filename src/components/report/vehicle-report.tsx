@@ -20,12 +20,12 @@ import {
 import { createExcelReportBlob } from "@/lib/export/excel-export";
 
 const actionLabels: Record<ServiceAction["action_type"], string> = {
-  replaced: "Vaihdettu",
-  serviced: "Huollettu",
-  repaired: "Korjattu",
-  inspected: "Tarkastettu",
-  adjusted: "Säädetty",
-  unknown: "Epäselvä",
+  replaced: "Replaced",
+  serviced: "Serviced",
+  repaired: "Repaired",
+  inspected: "Inspected",
+  adjusted: "Adjusted",
+  unknown: "Unknown",
 };
 
 export function VehicleReportPanel() {
@@ -83,7 +83,7 @@ export function VehicleReportPanel() {
       downloadBlobLocally(blob, createReportFilename(report, "xlsx"));
     } catch {
       setExportError(
-        "Excel-raporttia ei voitu muodostaa selaimessa. JSON-vienti on edelleen käytettävissä.",
+        "The Excel report could not be generated in the browser. JSON export is still available.",
       );
     } finally {
       setExcelExporting(false);
@@ -94,17 +94,17 @@ export function VehicleReportPanel() {
     <section className="reportSection" aria-labelledby="report-heading">
       <div className="reportHeading">
         <div>
-          <p className="sectionLabel">Vaihe 8 / Raportti ja paikallinen vienti</p>
+          <p className="sectionLabel">Phase 8 / Report and local export</p>
           <h2 id="report-heading">
-            Tarkista raportti ja tallenna se omalle laitteellesi.
+            Review the report and save it to your device.
           </h2>
         </div>
         <div className="localExportNotice">
-          <strong>Vienti tapahtuu vain selaimessa</strong>
+          <strong>Export happens only in the browser</strong>
           <p>
-            JSON- ja Excel-tiedostot muodostetaan tästä tarkistetusta
-            istuntotilasta ilman uutta verkkopyyntöä. Kuvat eivät sisälly
-            raporttiin.
+            JSON and Excel files are generated from this reviewed session state
+            without a new network request. Images are not included in the
+            report.
           </p>
         </div>
       </div>
@@ -113,10 +113,10 @@ export function VehicleReportPanel() {
         <div className="emptyResolutionState">
           <span aria-hidden="true">08</span>
           <div>
-            <strong>Raportti odottaa valmista tilalaskentaa.</strong>
+            <strong>The report is waiting for completed status calculation.</strong>
             <p>
-              Vahvista huoltohistoria ja ajoneuvoversio sekä suorita
-              huoltovälitutkimus.
+              Confirm the service history and vehicle variant, then run
+              maintenance interval research.
             </p>
           </div>
         </div>
@@ -124,7 +124,7 @@ export function VehicleReportPanel() {
         <div className="reportWorkspace">
           <div className="reportSnapshotHeader">
             <div>
-              <p className="reportKicker">Paikallinen raporttinäkymä</p>
+              <p className="reportKicker">Local report view</p>
               <h3>
                 {report.vehicle.make} {report.vehicle.model}
               </h3>
@@ -141,15 +141,15 @@ export function VehicleReportPanel() {
             </div>
             <dl>
               <div>
-                <dt>Nykyinen mittarilukema</dt>
+                <dt>Current odometer reading</dt>
                 <dd>{formatKilometres(report.vehicle.current_odometer_km)}</dd>
               </div>
               <div>
-                <dt>Laskentapäivä</dt>
+                <dt>Calculation date</dt>
                 <dd>{formatFinnishDate(report.metadata.analysis_date)}</dd>
               </div>
               <div>
-                <dt>Variantin yhteensopivuus</dt>
+                <dt>Variant compatibility</dt>
                 <dd>
                   {
                     REPORT_COMPATIBILITY_LABELS_FI[
@@ -163,10 +163,10 @@ export function VehicleReportPanel() {
 
           <div className="reportExportActions">
             <div>
-              <strong>Vie tarkistettu raportti</strong>
+              <strong>Export the reviewed report</strong>
               <p>
-                Excel-solujen ulkoinen tekstisisältö suojataan kaavojen
-                suorittamiselta.
+                External text content in Excel cells is protected from formula
+                execution.
               </p>
             </div>
             <div className="reportExportButtons">
@@ -175,7 +175,7 @@ export function VehicleReportPanel() {
                 type="button"
                 onClick={downloadJson}
               >
-                Lataa JSON
+                Download JSON
               </button>
               <button
                 className="primaryButton"
@@ -183,7 +183,7 @@ export function VehicleReportPanel() {
                 disabled={excelExporting}
                 onClick={downloadExcel}
               >
-                {excelExporting ? "Luodaan Exceliä…" : "Lataa Excel"}
+                {excelExporting ? "Creating Excel…" : "Download Excel"}
               </button>
             </div>
           </div>
@@ -194,18 +194,18 @@ export function VehicleReportPanel() {
             </div>
           ) : null}
 
-          <div className="reportSummaryGrid" aria-label="Raportin yhteenveto">
+          <div className="reportSummaryGrid" aria-label="Report summary">
             <ReportSummaryMetric
               value={report.summary.service_event_count}
-              label="huoltotapahtumaa"
+              label="service events"
             />
             <ReportSummaryMetric
               value={report.summary.component_count}
-              label="komponenttia"
+              label="components"
             />
             <ReportSummaryMetric
               value={report.summary.source_count}
-              label="lähderiviä"
+              label="source rows"
             />
             <ReportSummaryMetric
               value={
@@ -215,17 +215,17 @@ export function VehicleReportPanel() {
                       report.summary.highest_priority_status
                     ]
               }
-              label="korkein tilaprioriteetti"
+              label="highest status priority"
             />
           </div>
 
           <div className="reportUncertainty">
-            <strong>Ajoneuvoversion epävarmuus</strong>
+            <strong>Vehicle variant uncertainty</strong>
             <p>{report.vehicle.resolution.compatibility_explanation}</p>
             {report.vehicle.resolution.missing_distinguishing_fields.length >
             0 ? (
               <p>
-                Puuttuvat erottelutiedot:{" "}
+                Missing distinguishing details:{" "}
                 {report.vehicle.resolution.missing_distinguishing_fields.join(
                   ", ",
                 )}
@@ -246,11 +246,11 @@ export function VehicleReportPanel() {
           <ReportSourceTable sources={report.sources} />
 
           <div className="reportDisclaimer">
-            <strong>Rajaus</strong>
+            <strong>Scope</strong>
             <p>{report.metadata.disclaimer_fi}</p>
             <p>
-              Raportti vastaa yllä näkyvää tarkistettua selaintilaa.
-              Latauksen jälkeen tiedosto on käyttäjän hallinnassa.
+              The report reflects the reviewed browser state shown above. After
+              download, the file is under the user&apos;s control.
             </p>
           </div>
         </div>
@@ -265,7 +265,7 @@ function ReportWarnings({ warnings }: Readonly<{ warnings: string[] }>) {
   }
   return (
     <details className="reportWarnings">
-      <summary>Raportin varoitukset ({warnings.length})</summary>
+      <summary>Report warnings ({warnings.length})</summary>
       <ul>
         {warnings.map((warning, index) => (
           <li key={`${index}-${warning}`}>{warning}</li>
@@ -292,40 +292,40 @@ function ReportServiceHistoryTable({
 }: Readonly<{ events: ReportServiceEvent[] }>) {
   return (
     <ReportTableSection
-      title="Tarkistettu huoltohistoria"
-      description="Arvot vastaavat selaimessa tarkistettua historiaa. Mittarilukema esitetään kilometreinä."
+      title="Reviewed service history"
+      description="Values correspond to the history reviewed in the browser. The odometer reading is shown in kilometres."
     >
       {events.length === 0 ? (
         <p className="reportEmptyTable">
-          Huoltohistoriasta ei löytynyt merkintää.
+          No service-history entry was found.
         </p>
       ) : (
         <div className="reportTableFrame">
           <table className="reportTable">
             <thead>
               <tr>
-                <th>Päivä</th>
-                <th>Mittarilukema</th>
-                <th>Toimenpiteet</th>
-                <th>Raaka näyttö ja epävarmuus</th>
+                <th>Date</th>
+                <th>Odometer reading</th>
+                <th>Actions</th>
+                <th>Raw evidence and uncertainty</th>
               </tr>
             </thead>
             <tbody>
               {events.map((event) => (
                 <tr key={event.event_id}>
                   <td>
-                    <strong>{event.service_date?.value ?? "Ei tiedossa"}</strong>
-                    <span>{event.service_date?.precision ?? "puuttuu"}</span>
+                    <strong>{event.service_date?.value ?? "Unknown"}</strong>
+                    <span>{event.service_date?.precision ?? "missing"}</span>
                   </td>
                   <td>
                     <strong>
                       {event.odometer_km === null
-                        ? "Ei tiedossa"
+                        ? "Unknown"
                         : formatKilometres(event.odometer_km)}
                     </strong>
                     {event.original_odometer_unit !== null ? (
                       <span>
-                        Alkuperäinen: {event.original_odometer_value}{" "}
+                        Original: {event.original_odometer_value}{" "}
                         {event.original_odometer_unit}
                       </span>
                     ) : null}
@@ -342,7 +342,7 @@ function ReportServiceHistoryTable({
                     </ul>
                   </td>
                   <td>
-                    <p>{event.raw_evidence || "Ei raakatekstiä"}</p>
+                    <p>{event.raw_evidence || "No raw text"}</p>
                     {event.ambiguities.length > 0 ? (
                       <span>{event.ambiguities.join(" · ")}</span>
                     ) : null}
@@ -363,18 +363,18 @@ function ReportComponentTable({
 }: Readonly<{ components: ReportComponent[] }>) {
   return (
     <ReportTableSection
-      title="Komponenttien laskettu tila"
-      description="Tilat ja erääntymisarviot ovat sovelluskoodin laskemia. Lähdekonflikteja ei ole keskiarvoistettu."
+      title="Calculated component status"
+      description="Statuses and due estimates are calculated by application code. Source conflicts have not been averaged."
     >
       <div className="reportTableFrame">
         <table className="reportTable reportComponentTable">
           <thead>
             <tr>
-              <th>Komponentti</th>
-              <th>Tila ja syyt</th>
-              <th>Huoltoväli</th>
-              <th>Laskettu jäljellä</th>
-              <th>Epävarmuus</th>
+              <th>Component</th>
+              <th>Status and reasons</th>
+              <th>Maintenance interval</th>
+              <th>Calculated remaining</th>
+              <th>Uncertainty</th>
             </tr>
           </thead>
           <tbody>
@@ -401,11 +401,11 @@ function ReportComponentTable({
                   </strong>
                   <span>
                     {component.months_remaining === null
-                      ? "Aika ei laskettavissa"
-                      : `${component.months_remaining} kk`}
+                      ? "Time cannot be calculated"
+                      : `${component.months_remaining} months`}
                   </span>
                   <span>
-                    Erääntyy:{" "}
+                    Due:{" "}
                     {component.due_date === null
                       ? "–"
                       : formatFinnishDate(component.due_date)}
@@ -413,7 +413,7 @@ function ReportComponentTable({
                 </td>
                 <td>
                   <strong>
-                    Luotettavuus: {component.trustworthiness_label_fi} (
+                    Trustworthiness: {component.trustworthiness_label_fi} (
                     {component.trustworthiness_level})
                   </strong>
                   <span>{component.trustworthiness_note_fi}</span>
@@ -422,7 +422,7 @@ function ReportComponentTable({
                   <span>
                     {component.conflict_summary ??
                       component.conditions ??
-                      "Ei erillistä ehtoa"}
+                      "No separate condition"}
                   </span>
                 </td>
               </tr>
@@ -439,18 +439,18 @@ function ReportSourceTable({
 }: Readonly<{ sources: ReportSource[] }>) {
   return (
     <ReportTableSection
-      title="Lähteet ja yhteensopivuus"
-      description="Mukana ovat valitun ajoneuvoversion lähteet sekä jokainen huoltoväliväite, myös ristiriitaiset väitteet."
+      title="Sources and compatibility"
+      description="Includes sources for the selected vehicle variant and every maintenance interval claim, including conflicting claims."
     >
       <div className="reportTableFrame">
         <table className="reportTable reportSourceTable">
           <thead>
             <tr>
-              <th>Rooli</th>
-              <th>Kohde ja väli</th>
-              <th>Yhteensopivuus</th>
-              <th>Lähde</th>
-              <th>Näyttö</th>
+              <th>Role</th>
+              <th>Subject and interval</th>
+              <th>Compatibility</th>
+              <th>Source</th>
+              <th>Evidence</th>
             </tr>
           </thead>
           <tbody>
@@ -458,14 +458,14 @@ function ReportSourceTable({
               <tr key={source.source_id}>
                 <td>
                   {source.source_scope === "vehicle_resolution"
-                    ? "Ajoneuvoversio"
-                    : "Huoltoväli"}
+                    ? "Vehicle variant"
+                    : "Maintenance interval"}
                   {source.recommended === true ? (
-                    <span>Valittu näyttö</span>
+                    <span>Selected evidence</span>
                   ) : null}
                 </td>
                 <td>
-                  <strong>{source.component_label ?? "Ajoneuvo"}</strong>
+                  <strong>{source.component_label ?? "Vehicle"}</strong>
                   <span>{formatSourceInterval(source)}</span>
                   <code>{source.claim_id ?? source.source_id}</code>
                 </td>
@@ -475,10 +475,10 @@ function ReportSourceTable({
                   </strong>
                   <span>{source.compatibility_notes}</span>
                   {source.authority_rank !== null ? (
-                    <span>Lähdetaso {source.authority_rank}</span>
+                    <span>Source tier {source.authority_rank}</span>
                   ) : null}
                   <span>
-                    Luotettavuus: {source.trustworthiness_label_fi} (
+                    Trustworthiness: {source.trustworthiness_label_fi} (
                     {source.trustworthiness_level})
                   </span>
                   <span>{source.trustworthiness_note_fi}</span>
@@ -487,7 +487,7 @@ function ReportSourceTable({
                   <a href={source.url} target="_blank" rel="noreferrer">
                     {source.title}
                   </a>
-                  <span>{source.publisher ?? "Julkaisija ei tiedossa"}</span>
+                  <span>{source.publisher ?? "Publisher unknown"}</span>
                   <code>{source.url}</code>
                 </td>
                 <td>{source.evidence}</td>
@@ -527,28 +527,28 @@ function formatComponentInterval(component: ReportComponent): string {
       : formatKilometres(component.recommended_interval_km),
     component.recommended_interval_months === null
       ? null
-      : `${component.recommended_interval_months} kk`,
+      : `${component.recommended_interval_months} months`,
   ].filter((value): value is string => value !== null);
 
   if (values.length === 0) {
-    return "Ei varmennettua väliä";
+    return "No verified interval";
   }
-  return values.join(component.whichever_first ? " tai " : " + ");
+  return values.join(component.whichever_first ? " or " : " + ");
 }
 
 function formatSourceInterval(source: ReportSource): string {
   const values = [
     source.interval_km === null ? null : formatKilometres(source.interval_km),
-    source.interval_months === null ? null : `${source.interval_months} kk`,
+    source.interval_months === null ? null : `${source.interval_months} months`,
   ].filter((value): value is string => value !== null);
   const normalized =
     values.length === 0
-      ? "Ei huoltoväliväitettä"
-      : values.join(source.whichever_first ? " tai " : " + ");
+      ? "No maintenance interval claim"
+      : values.join(source.whichever_first ? " or " : " + ");
   const original =
     source.original_value === null || source.original_unit === null
       ? ""
-      : ` (alkuperäinen ${source.original_value} ${source.original_unit})`;
+      : ` (original ${source.original_value} ${source.original_unit})`;
   return `${normalized}${original}`;
 }
 

@@ -22,27 +22,27 @@ export const syntheticDemoSession = {
     transmissionType: "cvt",
     drivetrain: "front_wheel_drive",
     country: "FI",
-    market: "Eurooppa",
+    market: "Europe",
     currentOdometerKm: 180_000,
     additionalDetails:
-      "SYNTEETTINEN DEMO – tiedot eivät kuvaa todellista ajoneuvoa.",
+      "SYNTHETIC DEMO – the details do not describe a real vehicle.",
   },
   serviceHistory: {
     images: [
       {
         image_id: "synthetic-document-1",
         readability: 0.97,
-        notes: "SYNTEETTINEN huoltokortti 1/3",
+        notes: "SYNTHETIC service card 1/3",
       },
       {
         image_id: "synthetic-document-2",
         readability: 0.78,
-        notes: "SYNTEETTINEN huoltokortti 2/3",
+        notes: "SYNTHETIC service card 2/3",
       },
       {
         image_id: "synthetic-document-3",
         readability: 0.92,
-        notes: "SYNTEETTINEN huoltokortti 3/3",
+        notes: "SYNTHETIC service card 3/3",
       },
     ],
     events: [
@@ -64,14 +64,14 @@ export const syntheticDemoSession = {
         actions: [
           {
             component_code: "engine_oil",
-            component_label: "Moottoriöljy",
+            component_label: "Engine oil",
             action_type: "replaced",
-            description: "Moottoriöljy vaihdettu",
+            description: "Engine oil replaced",
             confidence: 0.98,
           },
         ],
         workshop: null,
-        notes: "Mailit muunnetaan tarkalla kertoimella 1.609344.",
+        notes: "Miles are converted using the exact factor 1.609344.",
         confidence: 0.97,
         ambiguities: [],
       },
@@ -89,9 +89,9 @@ export const syntheticDemoSession = {
         actions: [
           {
             component_code: "brake_fluid",
-            component_label: "Jarruneste",
+            component_label: "Brake fluid",
             action_type: "unknown",
-            description: "Merkintä voi tarkoittaa vaihtoa tai tarkastusta",
+            description: "The entry may mean replacement or inspection",
             confidence: 0.52,
           },
         ],
@@ -99,8 +99,8 @@ export const syntheticDemoSession = {
         notes: null,
         confidence: 0.55,
         ambiguities: [
-          "Toimenpiteen laji on epäselvä: vaihto vai tarkastus.",
-          "Mittarilukemaa ei ole merkitty.",
+          "The action type is unclear: replacement or inspection.",
+          "The odometer reading is not recorded.",
         ],
       },
       {
@@ -121,9 +121,9 @@ export const syntheticDemoSession = {
         actions: [
           {
             component_code: "timing_belt",
-            component_label: "Jakohihna",
+            component_label: "Timing belt",
             action_type: "inspected",
-            description: "Jakohihna tarkastettu, ei vaihtomerkintää",
+            description: "Timing belt inspected, no replacement record",
             confidence: 0.95,
           },
         ],
@@ -134,7 +134,7 @@ export const syntheticDemoSession = {
       },
     ],
     warnings: [
-      "Synteettisen jarrunestemerkinnän toimenpide on tarkistettava.",
+      "The action in the synthetic brake fluid entry must be reviewed.",
     ],
   },
   vehicleResolution: {
@@ -148,23 +148,23 @@ export const syntheticDemoSession = {
           model_year: 2021,
           engine: "1.8 hybrid N18-X, 110 kW",
           transmission: "e-CVT",
-          market: "Eurooppa",
+          market: "Europe",
           confidence: 0.91,
-          unresolved_fields: ["vaihteistokoodi"],
+          unresolved_fields: ["transmission code"],
         },
         compatibility: "strong",
         compatibility_explanation:
-          "Sukupolvi, mallivuosi, moottorikoodi ja teho täsmäävät, mutta vaihteistokoodi puuttuu.",
+          "The generation, model year, engine code, and power match, but the transmission code is missing.",
         matching_fields: ["N2", "2021", "N18-X", "110 kW", "hybrid"],
         conflicting_fields: [],
-        missing_distinguishing_fields: ["vaihteistokoodi"],
+        missing_distinguishing_fields: ["transmission code"],
         sources: [
           {
             title: "SYNTHETIC Nordica Aurora N2 specifications",
             publisher: "demo.invalid",
             url: "https://vehicles.demo.invalid/nordica-aurora-n2",
             evidence:
-              "Synteettinen lähde yhdistää N18-X-moottorin N2-sukupolveen.",
+              "The synthetic source links the N18-X engine to the N2 generation.",
           },
         ],
       },
@@ -176,19 +176,19 @@ export const syntheticDemoSession = {
           generation: "N2",
           model_year: 2021,
           engine: "2.0 petrol N20-P, 125 kW",
-          transmission: "8-vaihteinen automaatti",
-          market: "Eurooppa",
+          transmission: "8-speed automatic",
+          market: "Europe",
           confidence: 0.58,
           unresolved_fields: [],
         },
         compatibility: "partial",
         compatibility_explanation:
-          "Sukupolvi ja mallivuosi täsmäävät, mutta moottori, teho ja vaihteisto poikkeavat.",
+          "The generation and model year match, but the engine, power, and transmission differ.",
         matching_fields: ["N2", "2021"],
         conflicting_fields: [
           "N20-P vs. N18-X",
           "125 kW vs. 110 kW",
-          "automaatti vs. CVT",
+          "automatic vs. CVT",
         ],
         missing_distinguishing_fields: [],
         sources: [
@@ -197,7 +197,7 @@ export const syntheticDemoSession = {
             publisher: "demo.invalid",
             url: "https://vehicles.demo.invalid/nordica-aurora-engines",
             evidence:
-              "Synteettinen luettelo sisältää vaihtoehtoisen bensiinimoottorin.",
+              "The synthetic catalogue contains an alternative petrol engine.",
           },
         ],
       },
@@ -215,7 +215,7 @@ export const syntheticDemoSession = {
       },
     ],
     warnings: [
-      "Demo sisältää kaksi ehdokasta havainnollistamaan pakollista käyttäjävalintaa.",
+      "The demo contains two candidates to illustrate mandatory user selection.",
     ],
     resolved_at: "2026-07-19T10:00:00.000Z",
   },
@@ -228,14 +228,14 @@ export const syntheticDemoSession = {
       model_year: 2021,
       engine: "1.8 hybrid N18-X, 110 kW",
       transmission: "e-CVT",
-      market: "Eurooppa",
+      market: "Europe",
       confidence: 0.91,
-      unresolved_fields: ["vaihteistokoodi"],
+      unresolved_fields: ["transmission code"],
     },
     components: [
       {
         component_code: "engine_oil",
-        component_label: "Moottoriöljy",
+        component_label: "Engine oil",
         resolution: "resolved",
         interval_claims: [
           {
@@ -243,7 +243,7 @@ export const syntheticDemoSession = {
             interval_km: 16_093,
             interval_months: null,
             whichever_first: false,
-            conditions: "Normaali käyttö",
+            conditions: "Normal use",
             original_value: 10_000,
             original_unit: "mi",
             source: {
@@ -252,12 +252,12 @@ export const syntheticDemoSession = {
               url: "https://maintenance.demo.invalid/nordica-aurora",
               retrieved_at: "2026-07-19",
               evidence:
-                "Synteettinen ohjelma ilmoittaa moottoriöljylle 10 000 mailin vaihtovälin.",
+                "The synthetic schedule states a 10,000-mile replacement interval for engine oil.",
             },
             authority_rank: 1,
             compatibility: "exact",
             compatibility_notes:
-              "Moottori, mallivuosi ja Euroopan markkina täsmäävät.",
+              "The engine, model year, and European market match.",
           },
         ],
         recommended_claim_id: "claim-1",
@@ -265,7 +265,7 @@ export const syntheticDemoSession = {
       },
       {
         component_code: "timing_belt",
-        component_label: "Jakohihna",
+        component_label: "Timing belt",
         resolution: "conflicting_sources",
         interval_claims: [
           {
@@ -282,11 +282,11 @@ export const syntheticDemoSession = {
               url: "https://maintenance.demo.invalid/nordica-workshop-manual",
               retrieved_at: "2026-07-19",
               evidence:
-                "Synteettinen korjaamokäsikirja ilmoittaa 160 000 kilometriä.",
+                "The synthetic workshop manual states 160,000 kilometres.",
             },
             authority_rank: 1,
             compatibility: "exact",
-            compatibility_notes: "N18-X-moottorikoodi täsmää.",
+            compatibility_notes: "The N18-X engine code matches.",
           },
           {
             claim_id: "claim-3",
@@ -302,20 +302,20 @@ export const syntheticDemoSession = {
               url: "https://maintenance.demo.invalid/nordica-bulletin",
               retrieved_at: "2026-07-19",
               evidence:
-                "Synteettinen markkinatiedote ilmoittaa 90 000 mailia.",
+                "The synthetic market bulletin states 90,000 miles.",
             },
             authority_rank: 1,
             compatibility: "exact",
-            compatibility_notes: "N18-X-moottorikoodi täsmää.",
+            compatibility_notes: "The N18-X engine code matches.",
           },
         ],
         recommended_claim_id: null,
         conflict_summary:
-          "Kaksi yhtä vahvaa synteettistä valmistajalähdettä ilmoittaa eri vaihtovälin. Väliä ei valittu automaattisesti.",
+          "Two equally strong synthetic manufacturer sources state different replacement intervals. No interval was selected automatically.",
       },
       {
         component_code: "air_filter",
-        component_label: "Ilmansuodatin",
+        component_label: "Engine air filter",
         resolution: "resolved",
         interval_claims: [
           {
@@ -323,7 +323,7 @@ export const syntheticDemoSession = {
             interval_km: 30_000,
             interval_months: null,
             whichever_first: false,
-            conditions: "Normaali käyttö",
+            conditions: "Normal use",
             original_value: 30_000,
             original_unit: "km",
             source: {
@@ -332,11 +332,11 @@ export const syntheticDemoSession = {
               url: "https://maintenance.demo.invalid/nordica-filters",
               retrieved_at: "2026-07-19",
               evidence:
-                "Synteettinen ohjelma ilmoittaa ilmansuodattimelle 30 000 kilometriä.",
+                "The synthetic schedule states 30,000 kilometres for the engine air filter.",
             },
             authority_rank: 1,
             compatibility: "exact",
-            compatibility_notes: "Ajoneuvoversio ja markkina täsmäävät.",
+            compatibility_notes: "The vehicle variant and market match.",
           },
         ],
         recommended_claim_id: "claim-4",
@@ -344,7 +344,7 @@ export const syntheticDemoSession = {
       },
       {
         component_code: "coolant",
-        component_label: "Jäähdytysneste",
+        component_label: "Engine coolant",
         resolution: "insufficient_evidence",
         interval_claims: [],
         recommended_claim_id: null,
@@ -352,7 +352,7 @@ export const syntheticDemoSession = {
       },
     ],
     global_warnings: [
-      "Jäähdytysnesteelle ei löytynyt riittävää, varianttiin sopivaa näyttöä.",
+      "Sufficient variant-compatible evidence was not found for engine coolant.",
     ],
     researched_at: "2026-07-19T12:00:00.000Z",
   },

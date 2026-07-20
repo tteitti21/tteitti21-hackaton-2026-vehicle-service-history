@@ -4,12 +4,12 @@ test("keeps the complete demo within the mobile viewport", async ({ page }) => {
   await page.goto("/");
 
   await expect(
-    page.getByRole("navigation", { name: "Päänavigaatio" }),
+    page.getByRole("navigation", { name: "Main navigation" }),
   ).toBeVisible();
   await expectNoDocumentOverflow(page);
 
   const demoButton = page.getByRole("button", {
-    name: "Lataa synteettinen demo",
+    name: "Load synthetic demo",
   });
   const demoButtonBox = await demoButton.boundingBox();
   expect(demoButtonBox?.height).toBeGreaterThanOrEqual(44);
@@ -34,7 +34,7 @@ test("keeps the complete demo within the mobile viewport", async ({ page }) => {
   expect(tableOverflow.scrollWidth).toBeGreaterThan(tableOverflow.clientWidth);
   await expectNoDocumentOverflow(page);
 
-  await page.getByRole("link", { name: "Tietosuoja", exact: true }).click();
+  await page.getByRole("link", { name: "Privacy", exact: true }).click();
   await expect(page).toHaveURL(/\/tietosuoja$/);
   await expectNoDocumentOverflow(page);
 });

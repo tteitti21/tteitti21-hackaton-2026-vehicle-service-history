@@ -22,32 +22,32 @@ describe("ComponentStatusSummaryPanel", () => {
     renderPanel("full");
 
     expect(
-      screen.getByText("Tilalaskenta odottaa huoltovälitutkimusta."),
+      screen.getByText("Status calculation is waiting for maintenance interval research."),
     ).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Valmistele tilat" }));
+    await user.click(screen.getByRole("button", { name: "Prepare statuses" }));
 
     const oilCard = screen.getByRole("heading", {
-      name: "Moottoriöljy",
+      name: "Engine oil",
     }).closest("article");
     expect(oilCard).not.toBeNull();
-    expect(within(oilCard!).getByText("Ajankohtainen")).toBeVisible();
+    expect(within(oilCard!).getByText("Due")).toBeVisible();
     expect(within(oilCard!).getByText("184 000 km")).toBeVisible();
-    expect(within(oilCard!).getByText("Sovelluskoodin laskema")).toBeVisible();
-    expect(screen.getAllByText("Lähteissä ristiriita")).not.toHaveLength(0);
-    expect(screen.getAllByText("Ei riittävää tietoa")).not.toHaveLength(0);
+    expect(within(oilCard!).getByText("Calculated by application code")).toBeVisible();
+    expect(screen.getAllByText("Conflicting sources")).not.toHaveLength(0);
+    expect(screen.getAllByText("Insufficient evidence")).not.toHaveLength(0);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("uses truthful missing-history wording instead of claiming non-service", async () => {
     const user = userEvent.setup();
     renderPanel("missing");
-    await user.click(screen.getByRole("button", { name: "Valmistele tilat" }));
+    await user.click(screen.getByRole("button", { name: "Prepare statuses" }));
 
     expect(
-      screen.getByText("Huoltohistoriasta ei löytynyt merkintää."),
+      screen.getByText("No service-history entry was found."),
     ).toBeVisible();
-    expect(screen.queryByText("Huoltoa ei ole tehty.")).not.toBeInTheDocument();
-    expect(screen.getAllByText("Epäselvä")).not.toHaveLength(0);
+    expect(screen.queryByText("Maintenance was not performed.")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Unknown")).not.toHaveLength(0);
   });
 });
 
@@ -80,7 +80,7 @@ function SetupButton({ mode }: Readonly<{ mode: "full" | "missing" }>) {
                   {
                     event_id: "event-oil",
                     source_image_ids: ["image-1"],
-                    raw_evidence: "Moottoriöljy vaihdettu",
+                    raw_evidence: "Engine oil replaced",
                     service_date: {
                       value: "2026-01-01",
                       precision: "day",
@@ -94,9 +94,9 @@ function SetupButton({ mode }: Readonly<{ mode: "full" | "missing" }>) {
                     actions: [
                       {
                         component_code: "engine_oil",
-                        component_label: "Moottoriöljy",
+                        component_label: "Engine oil",
                         action_type: "replaced",
-                        description: "Moottoriöljy vaihdettu",
+                        description: "Engine oil replaced",
                         confidence: 1,
                       },
                     ],
@@ -116,7 +116,7 @@ function SetupButton({ mode }: Readonly<{ mode: "full" | "missing" }>) {
         );
       }}
     >
-      Valmistele tilat
+      Prepare statuses
     </button>
   );
 }

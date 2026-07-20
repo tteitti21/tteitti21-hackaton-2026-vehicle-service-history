@@ -24,14 +24,14 @@ const baseClaim: IntervalClaim = {
   },
   authority_rank: 1,
   compatibility: "exact",
-  compatibility_notes: "Täsmää.",
+  compatibility_notes: "Matches.",
 };
 
 describe("resolveComponentEvidence", () => {
   it("selects the strongest compatible source without a model decision", () => {
     const result = resolveComponentEvidence({
       component_code: "engine_oil",
-      component_label: "Moottoriöljy",
+      component_label: "Engine oil",
       interval_claims: [
         {
           ...baseClaim,
@@ -54,7 +54,7 @@ describe("resolveComponentEvidence", () => {
   it("exposes conflicts at the best rank and never silently chooses", () => {
     const result = resolveComponentEvidence({
       component_code: "timing_belt",
-      component_label: "Jakohihna",
+      component_label: "Timing belt",
       interval_claims: [
         baseClaim,
         {
@@ -68,13 +68,13 @@ describe("resolveComponentEvidence", () => {
 
     expect(result.resolution).toBe("conflicting_sources");
     expect(result.recommended_claim_id).toBeNull();
-    expect(result.conflict_summary).toContain("ristiriitaisia");
+    expect(result.conflict_summary).toContain("conflicting");
   });
 
   it("returns insufficient evidence for weak, partial, or low-authority claims", () => {
     const result = resolveComponentEvidence({
       component_code: "air_filter",
-      component_label: "Ilmansuodatin",
+      component_label: "Engine air filter",
       interval_claims: [
         {
           ...baseClaim,
@@ -109,7 +109,7 @@ describe("resolveComponentEvidence", () => {
 
     const conflict = resolveComponentEvidence({
       component_code: "timing_belt",
-      component_label: "Jakohihna",
+      component_label: "Timing belt",
       interval_claims: [
         baseClaim,
         {
@@ -122,7 +122,7 @@ describe("resolveComponentEvidence", () => {
     });
     expect(assessComponentTrustworthiness(conflict)).toMatchObject({
       level: "low",
-      note_fi: expect.stringContaining("eri huoltovälejä"),
+      note_fi: expect.stringContaining("different maintenance intervals"),
     });
   });
 });

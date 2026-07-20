@@ -66,16 +66,16 @@ The application converts user-redacted document images into an editable service-
 
 The product may support arbitrary vehicle inputs, but it must not promise that reliable maintenance data exists for every variation. The correct fallback is:
 
-> “Tarkkaa vaihtoväliä ei voitu varmistaa riittävän luotettavista, tähän ajoneuvovarianttiin sopivista lähteistä.”
+> “The exact replacement interval could not be verified from sufficiently reliable sources compatible with this vehicle variant.”
 
 ## User-facing status categories
 
-- **Kunnossa**
-- **Lähestyy**
-- **Ajankohtainen**
-- **Myöhässä**
-- **Epäselvä**
-- **Ei riittävää tietoa**
-- **Lähteissä ristiriita**
+- **OK**
+- **Due soon**
+- **Due**
+- **Overdue**
+- **Unknown**
+- **Insufficient evidence**
+- **Conflicting sources**
 
 The UI must distinguish calculated status from AI-generated explanation.

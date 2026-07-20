@@ -12,8 +12,8 @@ import {
 } from "./component-taxonomy";
 
 describe("component taxonomy", () => {
-  it("maps Finnish and English evidence into canonical component codes", () => {
-    expect(inferComponentCode("Jakopää vaihdettu")).toBe(
+  it("maps English evidence variants into canonical component codes", () => {
+    expect(inferComponentCode("Timing drive replaced")).toBe(
       "timing_belt",
     );
     expect(inferComponentCode("ATF service")).toBe("transmission_fluid");
@@ -24,22 +24,22 @@ describe("component taxonomy", () => {
   it("keeps an explicit component selection ahead of a text suggestion", () => {
     const action: ServiceAction = {
       component_code: "brake_fluid",
-      component_label: "Tarkistettu käyttäjän toimesta",
+      component_label: "Reviewed by the user",
       action_type: "serviced",
       description: "ATF",
       confidence: 1,
     };
 
-    expect(resolveActionComponentCode(action, "Vaihteistoöljy")).toBe(
+    expect(resolveActionComponentCode(action, "Transmission fluid")).toBe(
       "brake_fluid",
     );
   });
 
-  it("provides Finnish labels for the complete canonical taxonomy", () => {
+  it("provides English labels for the complete canonical taxonomy", () => {
     expect(COMPONENT_TAXONOMY.map((component) => component.code)).toEqual(
       componentCodeSchema.options,
     );
-    expect(getComponentLabel("engine_oil")).toBe("Moottoriöljy");
-    expect(getComponentLabel("other")).toBe("Muu komponentti");
+    expect(getComponentLabel("engine_oil")).toBe("Engine oil");
+    expect(getComponentLabel("other")).toBe("Other component");
   });
 });

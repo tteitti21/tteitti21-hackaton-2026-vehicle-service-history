@@ -6,11 +6,11 @@ export const maintenanceResearchRequestFixture: MaintenanceResearchRequest = {
   vehicle_variant: vehicleResolutionFixture.candidates[0].variant,
   current_odometer_km: 184_000,
   country: "FI",
-  market: "Eurooppa",
+  market: "Europe",
   components: [
-    { component_code: "engine_oil", component_label: "Moottoriöljy" },
-    { component_code: "timing_belt", component_label: "Jakohihna" },
-    { component_code: "air_filter", component_label: "Ilmansuodatin" },
+    { component_code: "engine_oil", component_label: "Engine oil" },
+    { component_code: "timing_belt", component_label: "Timing belt" },
+    { component_code: "air_filter", component_label: "Engine air filter" },
   ],
 };
 
@@ -26,7 +26,7 @@ export const maintenanceResearchFixture: MaintenanceResearch = {
   components: [
     {
       component_code: "engine_oil",
-      component_label: "Moottoriöljy",
+      component_label: "Engine oil",
       resolution: "resolved",
       interval_claims: [
         {
@@ -34,16 +34,16 @@ export const maintenanceResearchFixture: MaintenanceResearch = {
           interval_km: 15_000,
           interval_months: null,
           whichever_first: false,
-          conditions: "Normaali käyttö",
+          conditions: "Normal use",
           original_value: 15_000,
           original_unit: "km",
           source: {
             ...source,
-            evidence: "Valmistajan taulukossa vaihtoväli on 15 000 km.",
+            evidence: "The manufacturer table states a 15,000 km replacement interval.",
           },
           authority_rank: 1,
           compatibility: "exact",
-          compatibility_notes: "Ajoneuvoversio ja markkina täsmäävät.",
+          compatibility_notes: "The vehicle variant and market match.",
         },
       ],
       recommended_claim_id: "claim-1",
@@ -51,7 +51,7 @@ export const maintenanceResearchFixture: MaintenanceResearch = {
     },
     {
       component_code: "timing_belt",
-      component_label: "Jakohihna",
+      component_label: "Timing belt",
       resolution: "conflicting_sources",
       interval_claims: [
         {
@@ -64,11 +64,11 @@ export const maintenanceResearchFixture: MaintenanceResearch = {
           original_unit: "km",
           source: {
             ...source,
-            evidence: "Yksi virallinen taulukko ilmoittaa 100 000 km.",
+            evidence: "One official table states 100,000 km.",
           },
           authority_rank: 1,
           compatibility: "exact",
-          compatibility_notes: "Moottorikoodi täsmää.",
+          compatibility_notes: "The engine code matches.",
         },
         {
           claim_id: "claim-3",
@@ -82,20 +82,20 @@ export const maintenanceResearchFixture: MaintenanceResearch = {
             ...source,
             url: "https://manufacturer.example/bulletin",
             title: "Official maintenance bulletin",
-            evidence: "Toinen virallinen tiedote ilmoittaa 120 000 km.",
+            evidence: "Another official bulletin states 120,000 km.",
           },
           authority_rank: 1,
           compatibility: "exact",
-          compatibility_notes: "Moottorikoodi täsmää.",
+          compatibility_notes: "The engine code matches.",
         },
       ],
       recommended_claim_id: null,
       conflict_summary:
-        "Parhaan lähdetason kesken on ristiriitaisia huoltovälejä. Väliä ei valittu automaattisesti.",
+        "The best source tier contains conflicting maintenance intervals. No interval was selected automatically.",
     },
     {
       component_code: "air_filter",
-      component_label: "Ilmansuodatin",
+      component_label: "Engine air filter",
       resolution: "insufficient_evidence",
       interval_claims: [],
       recommended_claim_id: null,
@@ -103,7 +103,7 @@ export const maintenanceResearchFixture: MaintenanceResearch = {
     },
   ],
   global_warnings: [
-    "Ilmansuodatin: tarkkaa vaihtoväliä ei voitu varmistaa.",
+    "Engine air filter: the exact replacement interval could not be verified.",
   ],
   researched_at: "2026-07-19T12:00:00.000Z",
 };

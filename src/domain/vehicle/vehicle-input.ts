@@ -66,14 +66,14 @@ const requiredText = (label: string, maximumLength: number) =>
   z
     .string()
     .trim()
-    .min(1, `${label} on pakollinen.`)
-    .max(maximumLength, `${label} on liian pitkä.`);
+    .min(1, `${label} is required.`)
+    .max(maximumLength, `${label} is too long.`);
 
 const optionalText = (label: string, maximumLength: number) =>
   z
     .string()
     .trim()
-    .max(maximumLength, `${label} on liian pitkä.`)
+    .max(maximumLength, `${label} is too long.`)
     .transform((value) => (value === "" ? undefined : value));
 
 const requiredInteger = (
@@ -142,56 +142,56 @@ export function createVehicleInputSchema(
 ) {
   return z
     .strictObject({
-      make: requiredText("Merkki", 80),
-      model: requiredText("Malli", 80),
-      generation: optionalText("Sukupolvi tai alustakoodi", 80),
+      make: requiredText("Make", 80),
+      model: requiredText("Model", 80),
+      generation: optionalText("Generation or chassis code", 80),
       modelYear: optionalInteger(
-        "Anna mallivuosi nelinumeroisena kokonaislukuna.",
+        "Enter the model year as a four-digit integer.",
         1886,
         currentYear + 1,
-        `Mallivuoden on oltava välillä 1886–${currentYear + 1}.`,
+        `The model year must be between 1886 and ${currentYear + 1}.`,
       ),
       firstRegistrationYear: optionalInteger(
-        "Anna ensirekisteröintivuosi nelinumeroisena kokonaislukuna.",
+        "Enter the first registration year as a four-digit integer.",
         1886,
         currentYear,
-        `Ensirekisteröintivuoden on oltava välillä 1886–${currentYear}.`,
+        `The first registration year must be between 1886 and ${currentYear}.`,
       ),
       engineDisplacementLitres: optionalDecimal(
-        "Anna moottorin tilavuus numerona, esimerkiksi 2,0.",
+        "Enter the engine displacement as a number, for example 2.0.",
         0.1,
         20,
-        "Moottorin tilavuuden on oltava välillä 0,1–20 litraa.",
+        "The engine displacement must be between 0.1 and 20 litres.",
       ),
-      engineCode: optionalText("Moottorikoodi", 40),
+      engineCode: optionalText("Engine code", 40),
       powerKw: optionalInteger(
-        "Anna teho kokonaisina kilowatteina.",
+        "Enter power as whole kilowatts.",
         1,
         2_000,
-        "Tehon on oltava välillä 1–2 000 kW.",
+        "Power must be between 1 and 2,000 kW.",
       ),
-      fuelType: optionalEnum(fuelTypes, "Valitse luettelossa oleva käyttövoima."),
+      fuelType: optionalEnum(fuelTypes, "Select a fuel type from the list."),
       transmissionType: optionalEnum(
         transmissionTypes,
-        "Valitse luettelossa oleva vaihteistotyyppi.",
+        "Select a transmission type from the list.",
       ),
-      transmissionCode: optionalText("Vaihteistokoodi", 40),
+      transmissionCode: optionalText("Transmission code", 40),
       drivetrain: optionalEnum(
         drivetrainTypes,
-        "Valitse luettelossa oleva vetotapa.",
+        "Select a drivetrain from the list.",
       ),
       country: z.enum(countryCodes, {
-        error: "Valitse ajoneuvon maa.",
+        error: "Select the vehicle country.",
       }),
-      market: optionalText("Markkina-alue", 80),
+      market: optionalText("Market", 80),
       currentOdometerKm: requiredInteger(
-        "Nykyinen matkamittarilukema on pakollinen.",
-        "Anna matkamittarilukema kokonaisina kilometreinä.",
+        "The current odometer reading is required.",
+        "Enter the odometer reading as whole kilometres.",
         0,
         10_000_000,
-        "Matkamittarilukeman on oltava välillä 0–10 000 000 km.",
+        "The odometer reading must be between 0 and 10,000,000 km.",
       ),
-      additionalDetails: optionalText("Lisätiedot", 1_000),
+      additionalDetails: optionalText("Additional details", 1_000),
     })
     .superRefine((vehicle, context) => {
       if (
@@ -203,7 +203,7 @@ export function createVehicleInputSchema(
           code: "custom",
           path: ["firstRegistrationYear"],
           message:
-            "Ensirekisteröintivuosi ei voi olla yli vuotta mallivuotta aikaisempi.",
+            "The first registration year cannot be more than one year before the model year.",
         });
       }
     });
@@ -253,7 +253,7 @@ export function createConfirmedVehicleInputSchema(
           code: "custom",
           path: ["firstRegistrationYear"],
           message:
-            "Ensirekisteröintivuosi ei voi olla yli vuotta mallivuotta aikaisempi.",
+            "The first registration year cannot be more than one year before the model year.",
         });
       }
     });
@@ -277,7 +277,7 @@ export function createEmptyVehicleDraft(): VehicleFormDraft {
     transmissionCode: "",
     drivetrain: "",
     country: "FI",
-    market: "Eurooppa",
+    market: "Europe",
     currentOdometerKm: "",
     additionalDetails: "",
   };

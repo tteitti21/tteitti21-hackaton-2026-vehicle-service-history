@@ -65,7 +65,7 @@ export function validateEventValues(
         code: "invalid_date",
         severity: "error",
         eventIds: [event.event_id],
-        message: `Tapahtuman ${event.event_id} päivämäärä ei ole mahdollinen tai vastaa tuettua muotoa.`,
+        message: `The date of event ${event.event_id} is not possible or does not match a supported format.`,
       });
     } else if (date.status === "unverified") {
       issues.push({
@@ -73,7 +73,7 @@ export function validateEventValues(
         code: "unverified_date",
         severity: "warning",
         eventIds: [event.event_id],
-        message: `Tapahtuman ${event.event_id} päivämäärän tarkkuutta ei voitu päätellä syötetystä muodosta.`,
+        message: `The date precision of event ${event.event_id} could not be inferred from the entered format.`,
       });
     }
 
@@ -83,7 +83,7 @@ export function validateEventValues(
         code: "invalid_odometer",
         severity: "error",
         eventIds: [event.event_id],
-        message: `Tapahtuman ${event.event_id} matkamittarilukeman on oltava nolla tai positiivinen kokonaisluku.`,
+        message: `The odometer reading of event ${event.event_id} must be zero or a positive integer.`,
       });
     } else if (odometer.status === "unverified") {
       issues.push({
@@ -91,7 +91,7 @@ export function validateEventValues(
         code: "unverified_odometer_unit",
         severity: "warning",
         eventIds: [event.event_id],
-        message: `Tapahtuman ${event.event_id} matkamittarin yksikkö on epäselvä, joten lukemaa ei käytetä kilometrilaskennassa.`,
+        message: `The odometer unit of event ${event.event_id} is unclear, so the reading is not used in kilometre calculations.`,
       });
     }
 
@@ -124,7 +124,7 @@ export function detectDuplicateEvents(
         code: "possible_duplicate",
         severity: "warning",
         eventIds: [left.event.event_id, right.event.event_id],
-        message: `Tapahtumat ${left.event.event_id} ja ${right.event.event_id} voivat kuvata samaa huoltokäyntiä (${signals.join(", ")}). Tarkista ja yhdistä tarvittaessa.`,
+        message: `Events ${left.event.event_id} and ${right.event.event_id} may describe the same service visit (${signals.join(", ")}). Review and merge them if necessary.`,
       });
     }
   }
@@ -162,7 +162,7 @@ export function detectChronologyWarnings(
         code: "future_service_date",
         severity: "warning",
         eventIds: [normalized.event.event_id],
-        message: `Tapahtuman ${normalized.event.event_id} päivämäärä on tulevaisuudessa.`,
+        message: `The date of event ${normalized.event.event_id} is in the future.`,
       });
     }
 
@@ -177,7 +177,7 @@ export function detectChronologyWarnings(
         code: "odometer_above_current",
         severity: "warning",
         eventIds: [normalized.event.event_id],
-        message: `Tapahtuman ${normalized.event.event_id} normalisoitu mittarilukema ylittää ajoneuvon nykyisen lukeman.`,
+        message: `The normalized odometer reading of event ${normalized.event.event_id} exceeds the vehicle's current reading.`,
       });
     }
   }
@@ -212,7 +212,7 @@ export function detectChronologyWarnings(
           ordered.earlier.event.event_id,
           ordered.later.event.event_id,
         ],
-        message: `Mittarilukema pienenee tapahtumasta ${ordered.earlier.event.event_id} myöhempään tapahtumaan ${ordered.later.event.event_id}. Tarkista päivämäärät, yksiköt ja lukemat.`,
+        message: `The odometer reading decreases from event ${ordered.earlier.event.event_id} to later event ${ordered.later.event.event_id}. Check the dates, units, and readings.`,
       });
     }
   }
@@ -232,7 +232,7 @@ function duplicateSignals(
     left.date.earliestUtc === right.date.earliestUtc &&
     left.date.latestUtc === right.date.latestUtc
   ) {
-    signals.push("sama päivämäärä");
+    signals.push("same date");
   }
 
   if (
@@ -242,7 +242,7 @@ function duplicateSignals(
     right.odometer.kilometres !== null &&
     Math.abs(left.odometer.kilometres - right.odometer.kilometres) <= 10
   ) {
-    signals.push("sama mittarilukema");
+    signals.push("same odometer reading");
   }
 
   const leftComponents = resolvedComponentCodes(left.event);
@@ -251,7 +251,7 @@ function duplicateSignals(
   if (
     [...leftComponents].some((component) => rightComponents.has(component))
   ) {
-    signals.push("sama komponentti");
+    signals.push("same component");
   }
 
   return signals;

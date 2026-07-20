@@ -23,19 +23,19 @@ describe("VehicleResolutionPanel", () => {
     renderPanel();
 
     expect(
-      screen.getByText(/Ajoneuvohaku odottaa aiempien vaiheiden vahvistusta/),
+      screen.getByText(/Vehicle search is waiting for confirmation of earlier phases/),
     ).toBeVisible();
     expect(
       screen.queryByRole("button", {
-        name: "Etsi ajoneuvoversiot verkosta",
+        name: "Search the web for vehicle variants",
       }),
     ).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Valmistele istunto" }));
+    await user.click(screen.getByRole("button", { name: "Prepare session" }));
 
     expect(
       screen.getByRole("button", {
-        name: "Etsi ajoneuvoversiot verkosta",
+        name: "Search the web for vehicle variants",
       }),
     ).toBeEnabled();
   });
@@ -53,7 +53,7 @@ describe("VehicleResolutionPanel", () => {
     );
     expect(
       screen.getByRole("button", {
-        name: "Vahvista valittu ajoneuvoversio",
+        name: "Confirm selected vehicle variant",
       }),
     ).toBeDisabled();
     const sourceLinks = screen.getAllByRole("link", {
@@ -86,12 +86,12 @@ describe("VehicleResolutionPanel", () => {
     await user.click(secondCandidate);
     await user.click(
       screen.getByRole("button", {
-        name: "Vahvista valittu ajoneuvoversio",
+        name: "Confirm selected vehicle variant",
       }),
     );
 
     const confirmation = screen.getByText(
-      "Ajoneuvoversio vahvistettu myöhempää tutkimusta varten",
+      "Vehicle variant confirmed for later research",
     ).parentElement;
     expect(confirmation).not.toBeNull();
     expect(within(confirmation!).getByText(/2WW/)).toBeVisible();
@@ -111,19 +111,19 @@ describe("VehicleResolutionPanel", () => {
     );
     await user.click(
       screen.getByRole("button", {
-        name: "Vahvista valittu ajoneuvoversio",
+        name: "Confirm selected vehicle variant",
       }),
     );
     await user.click(
       screen.getByRole("button", {
-        name: "Mikään näistä ei vastaa ajoneuvoa",
+        name: "None of these matches the vehicle",
       }),
     );
 
-    expect(screen.getByText("Ehdokkaat hylättiin.")).toBeVisible();
+    expect(screen.getByText("Candidates rejected.")).toBeVisible();
     expect(
       screen.queryByText(
-        "Ajoneuvoversio vahvistettu myöhempää tutkimusta varten",
+        "Vehicle variant confirmed for later research",
       ),
     ).not.toBeInTheDocument();
     expect(
@@ -138,16 +138,16 @@ describe("VehicleResolutionPanel", () => {
     mockResolution({
       ...vehicleResolutionFixture,
       candidates: [],
-      warnings: ["Moottori- tai alustakoodi puuttuu."],
+      warnings: ["The engine or chassis code is missing."],
     });
     renderPanel();
-    await prepareAndSearch(user, "Varmennettavaa ehdokasta ei löytynyt.");
+    await prepareAndSearch(user, "No verifiable candidate was found.");
 
     expect(
-      screen.getByText("Varmennettavaa ehdokasta ei löytynyt."),
+      screen.getByText("No verifiable candidate was found."),
     ).toBeVisible();
     expect(
-      screen.getByText(/Tarkkaa versiota ei päätelty puutteellisesta näytöstä/),
+      screen.getByText(/An exact variant was not inferred from incomplete evidence/),
     ).toBeVisible();
 
     vi.mocked(fetch).mockResolvedValueOnce(
@@ -165,11 +165,11 @@ describe("VehicleResolutionPanel", () => {
       ),
     );
     await user.click(
-      screen.getByRole("button", { name: "Hae ajoneuvoversiot uudelleen" }),
+      screen.getByRole("button", { name: "Search for vehicle variants again" }),
     );
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "Ajoneuvoversion verkkohaku epäonnistui palveluntarjoajalla.",
+      "Vehicle-variant web search failed at the provider.",
     );
     expect(screen.getByRole("alert")).not.toHaveTextContent("<script>");
   });
@@ -186,11 +186,11 @@ function renderPanel() {
 
 async function prepareAndSearch(
   user: ReturnType<typeof userEvent.setup>,
-  completedText = "2 ehdokasta löytyi",
+  completedText = "2 candidates found",
 ) {
-  await user.click(screen.getByRole("button", { name: "Valmistele istunto" }));
+  await user.click(screen.getByRole("button", { name: "Prepare session" }));
   await user.click(
-    screen.getByRole("button", { name: "Etsi ajoneuvoversiot verkosta" }),
+    screen.getByRole("button", { name: "Search the web for vehicle variants" }),
   );
   await screen.findByText(completedText);
 }
@@ -232,7 +232,7 @@ function SessionControls() {
         confirmServiceHistoryReview();
       }}
     >
-      Valmistele istunto
+      Prepare session
     </button>
   );
 }

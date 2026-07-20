@@ -8,44 +8,44 @@ test("shows the Phase 9 MVP, demo, workflow, and report controls", async ({
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: /Huoltohistoria selkeäksi/,
+      name: /A clear service history/,
     }),
   ).toBeVisible();
-  await expect(page.getByText("Vaihe 9 / MVP käytössä")).toBeVisible();
+  await expect(page.getByText("Phase 9 / MVP available")).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Lataa synteettinen demo" }),
+    page.getByRole("button", { name: "Load synthetic demo" }),
   ).toBeVisible();
-  await expect(page.getByRole("textbox", { name: "Merkki" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Make" })).toBeVisible();
   await expect(
-    page.getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" }),
+    page.getByRole("spinbutton", { name: "Current odometer reading" }),
   ).toBeVisible();
-  await expect(page.getByLabel("Valitse kuvat")).toHaveAttribute(
+  await expect(page.getByLabel("Select images")).toHaveAttribute(
     "accept",
     "image/jpeg,image/png,image/webp",
   );
   await expect(
     page.getByRole("heading", {
-      name: "Poimitut huoltotapahtumat normalisoidaan tässä.",
+      name: "Extracted service events are normalized here.",
     }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "Rajaa tarkka ajoneuvoversio lähteiden avulla.",
+      name: "Narrow down the exact vehicle variant using sources.",
     }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "Tarkista huoltovälit lähde kerrallaan.",
+      name: "Review maintenance intervals one source at a time.",
     }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "Huoltojen tila lasketaan todennetusta näytöstä.",
+      name: "Maintenance status is calculated from verified evidence.",
     }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "Tarkista raportti ja tallenna se omalle laitteellesi.",
+      name: "Review the report and save it to your device.",
     }),
   ).toBeVisible();
 });
@@ -55,47 +55,47 @@ test("validates, confirms, and resets vehicle data in memory", async ({
 }) => {
   await page.goto("/");
 
-  await page.getByRole("textbox", { name: "Merkki" }).fill("Toyota");
-  await page.getByRole("textbox", { name: "Malli" }).fill("Avensis");
-  await page.getByLabel("Mallivuosi").fill("2015");
-  await page.getByLabel("Ensirekisteröintivuosi").fill("2015");
+  await page.getByRole("textbox", { name: "Make" }).fill("Toyota");
+  await page.getByRole("textbox", { name: "Model" }).fill("Avensis");
+  await page.getByLabel("Model year").fill("2015");
+  await page.getByLabel("First registration year").fill("2015");
   await page
-    .getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" })
+    .getByRole("spinbutton", { name: "Current odometer reading" })
     .fill("184000");
-  await page.getByRole("button", { name: "Vahvista ajoneuvotiedot" }).click();
+  await page.getByRole("button", { name: "Confirm vehicle details" }).click();
 
   const summary = page.getByTestId("confirmed-vehicle");
   await expect(summary.getByText("Toyota Avensis")).toBeVisible();
   await expect(summary.getByText(/184.?000 km/)).toBeVisible();
 
-  await page.getByRole("button", { name: "Tyhjennä istunto" }).click();
-  await expect(page.getByRole("textbox", { name: "Merkki" })).toHaveValue("");
-  await expect(page.getByRole("textbox", { name: "Malli" })).toHaveValue("");
+  await page.getByRole("button", { name: "Clear session" }).click();
+  await expect(page.getByRole("textbox", { name: "Make" })).toHaveValue("");
+  await expect(page.getByRole("textbox", { name: "Model" })).toHaveValue("");
   await expect(
-    page.getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" }),
+    page.getByRole("spinbutton", { name: "Current odometer reading" }),
   ).toHaveValue("");
   await expect(summary).toHaveCount(0);
-  await expect(page.getByText("Istunto on tyhjennetty")).toBeVisible();
+  await expect(page.getByText("Session cleared")).toBeVisible();
 });
 
 test("rejects invalid odometer and year combinations", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByRole("textbox", { name: "Merkki" }).fill("Toyota");
-  await page.getByRole("textbox", { name: "Malli" }).fill("Avensis");
-  await page.getByLabel("Mallivuosi").fill("2020");
-  await page.getByLabel("Ensirekisteröintivuosi").fill("2017");
+  await page.getByRole("textbox", { name: "Make" }).fill("Toyota");
+  await page.getByRole("textbox", { name: "Model" }).fill("Avensis");
+  await page.getByLabel("Model year").fill("2020");
+  await page.getByLabel("First registration year").fill("2017");
   await page
-    .getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" })
+    .getByRole("spinbutton", { name: "Current odometer reading" })
     .fill("-1");
-  await page.getByRole("button", { name: "Vahvista ajoneuvotiedot" }).click();
+  await page.getByRole("button", { name: "Confirm vehicle details" }).click();
 
   await expect(
-    page.getByText("Anna matkamittarilukema kokonaisina kilometreinä."),
+    page.getByText("Enter the odometer reading as whole kilometres."),
   ).toBeVisible();
   await expect(
     page.getByText(
-      "Ensirekisteröintivuosi ei voi olla yli vuotta mallivuotta aikaisempi.",
+      "The first registration year cannot be more than one year before the model year.",
     ),
   ).toBeVisible();
   await expect(page.getByTestId("confirmed-vehicle")).toHaveCount(0);
@@ -104,23 +104,23 @@ test("rejects invalid odometer and year combinations", async ({ page }) => {
 test("reload clears all vehicle data", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByRole("textbox", { name: "Merkki" }).fill("Toyota");
-  await page.getByRole("textbox", { name: "Malli" }).fill("Avensis");
+  await page.getByRole("textbox", { name: "Make" }).fill("Toyota");
+  await page.getByRole("textbox", { name: "Model" }).fill("Avensis");
   await page
-    .getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" })
+    .getByRole("spinbutton", { name: "Current odometer reading" })
     .fill("184000");
-  await page.getByRole("button", { name: "Vahvista ajoneuvotiedot" }).click();
+  await page.getByRole("button", { name: "Confirm vehicle details" }).click();
   await expect(page.getByTestId("confirmed-vehicle")).toBeVisible();
 
   await page.reload();
 
-  await expect(page.getByRole("textbox", { name: "Merkki" })).toHaveValue("");
-  await expect(page.getByRole("textbox", { name: "Malli" })).toHaveValue("");
+  await expect(page.getByRole("textbox", { name: "Make" })).toHaveValue("");
+  await expect(page.getByRole("textbox", { name: "Model" })).toHaveValue("");
   await expect(
-    page.getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" }),
+    page.getByRole("spinbutton", { name: "Current odometer reading" }),
   ).toHaveValue("");
   await expect(page.getByTestId("confirmed-vehicle")).toHaveCount(0);
-  await expect(page.getByText("Ei vahvistettua ajoneuvoa")).toBeVisible();
+  await expect(page.getByText("No confirmed vehicle")).toBeVisible();
 });
 
 test("does not persist vehicle data in browser storage or cookies", async ({
@@ -129,12 +129,12 @@ test("does not persist vehicle data in browser storage or cookies", async ({
 }) => {
   await page.goto("/");
 
-  await page.getByRole("textbox", { name: "Merkki" }).fill("Toyota");
-  await page.getByRole("textbox", { name: "Malli" }).fill("Avensis");
+  await page.getByRole("textbox", { name: "Make" }).fill("Toyota");
+  await page.getByRole("textbox", { name: "Model" }).fill("Avensis");
   await page
-    .getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" })
+    .getByRole("spinbutton", { name: "Current odometer reading" })
     .fill("184000");
-  await page.getByRole("button", { name: "Vahvista ajoneuvotiedot" }).click();
+  await page.getByRole("button", { name: "Confirm vehicle details" }).click();
 
   const storage = await page.evaluate(async () => ({
     localStorageKeys: Object.keys(window.localStorage),
@@ -154,17 +154,17 @@ test("does not persist vehicle data in browser storage or cookies", async ({
 
 test("provides the full privacy disclosure", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: /Miten tietoja käsitellään/ }).click();
+  await page.getByRole("link", { name: /How data is handled/ }).click();
 
   await expect(page).toHaveURL(/\/tietosuoja$/);
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: /Tietojen käsittely on rajattu yhteen istuntoon/,
+      name: /Data handling is limited to one session/,
     }),
   ).toBeVisible();
   await expect(
-    page.getByText(/säilytys- ja väärinkäytön valvontakäytännöt/),
+    page.getByText(/data retention and abuse monitoring policies/),
   ).toBeVisible();
 });
 
@@ -204,7 +204,7 @@ test("loads the complete synthetic demo locally and clears it on reload", async 
   await page.goto("/");
 
   await page
-    .getByRole("button", { name: "Lataa synteettinen demo" })
+    .getByRole("button", { name: "Load synthetic demo" })
     .click();
 
   await expect(page.getByTestId("confirmed-vehicle")).toContainText(
@@ -212,17 +212,17 @@ test("loads the complete synthetic demo locally and clears it on reload", async 
   );
   await expect(
     page
-      .getByRole("complementary", { name: "Normalisoidut arvot" })
+      .getByRole("complementary", { name: "Normalized values" })
       .getByText("160 934,4 km", { exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Nordica Aurora", level: 3 }),
   ).toBeVisible();
-  await expect(page.getByText("Lähteissä ristiriita").first()).toBeVisible();
+  await expect(page.getByText("Conflicting sources").first()).toBeVisible();
   expect(apiRequests).toEqual([]);
 
   await page.reload();
-  await expect(page.getByRole("textbox", { name: "Merkki" })).toHaveValue("");
+  await expect(page.getByRole("textbox", { name: "Make" })).toHaveValue("");
   await expect(page.getByTestId("confirmed-vehicle")).toHaveCount(0);
 });
 

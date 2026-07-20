@@ -15,34 +15,34 @@ import {
 import { readSafeApiError } from "@/lib/http/safe-client-error";
 
 const resolutionLabels: Record<ComponentResearch["resolution"], string> = {
-  resolved: "Lähde löytyi",
-  conflicting_sources: "Lähteissä ristiriita",
-  insufficient_evidence: "Ei riittävää tietoa",
+  resolved: "Source found",
+  conflicting_sources: "Conflicting sources",
+  insufficient_evidence: "Insufficient evidence",
 };
 
 const compatibilityLabels: Record<IntervalClaim["compatibility"], string> = {
-  exact: "Tarkka yhteensopivuus",
-  strong: "Vahva yhteensopivuus",
-  partial: "Osittainen yhteensopivuus",
-  weak: "Heikko yhteensopivuus",
-  unknown: "Yhteensopivuus tuntematon",
+  exact: "Exact compatibility",
+  strong: "Strong compatibility",
+  partial: "Partial compatibility",
+  weak: "Weak compatibility",
+  unknown: "Compatibility unknown",
 };
 
 const maintenanceResearchErrorMessages = {
-  forbidden: "Tutkimuspyyntö estettiin. Päivitä sivu ja yritä uudelleen.",
+  forbidden: "The research request was blocked. Refresh the page and try again.",
   rate_limited:
-    "Huoltovälitutkimuksia on tehty liian monta. Odota hetki ja yritä uudelleen.",
+    "Too many maintenance interval research requests have been made. Wait a moment and try again.",
   provider_timeout:
-    "Huoltovälien verkkotutkimus aikakatkaistiin. Voit yrittää uudelleen.",
+    "Maintenance interval web research timed out. You can try again.",
   invalid_provider_output:
-    "Tutkimustulosta tai sen lähteitä ei voitu varmistaa turvallisesti.",
+    "The research result or its sources could not be verified safely.",
   provider_error:
-    "Huoltovälien verkkotutkimus epäonnistui palveluntarjoajalla.",
+    "Maintenance interval web research failed at the provider.",
   service_unavailable:
-    "Huoltovälien verkkotutkimus ei ole tällä hetkellä käytettävissä.",
-  payload_too_large: "Tutkimuspyyntö ylittää sallitun kokorajan.",
-  unsupported_media_type: "Tutkimuspyyntö on lähetettävä JSON-muodossa.",
-  invalid_request: "Tutkimuspyyntöä ei voitu käsitellä.",
+    "Maintenance interval web research is currently unavailable.",
+  payload_too_large: "The research request exceeds the allowed size limit.",
+  unsupported_media_type: "The research request must be submitted as JSON.",
+  invalid_request: "The research request could not be processed.",
 } as const;
 
 export function MaintenanceResearchPanel() {
@@ -96,7 +96,7 @@ export function MaintenanceResearchPanel() {
           readSafeApiError(
             payload,
             maintenanceResearchErrorMessages,
-            "Huoltovälitutkimus epäonnistui. Yritä uudelleen.",
+            "Maintenance interval research failed. Try again.",
           ),
         );
         return;
@@ -105,14 +105,14 @@ export function MaintenanceResearchPanel() {
       const parsed = maintenanceResearchSchema.safeParse(payload);
       if (!parsed.success) {
         failMaintenanceResearch(
-          "Tutkimuksen vastausta ei voitu varmistaa turvallisesti.",
+          "The research response could not be verified safely.",
         );
         return;
       }
       completeMaintenanceResearch(parsed.data);
     } catch {
       failMaintenanceResearch(
-        "Huoltovälitutkimukseen ei saatu yhteyttä. Tarkista verkkoyhteys ja yritä uudelleen.",
+        "Maintenance interval research could not be reached. Check your network connection and try again.",
       );
     }
   };
@@ -124,17 +124,18 @@ export function MaintenanceResearchPanel() {
     >
       <div className="maintenanceResearchHeading">
         <div>
-          <p className="sectionLabel">Vaihe 6 / Huoltovälien tutkimus</p>
+          <p className="sectionLabel">Phase 6 / Maintenance interval research</p>
           <h2 id="maintenance-research-heading">
-            Tarkista huoltovälit lähde kerrallaan.
+            Review maintenance intervals one source at a time.
           </h2>
         </div>
         <div className="webSearchNotice">
-          <strong>Kaksivaiheinen, lähteisiin sidottu haku</strong>
+          <strong>Two-stage, source-backed search</strong>
           <p>
-            OpenAI:lle välitetään vain vahvistettu ajoneuvoversio, maa ja
-            markkina sekä tutkittavat komponenttiluokat. Kuvia,
-            huoltohistoriaa tai matkamittarilukemaa ei välitetä tutkimusmallille.
+            Only the confirmed vehicle variant, country, market, and component
+            categories being researched are sent to OpenAI. Images, service
+            history, and the odometer reading are not sent to the research
+            model.
           </p>
         </div>
       </div>
@@ -143,10 +144,10 @@ export function MaintenanceResearchPanel() {
         <div className="emptyResolutionState">
           <span aria-hidden="true">06</span>
           <div>
-            <strong>Huoltovälitutkimus odottaa vahvistettua versiota.</strong>
+            <strong>Maintenance interval research is waiting for a confirmed variant.</strong>
             <p>
-              Vahvista ensin ajoneuvotiedot, tarkistettu huoltohistoria ja yksi
-              ajoneuvoversio.
+              First confirm the vehicle details, reviewed service history, and
+              one vehicle variant.
             </p>
           </div>
         </div>
@@ -160,14 +161,14 @@ export function MaintenanceResearchPanel() {
               onClick={startResearch}
             >
               {state.maintenanceResearchStatus === "submitting"
-                ? "Tutkitaan huoltovälejä…"
+                ? "Researching maintenance intervals…"
                 : state.maintenanceResearch === null
-                  ? "Tutki huoltovälit verkosta"
-                  : "Tutki huoltovälit uudelleen"}
+                  ? "Research maintenance intervals online"
+                  : "Research maintenance intervals again"}
             </button>
             <p>
-              Sovellus ei arvaa puuttuvaa väliä eikä laske vielä huollon
-              ajankohtaisuutta.
+              The application does not guess a missing interval or calculate
+              maintenance timing yet.
             </p>
           </div>
 
@@ -175,15 +176,15 @@ export function MaintenanceResearchPanel() {
             <div className="resolutionProgress" role="status">
               <span aria-hidden="true" />
               <div>
-                <strong>Haetaan ja normalisoidaan lähdenäyttöä</strong>
-                <p>Kaksivaiheinen verkkotutkimus voi kestää muutaman minuutin.</p>
+                <strong>Retrieving and normalizing source evidence</strong>
+                <p>Two-stage web research may take a few minutes.</p>
               </div>
             </div>
           ) : null}
 
           {state.maintenanceResearchStatus === "error" ? (
             <div className="resolutionError" role="alert">
-              <strong>Huoltovälitutkimus epäonnistui.</strong>
+              <strong>Maintenance interval research failed.</strong>
               <p>{state.maintenanceResearchError}</p>
             </div>
           ) : null}
@@ -225,21 +226,21 @@ function ResearchResults({
       <div className="researchSummary" role="status">
         <div>
           <strong>{counts.resolved}</strong>
-          <span>varmennettua</span>
+          <span>verified</span>
         </div>
         <div>
           <strong>{counts.conflicting_sources}</strong>
-          <span>ristiriitaa</span>
+          <span>conflicts</span>
         </div>
         <div>
           <strong>{counts.insufficient_evidence}</strong>
-          <span>ilman riittävää näyttöä</span>
+          <span>without sufficient evidence</span>
         </div>
       </div>
 
       {warnings.length > 0 ? (
         <details className="researchWarnings">
-          <summary>Tutkimuksen varoitukset ({warnings.length})</summary>
+          <summary>Research warnings ({warnings.length})</summary>
           <ul>
             {warnings.map((warning) => (
               <li key={warning}>{warning}</li>
@@ -279,8 +280,8 @@ function ComponentResearchCard({
 
       {component.resolution === "insufficient_evidence" ? (
         <p className="insufficientEvidence">
-          Tarkkaa vaihtoväliä ei voitu varmistaa riittävän luotettavista, tähän
-          ajoneuvovarianttiin sopivista lähteistä.
+          The exact replacement interval could not be verified from
+          sufficiently reliable sources compatible with this vehicle variant.
         </p>
       ) : null}
 
@@ -316,27 +317,27 @@ function IntervalClaimCard({
     <li className={recommended ? "recommendedClaim" : undefined}>
       <div className="claimHeading">
         <strong>{formatInterval(claim)}</strong>
-        {recommended ? <span>Sovelluksen valitsema paras näyttö</span> : null}
+        {recommended ? <span>Best evidence selected by the application</span> : null}
       </div>
       {claim.conditions ? <p>{claim.conditions}</p> : null}
       <dl>
         <div>
-          <dt>Alkuperäinen arvo</dt>
+          <dt>Original value</dt>
           <dd>{formatOriginalValue(claim)}</dd>
         </div>
         <div>
-          <dt>Lähdetaso</dt>
+          <dt>Source tier</dt>
           <dd>
             {claim.authority_rank}.{" "}
             {SOURCE_AUTHORITY_LABELS[claim.authority_rank]}
           </dd>
         </div>
         <div>
-          <dt>Yhteensopivuus</dt>
+          <dt>Compatibility</dt>
           <dd>{compatibilityLabels[claim.compatibility]}</dd>
         </div>
         <div>
-          <dt>Luotettavuustaso</dt>
+          <dt>Trustworthiness level</dt>
           <dd>
             {TRUSTWORTHINESS_LABELS_FI[trustworthiness.level]} (
             {trustworthiness.level})
@@ -363,18 +364,18 @@ function formatInterval(claim: IntervalClaim): string {
       : `${new Intl.NumberFormat("fi-FI").format(claim.interval_km)} km`,
     claim.interval_months === null
       ? null
-      : `${claim.interval_months} kk`,
+      : `${claim.interval_months} months`,
   ].filter((value): value is string => value !== null);
 
-  return values.join(claim.whichever_first ? " tai " : " + ");
+  return values.join(claim.whichever_first ? " or " : " + ");
 }
 
 function formatOriginalValue(claim: IntervalClaim): string {
   if (claim.original_unit === "mixed") {
-    return "Yhdistetty etäisyys- ja aikaväli; alkuperäiset arvot lähdenäytössä";
+    return "Combined distance and time interval; original values are in the source evidence";
   }
   if (claim.original_value === null || claim.original_unit === null) {
-    return "Ei ilmoitettu";
+    return "Not reported";
   }
   return `${claim.original_value} ${claim.original_unit}`;
 }

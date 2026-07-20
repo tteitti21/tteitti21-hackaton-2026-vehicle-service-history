@@ -96,7 +96,7 @@ describe("vehicle input schema", () => {
         expect.objectContaining({
           path: ["firstRegistrationYear"],
           message:
-            "Ensirekisteröintivuosi ei voi olla yli vuotta mallivuotta aikaisempi.",
+            "The first registration year cannot be more than one year before the model year.",
         }),
       );
     }
@@ -122,10 +122,10 @@ describe("vehicle input schema", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.flatten().fieldErrors.make).toContain(
-        "Merkki on pakollinen.",
+        "Make is required.",
       );
       expect(result.error.flatten().fieldErrors.model).toContain(
-        "Malli on pakollinen.",
+        "Model is required.",
       );
     }
   });

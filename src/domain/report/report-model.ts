@@ -29,27 +29,27 @@ import type { VehicleInput } from "@/domain/vehicle/vehicle-input";
 export const REPORT_SCHEMA_VERSION = "1.1";
 
 export const REPORT_STATUS_LABELS_FI: Record<ComponentStatusValue, string> = {
-  ok: "Kunnossa",
-  due_soon: "Lähestyy",
-  due: "Ajankohtainen",
-  overdue: "Myöhässä",
-  unknown: "Epäselvä",
-  insufficient_evidence: "Ei riittävää tietoa",
-  conflicting_sources: "Lähteissä ristiriita",
+  ok: "OK",
+  due_soon: "Due soon",
+  due: "Due",
+  overdue: "Overdue",
+  unknown: "Unknown",
+  insufficient_evidence: "Insufficient evidence",
+  conflicting_sources: "Conflicting sources",
 };
 
 export const REPORT_COMPATIBILITY_LABELS_FI = {
-  exact: "Tarkka",
-  strong: "Vahva",
-  partial: "Osittainen",
-  weak: "Heikko",
-  unknown: "Tuntematon",
+  exact: "Exact",
+  strong: "Strong",
+  partial: "Partial",
+  weak: "Weak",
+  unknown: "Unknown",
 } as const;
 
 export const REPORT_RESOLUTION_LABELS_FI = {
-  resolved: "Lähde varmennettu",
-  conflicting_sources: "Lähteissä ristiriita",
-  insufficient_evidence: "Ei riittävää tietoa",
+  resolved: "Source verified",
+  conflicting_sources: "Conflicting sources",
+  insufficient_evidence: "Insufficient evidence",
 } as const;
 
 export interface ReportModelInput {
@@ -242,7 +242,7 @@ export function createVehicleReportModel(
       local_export: true,
       images_included: false,
       disclaimer_fi:
-        "Raportti ei korvaa valmistajan huolto-ohjelmaa, kuntotarkastusta tai ammattilaisen arviota.",
+        "The report does not replace the manufacturer's maintenance schedule, a condition inspection, or professional assessment.",
     },
     vehicle: {
       make: input.confirmedVehicle.make,
@@ -332,8 +332,8 @@ export function createVehicleReportModel(
           createMaintenanceSuggestion(component),
         service_history_note_fi:
           status.last_service_event_id === null
-            ? "Huoltohistoriasta ei löytynyt merkintää."
-            : `Viimeisin laskennassa käytetty merkintä: ${status.last_service_event_id}.`,
+            ? "No service-history entry was found."
+            : `Latest entry used in the calculation: ${status.last_service_event_id}.`,
         interval_claim_count: component.interval_claims.length,
         recommended_claim_id: component.recommended_claim_id,
         recommended_interval_km: recommendedClaim?.interval_km ?? null,
@@ -439,7 +439,7 @@ function createMaintenanceSuggestion(
   component: MaintenanceResearch["components"][number],
 ): string {
   if (component.resolution === "insufficient_evidence") {
-    return "Tarkkaa vaihtoväliä ei voitu varmistaa riittävän luotettavista, tähän ajoneuvovarianttiin sopivista lähteistä.";
+    return "The exact replacement interval could not be verified from sufficiently reliable sources compatible with this vehicle variant.";
   }
 
   if (component.resolution === "conflicting_sources") {
@@ -449,18 +449,18 @@ function createMaintenanceSuggestion(
           `${claim.claim_id}: ${formatClaimInterval(claim.interval_km, claim.interval_months, claim.whichever_first)}`,
       )
       .join(" | ");
-    return `${component.conflict_summary ?? "Lähteissä on ratkaisematon ristiriita."} Säilytetyt väitteet: ${claims}.`;
+    return `${component.conflict_summary ?? "The sources contain an unresolved conflict."} Preserved claims: ${claims}.`;
   }
 
   const claim = component.interval_claims.find(
     (candidate) => candidate.claim_id === component.recommended_claim_id,
   );
   if (claim === undefined) {
-    return "Valittua huoltoväliväitettä ei löytynyt.";
+    return "The selected maintenance interval claim was not found.";
   }
 
   const conditions =
-    claim.conditions === null ? "Ei erillisiä käyttöehtoja." : claim.conditions;
+    claim.conditions === null ? "No separate operating conditions." : claim.conditions;
   return `${formatClaimInterval(claim.interval_km, claim.interval_months, claim.whichever_first)}. ${conditions}`;
 }
 
@@ -471,10 +471,10 @@ function formatClaimInterval(
 ): string {
   const values = [
     intervalKm === null ? null : `${intervalKm} km`,
-    intervalMonths === null ? null : `${intervalMonths} kk`,
+    intervalMonths === null ? null : `${intervalMonths} months`,
   ].filter((value): value is string => value !== null);
 
-  return values.join(whicheverFirst ? " tai " : " + ");
+  return values.join(whicheverFirst ? " or " : " + ");
 }
 
 function cloneVehicleVariant(variant: VehicleVariant): VehicleVariant {

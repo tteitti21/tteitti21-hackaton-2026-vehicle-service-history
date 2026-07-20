@@ -26,21 +26,21 @@ describe("ImageRedactionWorkspace", () => {
     );
 
     expect(
-      screen.getByText(/Vain alla näkyvä peitetty esikatselu voidaan lähettää/),
+      screen.getByText(/Only the sanitized preview shown below can be submitted/),
     ).toBeVisible();
     expect(
-      screen.getByText(/vastaanottava palveluntarjoaja on OpenAI/),
+      screen.getByText(/provider receiving the sanitized image is OpenAI/),
     ).toBeVisible();
-    expect(screen.getByText(/Rekisterinumeroa tai VINiä ei tarvita/)).toBeVisible();
+    expect(screen.getByText(/registration number or VIN is not needed/)).toBeVisible();
 
-    fireEvent.change(screen.getByLabelText("Valitse kuvat"), {
+    fireEvent.change(screen.getByLabelText("Select images"), {
       target: {
         files: [new File(["private"], "invoice.txt", { type: "text/plain" })],
       },
     });
 
     expect(
-      await screen.findByText(/tuettuja tiedostomuotoja ovat JPG, PNG ja WebP/),
+      await screen.findByText(/supported file formats are JPG, PNG, and WebP/),
     ).toBeVisible();
     expect(createImageBitmapSpy).not.toHaveBeenCalled();
   });
@@ -61,11 +61,11 @@ describe("ImageRedactionWorkspace", () => {
     );
 
     await user.upload(
-      screen.getByLabelText("Valitse kuvat"),
+      screen.getByLabelText("Select images"),
       new File(["12345"], "large.png", { type: "image/png" }),
     );
 
-    expect(await screen.findByText(/tiedosto ylittää kokorajan/)).toBeVisible();
+    expect(await screen.findByText(/file exceeds the .* size limit/)).toBeVisible();
     expect(createImageBitmapSpy).not.toHaveBeenCalled();
   });
 });

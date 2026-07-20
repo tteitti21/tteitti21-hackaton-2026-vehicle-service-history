@@ -1,172 +1,168 @@
-# AutoHuolto AI – Codex-toteutuspaketti
+# AutoHuolto AI – Codex implementation package
 
-Tämä paketti määrittelee yksityisyyttä painottavan, tilattoman web-sovelluksen, joka:
+This package defines a privacy-first, stateless web application that:
 
-1. vastaanottaa käyttäjän selaimessa anonymisoimat huoltokirja- ja kuittikuvat,
-2. poimii kuvista rakenteisen huoltohistorian OpenAI API:n kuva-analyysillä,
-3. antaa käyttäjän tarkistaa ja korjata poimitut rivit,
-4. hakee verkosta ajoneuvovarianttiin liittyvät huolto- ja vaihtovälit,
-5. laskee huoltojen tilanteen deterministisesti sovelluskoodissa,
-6. näyttää lähteet ja epävarmuudet,
-7. vie tuloksen JSON- ja Excel-tiedostoksi,
-8. ei käytä omaa tietokantaa eikä tallenna käyttäjän kuvia tai raportteja pysyvästi.
+1. accepts service-book and receipt images anonymized in the user's browser,
+2. extracts a structured service history from the images with OpenAI API image analysis,
+3. lets the user review and correct the extracted rows,
+4. searches the web for maintenance and replacement intervals related to the vehicle variant,
+5. calculates maintenance status deterministically in application code,
+6. displays sources and uncertainties,
+7. exports the result as JSON and Excel files,
+8. does not use its own database or permanently store the user's images or reports.
 
-## Codexille annettava aloitusohje
+## Starting instructions for Codex
 
-Avaa projektin juuressa oleva `AGENTS.md` ja toimi sen mukaan. Lue sen jälkeen:
+Open `AGENTS.md` in the project root and follow it. Then read:
 
 1. `CODEX_BUILD_SPEC.md`
 2. `docs/05_IMPLEMENTATION_PHASES.md`
 3. `docs/06_TESTING_AND_ACCEPTANCE.md`
 4. `docs/07_PRIVACY_AND_SECURITY.md`
 
-Rakenna yksi vaihe kerrallaan. Älä ohita testejä tai yksityisyysvaatimuksia.
+Build one phase at a time. Do not skip tests or privacy requirements.
 
-## Suositeltu toteutustapa
+## Recommended implementation
 
-- Next.js, TypeScript ja App Router
-- yksi deployattava web-sovellus
-- server route -rajapinnat OpenAI-kutsuille
-- ei tietokantaa
-- selaimen muistissa säilyvä istuntotila
-- manuaalinen kuvan peittäminen canvasilla ennen lähetystä
+- Next.js, TypeScript, and App Router
+- one deployable web application
+- server route APIs for OpenAI calls
+- no database
+- session state kept in browser memory
+- manual image redaction with canvas before submission
 - OpenAI Responses API:
-  - kuva-analyysi
+  - image analysis
   - Structured Outputs
   - web search
-- Excel-vienti selaimessa
+- browser-side Excel export
 
-Tekninen spesifikaatio on englanniksi, koska se on Codexille ja lähdekoodin tuottamiseen yksiselitteisempi. Käyttöliittymän oletuskieli on suomi.
+The technical specification is in English because it is less ambiguous for Codex and source-code generation. The default user-interface language is English.
 
-## Nykyinen toteutusvaihe
+## Current implementation phase
 
-Phase 9 viimeistelee MVP:n kovennetuilla selainotsakkeilla, rajatulla
-prosessikohtaisella väärinkäytön estolla, turvallisilla virhetiloilla,
-automaattisella yksityisyystarkistuksella, mobiilinäkymillä, saavutettavuuden
-selainarvioinnilla ja kattavalla Playwright-työnkululla. Sisäänrakennettu
-Nordica Aurora -demo on täysin kuvitteellinen, toimii ilman API-kutsuja ja
-sisältää kolme synteettistä asiakirjaviitettä, mailimuunnoksen,
-epäselvän tapahtuman, lähderistiriidan sekä puuttuvan huoltomerkinnän.
+Phase 9 completes the MVP with hardened browser headers, bounded in-process abuse
+prevention, safe error states, an automated privacy audit, responsive mobile
+views, browser accessibility checks, and a comprehensive Playwright workflow.
+The built-in Nordica Aurora demo is entirely fictional, works without API calls,
+and includes three synthetic document references, a mileage conversion, an
+ambiguous event, a source conflict, and a missing service-history entry.
 
-MVP sisältää aiempien vaiheiden ajoneuvolomakkeen, selaimessa tehtävän
-kuvan peittämisen ja tilattoman `/api/extract`-rajapinnan. Käyttäjän
-erikseen hyväksymät uudet PNG-kuvat lähetetään pyyntökohtaisena kuvasisältönä
-OpenAI Responses API:lle. `store: false`, palvelinpuolinen API-avain,
-rakenteinen tulos, skeemavalidointi, yksi rajattu skeemakorjausyritys,
-pyyntöaikaraja ja muistissa toimiva nopeusrajoitus suojaavat työnkulkua.
+The MVP includes the vehicle form from earlier phases, browser-side image
+redaction, and the stateless `/api/extract` endpoint. New PNG images explicitly
+approved by the user are sent as request-scoped image content to the OpenAI
+Responses API. `store: false`, a server-side API key, structured output, schema
+validation, one bounded schema-repair attempt, a request timeout, and in-memory
+rate limiting protect the workflow.
 
-Poimitut tapahtumat, lähdekuvaviitteet, luettavuus ja luottamus näytetään
-muokattavassa tarkistustaulukossa. Käyttäjä voi muokata, lisätä, poistaa ja
-yhdistää tapahtumia. Tyhjä tai lukukelvoton aineisto esitetään rehellisenä
-tyhjänä tuloksena, ja palveluvirhe säilyttää paikalliset kuvat uutta yritystä
-varten. Muokattava tapahtuma tunnistetaan koko rivin korostuksesta,
-aktiivisesta painikkeesta ja muokkauslomakkeen vierityksessä pysyvästä
-otsakkeesta.
+Extracted events, source-image references, readability, and confidence are shown
+in an editable review table. The user can edit, add, remove, and merge events.
+Empty or unreadable material is presented as an honest empty result, and a
+provider error preserves local images for another attempt. The editable event
+is identified by highlighting the entire row, an active button state, and a
+sticky heading in the edit form.
 
-Tarkistusnäkymä näyttää alkuperäisen kuvanäytön rinnalla normalisoidun
-päivämäärän, kilometreiksi muunnetun mittarilukeman ja kanonisen
-komponenttiluokituksen. Mailit muunnetaan laskentaa varten täsmällisellä
-kertoimella `1.609344`, mutta alkuperäinen arvo ja yksikkö säilyvät.
-Päivämäärän tarkkuus päätellään syötteestä automaattisesti: `PP.KK.VVVV`,
-`KK.VVVV` ja `VVVV` vastaavat päivä-, kuukausi- ja vuositarkkuutta.
-Sovelluskoodi havaitsee virheelliset päivämäärät ja mittarilukemat,
-mahdolliset kaksoiskappaleet sekä aikajärjestyksen ristiriidat. Käyttäjän on
-korjattava virheet, kuitattava näkyvät epävarmuudet ja vahvistettava
-huoltohistoria erikseen. Jokainen muokkaus poistaa vahvistuksen
-automaattisesti.
+The review view displays the normalized date, odometer reading converted to
+kilometres, and canonical component classification beside the original image
+evidence. Miles are converted for calculations with the exact factor `1.609344`,
+while the original value and unit are preserved. Date precision is inferred
+automatically from the input: `DD.MM.YYYY`, `MM.YYYY`, and `YYYY` correspond to
+day, month, and year precision. Application code detects invalid dates and
+odometer readings, possible duplicates, and chronology conflicts. The user must
+correct errors, acknowledge visible uncertainties, and confirm the service
+history separately. Every edit automatically removes confirmation.
 
-`/api/extract` ohittaa Next.js-proxyn pyyntörungon puskuroinnin. Rajapinta
-validoi itse enintään 10 kuvaa, 20 Mt kuvaa kohden ja noin 201 Mt koko
-multipart-pyyntöä oletusasetuksilla. Lähetysesikatselu näyttää peitettyjen
-PNG-kuvien tavumäärät, palvelimen vastaanottaman HTTP-pyyntörungon koon sekä
-sovelletun kokonaisrajan. Kuvan tai pyynnön sisältöä ei kirjoiteta lokiin.
-Kuvien poiminnan oletusaikaraja on 180 sekuntia, ja sen voi asettaa välille
-5–240 sekuntia `OPENAI_EXTRACTION_TIMEOUT_MS`-ympäristömuuttujalla.
-Poimintareitti ilmoittaa alustalle 300 sekunnin enimmäissuoritusajan, jotta
-sovellus ehtii palauttaa hallitun aikakatkaisuvirheen.
+`/api/extract` bypasses request-body buffering in the Next.js proxy. The endpoint
+itself validates up to 10 images, 20 MiB per image, and an approximately 201 MiB
+total multipart request with default settings. The submission preview displays
+the byte sizes of sanitized PNG images, the HTTP request-body size received by
+the server, and the applied total limit. Image or request contents are never
+written to logs. The default image-extraction timeout is 180 seconds and can be
+set from 5–240 seconds with `OPENAI_EXTRACTION_TIMEOUT_MS`. The extraction route
+advertises a 300-second maximum execution time to the platform so that the
+application can return a controlled timeout error.
 
-Tarkistetun huoltohistorian jälkeen `/api/resolve-vehicle` hakee verkosta
-mahdollisia ajoneuvoversioita OpenAI Responses API:n web search -työkalulla.
-Ensimmäinen pyyntö säilyttää haussa käytetyt URL-osoitteet, ja erillinen
-Structured Outputs -pyyntö normalisoi enintään viisi ehdokasta. Ehdokkaan
-lähdeviite hyväksytään vain, jos sen palvelimen luoma lähdetunnus kuuluu
-alkuperäiseen verkkohakuun. Molemmissa pyynnöissä käytetään `store: false`
--asetusta, eikä tausta-ajoa käytetä.
+After the service history is reviewed, `/api/resolve-vehicle` searches the web
+for possible vehicle variants with the OpenAI Responses API web search tool.
+The first request preserves the URLs used in the search, and a separate
+Structured Outputs request normalizes up to five candidates. A candidate source
+reference is accepted only when its server-generated source identifier belongs
+to the original web search. Both requests use `store: false`, and no background
+jobs are used.
 
-Käyttöliittymä näyttää yhteensopivuuden, täsmäävät ja ristiriitaiset tiedot,
-puuttuvat erottavat kentät sekä napsautettavat lähteet. Ehdokasta ei valita
-automaattisesti luottamuksesta riippumatta: käyttäjän on valittava ja
-vahvistettava versio erikseen. “Mikään näistä” -polku jättää vahvistetun
-version tyhjäksi. Ehdokkaat, lähteet ja valittu tarkka versio säilyvät vain
-React-muistissa nykyisen välilehden ajan.
+The interface displays compatibility, matching and conflicting details, missing
+disambiguating fields, and clickable sources. A candidate is never selected
+automatically regardless of confidence: the user must select and confirm the
+variant explicitly. The “None of these” path leaves the confirmed variant empty.
+Candidates, sources, and the selected exact variant remain only in React memory
+for the lifetime of the current tab.
 
-Ajoneuvohaku käyttää `OPENAI_RESEARCH_MODEL`-mallia ja
-`OPENAI_RESEARCH_TIMEOUT_MS`-aikarajaa. Jos ne ovat tyhjiä, asetukset
-periytyvät poiminnan vastaavista ympäristömuuttujista ja lopulta turvallisista
-oletuksista.
+Vehicle resolution uses `OPENAI_RESEARCH_MODEL` and the
+`OPENAI_RESEARCH_TIMEOUT_MS` timeout. When they are empty, the settings inherit
+the corresponding extraction environment variables and finally safe defaults.
 
-Vahvistetulle ajoneuvoversiolle `/api/research` tekee kaksivaiheisen
-huoltovälitutkimuksen. Ensimmäinen OpenAI Responses API -pyyntö käyttää
-pakollista web search -työkalua ja tuottaa lähteisiin viittaavan
-tutkimusmuistion. Toinen, ilman verkkotyökalua suoritettava Structured Outputs
--pyyntö saa vain muistion ja palvelimen talteen ottaman lähdeluettelon.
-Normalisoitu väite hyväksytään vain, jos sen `source_id` kuuluu kyseiseen
-verkkohakuun. Molemmissa pyynnöissä käytetään `store: false` -asetusta.
+For a confirmed vehicle variant, `/api/research` performs two-stage maintenance
+interval research. The first OpenAI Responses API request uses the required web
+search tool and produces a research memo that cites sources. The second
+Structured Outputs request runs without web tools and receives only the memo
+and the source list captured by the server. A normalized claim is accepted only
+when its `source_id` belongs to that web search. Both requests use
+`store: false`.
 
-Sovelluskoodi valitsee huoltovälin deterministisesti lähdehierarkiasta:
-valmistajan virallinen aineisto on ensisijainen, ja heikompi lähde ei voi
-hiljaisesti ohittaa vahvempaa yhteensopivaa näyttöä. Saman parhaan lähdetason
-poikkeavat välit näkyvät ristiriitana ilman automaattista valintaa. Jos
-luotettavaa ja varianttiin sopivaa näyttöä ei ole, tulos on
-`insufficient_evidence`. Mailit muunnetaan kilometreiksi kertoimella
-`1.609344`, ja alkuperäinen arvo sekä yksikkö säilytetään lähdenäytössä.
+Application code selects the maintenance interval deterministically from the
+source hierarchy: official manufacturer material has priority, and a weaker
+source cannot silently override stronger compatible evidence. Different
+intervals from the same best source tier are displayed as a conflict without
+automatic selection. When reliable, variant-compatible evidence is unavailable,
+the result is `insufficient_evidence`. Miles are converted to kilometres with
+`1.609344`, while the original value and unit are preserved in the source
+evidence.
 
-Tutkimusmallille ei lähetetä kuvia, huoltohistorian sisältöä tai
-matkamittarilukemaa. Tutkimuksen muistio, lähteet ja tulos ovat pyyntökohtaisia
-ja säilyvät käyttöliittymässä vain nykyisen välilehden React-muistissa.
+Images, service-history contents, and the current odometer reading are not sent
+to the research model. The research memo, sources, and result are request-scoped
+and remain in the interface only in React memory for the current tab.
 
-Huoltovälitutkimuksen jälkeen komponenttien tilat lasketaan puhtailla
-TypeScript-funktioilla selaimessa. Tekoälyltä saatua tekstiä ei tulkita tilaksi.
-Laskenta valitsee viimeisimmän riittävän luotettavan vaihto- tai
-huoltomerkinnän, torjuu tulevaisuuden päivämäärät ja mahdottoman
-mittarijärjestyksen sekä käyttää lähdekonfliktin ja riittämättömän näytön
-tiloja ennen numeerista laskentaa.
+After maintenance interval research, component statuses are calculated in the
+browser with pure TypeScript functions. Text returned by AI is not interpreted
+as a status. The calculation selects the latest sufficiently reliable
+replacement or service record, rejects future dates and impossible odometer
+ordering, and applies source-conflict and insufficient-evidence states before
+numeric calculation.
 
-Kilometri- ja kuukausirajat käyttävät konfiguroitavia välittömän tarpeen,
-varoituksen ja ylitystoleranssin kynnyksiä. Kun tiedot riittävät, tulos sisältää
-käytetyn ja jäljellä olevan matkan/ajan sekä arvioidun erääntymislukeman ja
--päivän. Jos huoltomerkintää ei löydy, käyttöliittymä kertoo
-“Huoltohistoriasta ei löytynyt merkintää” eikä väitä, ettei huoltoa ole tehty.
+Distance and month thresholds use configurable immediate-need, warning, and
+overdue-tolerance boundaries. When enough data is available, the result includes
+used and remaining distance/time plus the estimated due odometer and date. If no
+service record is found, the interface says “No service-history entry was found”
+and does not claim that the service was not performed.
 
-Valmis raporttinäkymä kokoaa vahvistetun ajoneuvoversion, tarkistetun
-huoltohistorian, deterministisesti lasketut komponenttitilat sekä kaikki
-ajoneuvo- ja huoltovälilähteet epävarmuuksineen. Raportti voidaan ladata
-paikallisesti JSON- tai Excel-tiedostona ilman uutta verkkopyyntöä.
+The completed report view combines the confirmed vehicle variant, reviewed
+service history, deterministically calculated component statuses, and every
+vehicle and maintenance-interval source with its uncertainty. The report can be
+downloaded locally as a JSON or Excel file without a new network request.
 
-Excel-vienti sisältää erilliset yhteenveto-, huoltohistoria-, komponentti- ja
-lähdetaulukot. Ulkoinen tekstisisältö suojataan kaavainjektiolta ennen
-soluihin kirjoittamista. Kuvat ja niiden sisältö eivät kuulu kumpaankaan
-vientimuotoon; vain huoltotapahtuman lähdekuvien istuntotunnisteet säilytetään
-tekstimuotoisina jäljitettävyyttä varten.
+The Excel export contains separate summary, service-history, component, and
+source sheets. External text content is protected against formula injection
+before it is written to cells. Images and their contents are excluded from both
+export formats; only the session identifiers of service-event source images are
+preserved as text for traceability.
 
-## Paikallinen kehitys
+## Local development
 
-Vaatimukset:
+Requirements:
 
-- Node.js 20.9 tai uudempi
+- Node.js 20.9 or newer
 - npm
 
-Asenna riippuvuudet ja käynnistä kehityspalvelin:
+Install dependencies and start the development server:
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Kopioi tarvittaessa `.env.example` tiedostoksi `.env.local`. Älä tallenna
-API-avainta lähdekoodiin tai selaimelle näkyvään `NEXT_PUBLIC_`-muuttujaan.
+If necessary, copy `.env.example` to `.env.local`. Do not store the API key in
+source code or in a browser-visible `NEXT_PUBLIC_` variable.
 
-## Laatuportit
+## Quality gates
 
 ```bash
 npm run lint
@@ -177,12 +173,12 @@ npm run test:e2e
 npm run build
 ```
 
-Playwright tarvitsee paikallisen Chromium-asennuksen:
+Playwright requires a local Chromium installation:
 
 ```bash
 npx playwright install chromium
 ```
 
-Tuotantoympäristön vaatimukset, välityspalvelimen tietosuojarajaukset,
-ympäristömuuttujat, synteettinen smoke-testi ja tunnetut käyttörajat on kuvattu
-tiedostossa [`docs/09_DEPLOYMENT.md`](docs/09_DEPLOYMENT.md).
+Production environment requirements, proxy privacy constraints, environment
+variables, the synthetic smoke test, and known operating limits are documented
+in [`docs/09_DEPLOYMENT.md`](docs/09_DEPLOYMENT.md).

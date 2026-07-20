@@ -196,22 +196,22 @@ function errorResponse(
 function userFacingErrorMessage(code: string): string {
   switch (code) {
     case "payload_too_large":
-      return "Ajoneuvotietojen pyyntö ylittää sallitun kokorajan.";
+      return "The vehicle details request exceeds the allowed size limit.";
     case "unsupported_media_type":
-      return "Ajoneuvotiedot on lähetettävä JSON-muodossa.";
+      return "Vehicle details must be submitted as JSON.";
     case "rate_limited":
-      return "Ajoneuvohakuja on tehty liian monta. Yritä hetken kuluttua uudelleen.";
+      return "Too many vehicle searches have been made. Try again in a moment.";
     case "provider_timeout":
-      return "Ajoneuvoversion verkkohaku aikakatkaistiin. Voit yrittää uudelleen.";
+      return "Vehicle-variant web search timed out. You can try again.";
     case "invalid_provider_output":
-      return "Ajoneuvohausta saatuja ehdokkaita tai lähteitä ei voitu varmistaa.";
+      return "Candidates or sources returned by vehicle search could not be verified.";
     case "provider_error":
-      return "Ajoneuvoversion verkkohaku epäonnistui palveluntarjoajalla.";
+      return "Vehicle-variant web search failed at the provider.";
     case "service_unavailable":
-      return "Ajoneuvoversion verkkohaku ei ole tällä hetkellä käytettävissä.";
+      return "Vehicle-variant web search is currently unavailable.";
     case "forbidden":
-      return "Pyyntöä ei voitu hyväksyä.";
+      return "The request could not be accepted.";
     default:
-      return "Ajoneuvotietoja ei voitu käsitellä.";
+      return "Vehicle details could not be processed.";
   }
 }

@@ -2,26 +2,26 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Tietosuoja",
-  description: "AutoHuolto AI:n tietojen käsittelyn periaatteet.",
+  title: "Privacy",
+  description: "AutoHuolto AI data-handling principles.",
 };
 
 const protections = [
   {
-    title: "Ei sovelluksen omaa pysyvää tallennusta",
-    text: "Ladattuja kuvia, ajoneuvotietoja, poimittuja huoltotapahtumia, tutkimustuloksia tai raportteja ei tallenneta sovelluksen tietokantaan tai tiedostovarastoon.",
+    title: "No permanent application storage",
+    text: "Uploaded images, vehicle details, extracted service events, research results, and reports are not stored in an application database or file storage.",
   },
   {
-    title: "Peittäminen tapahtuu selaimessa",
-    text: "Käyttäjä peittää tunnisteet paikallisesti. Lähetystä varten selain piirtää uuden PNG-kuvan, eikä alkuperäistä kuvatiedostoa käytetä lähetyspaketissa.",
+    title: "Redaction happens in the browser",
+    text: "The user redacts identifiers locally. The browser draws a new PNG image for submission, and the original image file is not used in the submission package.",
   },
   {
-    title: "Vain tarpeellinen lähetetään",
-    text: "OpenAI:lle lähetetään vain käyttäjän hyväksymät, peitetyt kuvat sekä analyysin kannalta tarpeelliset ajoneuvo- ja huoltotiedot.",
+    title: "Only necessary data is submitted",
+    text: "Only user-approved sanitized images and the vehicle and maintenance details needed for analysis are submitted to OpenAI.",
   },
   {
-    title: "Istunto päättyy sivun sulkemiseen",
-    text: "Ajoneuvotiedot ja analyysin tila pidetään vain selaimen muistissa. Sivun sulkeminen tai päivittäminen poistaa nykyisen istunnon.",
+    title: "The session ends when the page closes",
+    text: "Vehicle details and analysis state are kept only in browser memory. Closing or refreshing the page removes the current session.",
   },
 ];
 
@@ -29,65 +29,64 @@ export default function PrivacyPage() {
   return (
     <main id="sisalto" className="privacyPage">
       <div className="pageIntro">
-        <p className="sectionLabel">Tietosuoja</p>
-        <h1>Tietojen käsittely on rajattu yhteen istuntoon.</h1>
+        <p className="sectionLabel">Privacy</p>
+        <h1>Data handling is limited to one session.</h1>
         <p>
-          AutoHuolto AI on sovellustasolla tilaton. Tämä ei tarkoita
-          palveluntarjoajan varmennettua nollasäilytystä.
+          AutoHuolto AI is stateless at the application level. This does not
+          mean verified zero retention by the provider.
         </p>
       </div>
 
       <section className="disclosure" aria-labelledby="disclosure-heading">
-        <p className="sectionLabel">Selkeästi sanottuna</p>
-        <h2 id="disclosure-heading">Mitä tapahtuu analyysin aikana?</h2>
+        <p className="sectionLabel">In plain language</p>
+        <h2 id="disclosure-heading">What happens during analysis?</h2>
         <p>
-          Sovellus ei tarkoituksellisesti tallenna ladattuja kuvia, poimittuja
-          huoltotapahtumia, ajoneuvotietoja, tutkimustuloksia tai raportteja
-          omaan tietokantaan tai tiedostovarastoon.
+          The application intentionally does not store uploaded images,
+          extracted service events, vehicle details, research results, or
+          reports in its own database or file storage.
         </p>
         <p>
-          Kun käyttäjä käynnistää poiminnan, hänen hyväksymänsä peitetyt
-          PNG-kuvat välitetään OpenAI:lle pyynnön käsittelyä varten. API:n
-          syötteitä ja tulosteita ei oletusarvoisesti käytetä OpenAI-mallien
-          kouluttamiseen, mutta palveluntarjoajan tietojen säilytys- ja
-          väärinkäytön valvontakäytännöt voivat silti olla voimassa.
+          When the user starts extraction, the approved sanitized PNG images
+          are sent to OpenAI to process the request. API inputs and outputs are
+          not used to train OpenAI models by default, but provider data
+          retention and abuse monitoring policies may still apply.
         </p>
         <p>
-          Kun käyttäjä käynnistää ajoneuvoversion haun, OpenAI:lle ja sen
-          verkkohakutyökalulle välitetään vahvistetut, version erottamiseen
-          tarvittavat ajoneuvotiedot. Kuvia ja nykyistä matkamittarilukemaa ei
-          välitetä tähän hakuun. Ehdokkaat ja hakulähteet säilyvät vain
-          nykyisen välilehden muistissa.
+          When the user starts vehicle-variant resolution, the confirmed
+          vehicle details needed to distinguish the variant are sent to OpenAI
+          and its web search tool. Images and the current odometer reading are
+          not sent to this search. Candidates and search sources remain only in
+          the current tab&apos;s memory.
         </p>
         <p>
-          Kun käyttäjä käynnistää huoltovälitutkimuksen, tutkimusmallille
-          välitetään vahvistettu ajoneuvoversio, maa, markkina ja tutkittavat
-          komponenttiluokat. Kuvia, huoltohistorian sisältöä tai nykyistä
-          matkamittarilukemaa ei sisällytetä tutkimusmallin pyyntöihin.
-          Tutkimusmuistio, lähteet ja normalisoitu tulos käsitellään
-          pyyntökohtaisesti, eikä niitä tallenneta sovelluksen omaan
-          tietokantaan tai tiedostovarastoon.
+          When the user starts maintenance interval research, the confirmed
+          vehicle variant, country, market, and component categories being
+          researched are sent to the research model. Images, service-history
+          contents, and the current odometer reading are not included in the
+          research model requests. The research memo, sources, and normalized
+          result are processed per request and are not stored in the
+          application&apos;s own database or file storage.
         </p>
         <p>
-          Komponenttien huoltotilat, jäljellä olevat rajat ja
-          erääntymisarviot lasketaan tämän jälkeen selaimessa
-          sovelluskoodilla. Tilalaskenta ei lähetä uutta pyyntöä
-          palveluntarjoajalle eikä tallenna tulosta pysyvästi.
+          Component maintenance statuses, remaining thresholds, and due
+          estimates are then calculated in the browser by application code.
+          Status calculation does not send another request to the provider or
+          store the result permanently.
         </p>
         <p>
-          JSON- ja Excel-raportit muodostetaan paikallisesti selaimessa
-          käyttäjän erillisestä latauspyynnöstä. Raporttiin ei liitetä
-          alkuperäisiä tai peitettyjä kuvia, eikä vienti lähetä uutta
-          verkkopyyntöä. Ladattu tiedosto jää käyttäjän oman laitteen ja
-          valitun tallennuspaikan hallintaan.
+          JSON and Excel reports are generated locally in the browser after an
+          explicit download request by the user. Original and sanitized images
+          are not attached to the report, and export does not send a new
+          network request. The downloaded file remains under the control of the
+          user&apos;s device and selected storage location.
         </p>
       </section>
 
       <section aria-labelledby="protections-heading">
         <div className="sectionHeading">
           <div>
-            <p className="sectionLabel">Suojaukset</p>
-            <h2 id="protections-heading">Sisäänrakennettu tietojen minimointi</h2>
+            <p className="sectionLabel">Protections</p>
+            <h2 id="protections-heading">Built-in data minimization</h2>
           </div>
         </div>
         <div className="protectionGrid">
@@ -102,23 +101,23 @@ export default function PrivacyPage() {
 
       <section className="userChecklist" aria-labelledby="checklist-heading">
         <div>
-          <p className="sectionLabel">Käyttäjän tarkistuslista</p>
-          <h2 id="checklist-heading">Ennen kuvalähetystä</h2>
+          <p className="sectionLabel">User checklist</p>
+          <h2 id="checklist-heading">Before submitting images</h2>
         </div>
         <ul>
-          <li>Peitä rekisterinumero ja valmistenumero (VIN).</li>
-          <li>Peitä nimet, osoitteet ja yhteystiedot.</li>
-          <li>Peitä asiakasnumerot ja muut tarpeettomat tunnisteet.</li>
-          <li>Tarkista aina peitetty esikatselu ennen lähettämistä.</li>
+          <li>Redact the registration number and vehicle identification number (VIN).</li>
+          <li>Redact names, addresses, and contact details.</li>
+          <li>Redact customer numbers and other unnecessary identifiers.</li>
+          <li>Always review the sanitized preview before submission.</li>
         </ul>
       </section>
 
       <aside className="providerNote" aria-labelledby="provider-heading">
-        <h2 id="provider-heading">Palveluntarjoajan käytännöt</h2>
+        <h2 id="provider-heading">Provider policies</h2>
         <p>
-          Ajantasaiset tiedot API-palveluiden tietosuojasta ja tietojen
-          käsittelystä löytyvät OpenAI:n omista ehdoista. Sovellus ei väitä
-          nollasäilytystä ilman erikseen varmennettua asetusta.
+          Current information about API service privacy and data handling is
+          available in OpenAI&apos;s own terms. The application does not claim zero
+          retention without a separately verified setting.
         </p>
         <a
           className="textLink"
@@ -131,7 +130,7 @@ export default function PrivacyPage() {
       </aside>
 
       <Link className="backLink" href="/">
-        <span aria-hidden="true">←</span> Takaisin etusivulle
+        <span aria-hidden="true">←</span> Back to home
       </Link>
     </main>
   );

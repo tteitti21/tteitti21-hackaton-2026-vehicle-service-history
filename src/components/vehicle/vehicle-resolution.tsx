@@ -15,28 +15,28 @@ const compatibilityLabels: Record<
   VehicleCandidate["compatibility"],
   string
 > = {
-  exact: "Tarkka osuma",
-  strong: "Vahva osuma",
-  partial: "Osittainen osuma",
-  weak: "Heikko osuma",
-  unknown: "Yhteensopivuus epäselvä",
+  exact: "Exact match",
+  strong: "Strong match",
+  partial: "Partial match",
+  weak: "Weak match",
+  unknown: "Compatibility unknown",
 };
 
 const vehicleResolutionErrorMessages = {
-  forbidden: "Ajoneuvohakupyyntö estettiin. Päivitä sivu ja yritä uudelleen.",
+  forbidden: "The vehicle search request was blocked. Refresh the page and try again.",
   rate_limited:
-    "Ajoneuvohakuja on tehty liian monta. Odota hetki ja yritä uudelleen.",
+    "Too many vehicle searches have been made. Wait a moment and try again.",
   provider_timeout:
-    "Ajoneuvoversion verkkohaku aikakatkaistiin. Voit yrittää uudelleen.",
+    "Vehicle-variant web search timed out. You can try again.",
   invalid_provider_output:
-    "Ajoneuvohausta saatuja ehdokkaita tai lähteitä ei voitu varmistaa.",
+    "Candidates or sources returned by vehicle search could not be verified.",
   provider_error:
-    "Ajoneuvoversion verkkohaku epäonnistui palveluntarjoajalla.",
+    "Vehicle-variant web search failed at the provider.",
   service_unavailable:
-    "Ajoneuvoversion verkkohaku ei ole tällä hetkellä käytettävissä.",
-  payload_too_large: "Ajoneuvotietojen pyyntö ylittää sallitun kokorajan.",
-  unsupported_media_type: "Ajoneuvotiedot on lähetettävä JSON-muodossa.",
-  invalid_request: "Ajoneuvotietoja ei voitu käsitellä.",
+    "Vehicle-variant web search is currently unavailable.",
+  payload_too_large: "The vehicle details request exceeds the allowed size limit.",
+  unsupported_media_type: "Vehicle details must be submitted as JSON.",
+  invalid_request: "Vehicle details could not be processed.",
 } as const;
 
 export function VehicleResolutionPanel() {
@@ -80,7 +80,7 @@ export function VehicleResolutionPanel() {
           readSafeApiError(
             payload,
             vehicleResolutionErrorMessages,
-            "Ajoneuvoversioita ei voitu hakea. Yritä uudelleen.",
+            "Vehicle variants could not be retrieved. Try again.",
           ),
         );
         return;
@@ -89,7 +89,7 @@ export function VehicleResolutionPanel() {
       const resolution = vehicleResolutionSchema.safeParse(payload);
       if (!resolution.success) {
         failVehicleResolution(
-          "Ajoneuvohaun vastausta ei voitu varmistaa turvallisesti.",
+          "The vehicle search response could not be verified safely.",
         );
         return;
       }
@@ -97,7 +97,7 @@ export function VehicleResolutionPanel() {
       completeVehicleResolution(resolution.data);
     } catch {
       failVehicleResolution(
-        "Ajoneuvohakuun ei saatu yhteyttä. Tarkista verkkoyhteys ja yritä uudelleen.",
+        "Vehicle search could not be reached. Check your network connection and try again.",
       );
     }
   };
@@ -109,17 +109,17 @@ export function VehicleResolutionPanel() {
     >
       <div className="vehicleResolutionHeading">
         <div>
-          <p className="sectionLabel">Vaihe 5 / Ajoneuvoversion varmennus</p>
+          <p className="sectionLabel">Phase 5 / Vehicle variant verification</p>
           <h2 id="vehicle-resolution-heading">
-            Rajaa tarkka ajoneuvoversio lähteiden avulla.
+            Narrow down the exact vehicle variant using sources.
           </h2>
         </div>
         <div className="webSearchNotice">
-          <strong>Verkkohaku käynnistyy vain painikkeesta</strong>
+          <strong>Web search starts only from the button</strong>
           <p>
-            Vahvistetut versiotiedot lähetetään OpenAI:lle verkkohakua varten.
-            Matkamittarilukemaa tai kuvia ei välitetä tähän hakuun. Hakutulosta
-            ei tallenneta sovelluksen tietokantaan.
+            Confirmed variant details are sent to OpenAI for web search. The
+            odometer reading and images are not sent to this search. Search
+            results are not stored in the application database.
           </p>
         </div>
       </div>
@@ -128,11 +128,11 @@ export function VehicleResolutionPanel() {
         <div className="emptyResolutionState">
           <span aria-hidden="true">05</span>
           <div>
-            <strong>Ajoneuvohaku odottaa aiempien vaiheiden vahvistusta.</strong>
+            <strong>Vehicle search is waiting for confirmation of earlier phases.</strong>
             <p>
               {state.confirmedVehicle === null
-                ? "Vahvista ensin ajoneuvotiedot."
-                : "Vahvista muokattu huoltohistoria ennen ajoneuvoversion hakua."}
+                ? "Confirm the vehicle details first."
+                : "Confirm the edited service history before searching for a vehicle variant."}
             </p>
           </div>
         </div>
@@ -146,13 +146,13 @@ export function VehicleResolutionPanel() {
               onClick={startResolution}
             >
               {state.vehicleResolutionStatus === "submitting"
-                ? "Haetaan ajoneuvoversioita…"
+                ? "Searching for vehicle variants…"
                 : state.vehicleResolution === null
-                  ? "Etsi ajoneuvoversiot verkosta"
-                  : "Hae ajoneuvoversiot uudelleen"}
+                  ? "Search the web for vehicle variants"
+                  : "Search for vehicle variants again"}
             </button>
             <p>
-              Ehdokasta ei valita automaattisesti, vaikka osuma olisi vahva.
+              A candidate is never selected automatically, even for a strong match.
             </p>
           </div>
 
@@ -160,15 +160,15 @@ export function VehicleResolutionPanel() {
             <div className="resolutionProgress" role="status">
               <span aria-hidden="true" />
               <div>
-                <strong>Haetaan erottavia versiotietoja ja lähteitä</strong>
-                <p>Verkkohaku voi kestää muutaman minuutin.</p>
+                <strong>Searching for distinguishing variant details and sources</strong>
+                <p>Web search may take a few minutes.</p>
               </div>
             </div>
           ) : null}
 
           {state.vehicleResolutionStatus === "error" ? (
             <div className="resolutionError" role="alert">
-              <strong>Ajoneuvoversioita ei voitu hakea.</strong>
+              <strong>Vehicle variants could not be retrieved.</strong>
               <p>{state.vehicleResolutionError}</p>
             </div>
           ) : null}
@@ -220,22 +220,22 @@ function ResolutionResults({
       <div className="resolutionResultSummary" role="status">
         <strong>
           {resolution.candidates.length === 0
-            ? "Varmennettavaa ehdokasta ei löytynyt."
+            ? "No verifiable candidate was found."
             : `${resolution.candidates.length} ${
                 resolution.candidates.length === 1
-                  ? "ehdokas löytyi"
-                  : "ehdokasta löytyi"
+                  ? "candidate found"
+                  : "candidates found"
               }`}
         </strong>
         <p>
-          Tarkista moottori, vaihteisto, mallivuosi, markkina ja lähteiden
-          yhteensopivuus ennen valintaa.
+          Review the engine, transmission, model year, market, and source
+          compatibility before making a selection.
         </p>
       </div>
 
       {resolution.warnings.length > 0 ? (
         <div className="resolutionWarnings" role="status">
-          <strong>Haun epävarmuudet</strong>
+          <strong>Search uncertainties</strong>
           <ul>
             {resolution.warnings.map((warning) => (
               <li key={warning}>{warning}</li>
@@ -246,7 +246,7 @@ function ResolutionResults({
 
       {resolution.candidates.length > 0 ? (
         <fieldset className="candidateList">
-          <legend>Valitse ehdokas vasta tarkistettuasi lähteet</legend>
+          <legend>Select a candidate only after reviewing the sources</legend>
           {resolution.candidates.map((candidate) => (
             <CandidateCard
               key={candidate.candidate_id}
@@ -258,10 +258,10 @@ function ResolutionResults({
         </fieldset>
       ) : (
         <div className="honestEmptyResult">
-          <strong>Tarkkaa versiota ei päätelty puutteellisesta näytöstä.</strong>
+          <strong>An exact variant was not inferred from incomplete evidence.</strong>
           <p>
-            Lisää lomakkeelle esimerkiksi moottori- tai vaihteistokoodi,
-            alustakoodi tai tarkempi markkina-alue ja käynnistä haku uudelleen.
+            Add an engine or transmission code, chassis code, or more precise
+            market to the form, for example, and start the search again.
           </p>
         </div>
       )}
@@ -273,20 +273,20 @@ function ResolutionResults({
           disabled={selectedCandidateId === null}
           onClick={onConfirm}
         >
-          Vahvista valittu ajoneuvoversio
+          Confirm selected vehicle variant
         </button>
         <button className="secondaryButton" type="button" onClick={onReject}>
-          Mikään näistä ei vastaa ajoneuvoa
+          None of these matches the vehicle
         </button>
       </div>
 
       {confirmedVariant !== null ? (
         <div className="confirmedVariant" role="status">
-          <strong>Ajoneuvoversio vahvistettu myöhempää tutkimusta varten</strong>
+          <strong>Vehicle variant confirmed for later research</strong>
           <p>{formatVariantTitle(confirmedVariant)}</p>
           {confirmedVariant.unresolved_fields.length > 0 ? (
             <p>
-              Avoimet tiedot: {confirmedVariant.unresolved_fields.join(", ")}
+              Unresolved details: {confirmedVariant.unresolved_fields.join(", ")}
             </p>
           ) : null}
         </div>
@@ -294,17 +294,17 @@ function ResolutionResults({
 
       {rejected ? (
         <div className="rejectedCandidates" role="status">
-          <strong>Ehdokkaat hylättiin.</strong>
+          <strong>Candidates rejected.</strong>
           <p>
-            Korjaa tai täydennä ajoneuvotietoja. Myöhempää huoltovälitutkimusta
-            ei käynnistetä ilman erikseen vahvistettua versiota.
+            Correct or complete the vehicle details. Later maintenance interval
+            research will not start without an explicitly confirmed variant.
           </p>
         </div>
       ) : null}
 
       <details className="searchedSources">
         <summary>
-          Kaikki verkkohaussa käytetyt lähteet ({resolution.sources.length})
+          All sources used in web search ({resolution.sources.length})
         </summary>
         {resolution.sources.length > 0 ? (
           <ul>
@@ -318,7 +318,7 @@ function ResolutionResults({
             ))}
           </ul>
         ) : (
-          <p>Hausta ei saatu säilytettävää lähdeluetteloa.</p>
+          <p>The search returned no source list that could be preserved.</p>
         )}
       </details>
     </div>
@@ -353,7 +353,7 @@ function CandidateCard({
             {compatibilityLabels[candidate.compatibility]}
           </span>
           <h3>{formatVariantTitle(candidate.variant)}</h3>
-          <p>Luottamus {formatConfidence(candidate.variant.confidence)}</p>
+          <p>Confidence {formatConfidence(candidate.variant.confidence)}</p>
         </div>
       </label>
 
@@ -363,24 +363,24 @@ function CandidateCard({
 
       <div className="candidateEvidenceGrid">
         <EvidenceList
-          title="Täsmäävät tiedot"
+          title="Matching details"
           values={candidate.matching_fields}
-          emptyText="Ei erikseen varmennettuja täsmäyksiä"
+          emptyText="No separately verified matches"
         />
         <EvidenceList
-          title="Ristiriidat"
+          title="Conflicts"
           values={candidate.conflicting_fields}
-          emptyText="Ei havaittuja ristiriitoja"
+          emptyText="No detected conflicts"
         />
         <EvidenceList
-          title="Puuttuvat erottavat tiedot"
+          title="Missing distinguishing details"
           values={candidate.missing_distinguishing_fields}
-          emptyText="Ei ilmoitettuja erottavia puutteita"
+          emptyText="No reported distinguishing gaps"
         />
       </div>
 
       <div className="candidateSources">
-        <strong>Lähteet ja ehdokasta tukeva näyttö</strong>
+        <strong>Sources and evidence supporting the candidate</strong>
         <ul>
           {candidate.sources.map((source) => (
             <li key={source.url}>

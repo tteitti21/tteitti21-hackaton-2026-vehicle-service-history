@@ -17,16 +17,16 @@ function renderVehicleForm() {
 async function fillRequiredFields() {
   const user = userEvent.setup();
   await user.type(
-    screen.getByRole("textbox", { name: "Merkki" }),
+    screen.getByRole("textbox", { name: "Make" }),
     "Toyota",
   );
   await user.type(
-    screen.getByRole("textbox", { name: "Malli" }),
+    screen.getByRole("textbox", { name: "Model" }),
     "Avensis",
   );
   await user.type(
     screen.getByRole("spinbutton", {
-      name: "Nykyinen matkamittarilukema",
+      name: "Current odometer reading",
     }),
     "184000",
   );
@@ -38,11 +38,11 @@ describe("VehicleForm", () => {
     renderVehicleForm();
 
     expect(
-      screen.getByText(/Vain tämän välilehden muistissa/),
+      screen.getByText(/Only in this tab's memory/),
     ).toBeVisible();
     expect(document.querySelector('input[type="file"]')).toBeNull();
     expect(
-      screen.getByRole("button", { name: "Tyhjennä istunto" }),
+      screen.getByRole("button", { name: "Clear session" }),
     ).toBeDisabled();
   });
 
@@ -51,13 +51,13 @@ describe("VehicleForm", () => {
     renderVehicleForm();
 
     await user.click(
-      screen.getByRole("button", { name: "Vahvista ajoneuvotiedot" }),
+      screen.getByRole("button", { name: "Confirm vehicle details" }),
     );
 
-    expect(screen.getByText("Merkki on pakollinen.")).toBeVisible();
-    expect(screen.getByText("Malli on pakollinen.")).toBeVisible();
+    expect(screen.getByText("Make is required.")).toBeVisible();
+    expect(screen.getByText("Model is required.")).toBeVisible();
     expect(
-      screen.getByText("Nykyinen matkamittarilukema on pakollinen."),
+      screen.getByText("The current odometer reading is required."),
     ).toBeVisible();
     expect(screen.queryByTestId("confirmed-vehicle")).not.toBeInTheDocument();
   });
@@ -65,34 +65,34 @@ describe("VehicleForm", () => {
   it("confirms and summarizes a valid vehicle", async () => {
     renderVehicleForm();
     const user = await fillRequiredFields();
-    await user.type(screen.getByLabelText("Mallivuosi"), "2015");
-    await user.selectOptions(screen.getByLabelText("Käyttövoima"), "diesel");
+    await user.type(screen.getByLabelText("Model year"), "2015");
+    await user.selectOptions(screen.getByLabelText("Fuel type"), "diesel");
 
     await user.click(
-      screen.getByRole("button", { name: "Vahvista ajoneuvotiedot" }),
+      screen.getByRole("button", { name: "Confirm vehicle details" }),
     );
 
     const summary = screen.getByTestId("confirmed-vehicle");
     expect(within(summary).getByText("Toyota Avensis")).toBeVisible();
-    expect(within(summary).getByText("mallivuosi 2015")).toBeVisible();
+    expect(within(summary).getByText("model year 2015")).toBeVisible();
     expect(within(summary).getByText("Diesel")).toBeVisible();
     expect(within(summary).getByText(/184.?000 km/)).toBeVisible();
-    expect(screen.getByText("Ajoneuvo vahvistettu")).toBeVisible();
+    expect(screen.getByText("Vehicle confirmed")).toBeVisible();
   });
 
   it("rejects contradictory years", async () => {
     renderVehicleForm();
     const user = await fillRequiredFields();
-    await user.type(screen.getByLabelText("Mallivuosi"), "2020");
-    await user.type(screen.getByLabelText("Ensirekisteröintivuosi"), "2017");
+    await user.type(screen.getByLabelText("Model year"), "2020");
+    await user.type(screen.getByLabelText("First registration year"), "2017");
 
     await user.click(
-      screen.getByRole("button", { name: "Vahvista ajoneuvotiedot" }),
+      screen.getByRole("button", { name: "Confirm vehicle details" }),
     );
 
     expect(
       screen.getByText(
-        "Ensirekisteröintivuosi ei voi olla yli vuotta mallivuotta aikaisempi.",
+        "The first registration year cannot be more than one year before the model year.",
       ),
     ).toBeVisible();
     expect(screen.queryByTestId("confirmed-vehicle")).not.toBeInTheDocument();
@@ -102,25 +102,25 @@ describe("VehicleForm", () => {
     renderVehicleForm();
     const user = await fillRequiredFields();
     await user.click(
-      screen.getByRole("button", { name: "Vahvista ajoneuvotiedot" }),
+      screen.getByRole("button", { name: "Confirm vehicle details" }),
     );
 
     await user.click(
-      screen.getByRole("button", { name: "Tyhjennä istunto" }),
+      screen.getByRole("button", { name: "Clear session" }),
     );
 
     expect(
-      screen.getByRole("textbox", { name: "Merkki" }),
+      screen.getByRole("textbox", { name: "Make" }),
     ).toHaveValue("");
     expect(
-      screen.getByRole("textbox", { name: "Malli" }),
+      screen.getByRole("textbox", { name: "Model" }),
     ).toHaveValue("");
     expect(
       screen.getByRole("spinbutton", {
-        name: "Nykyinen matkamittarilukema",
+        name: "Current odometer reading",
       }),
     ).toHaveValue(null);
     expect(screen.queryByTestId("confirmed-vehicle")).not.toBeInTheDocument();
-    expect(screen.getByText("Istunto on tyhjennetty")).toBeVisible();
+    expect(screen.getByText("Session cleared")).toBeVisible();
   });
 });

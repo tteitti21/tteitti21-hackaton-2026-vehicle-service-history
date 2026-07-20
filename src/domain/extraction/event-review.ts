@@ -18,7 +18,7 @@ export function createManualServiceEvent(
     workshop: null,
     notes: null,
     confidence: 0,
-    ambiguities: ["Käyttäjän lisäämä tapahtuma."],
+    ambiguities: ["Event added by the user."],
   };
 }
 
@@ -101,7 +101,7 @@ export function mergeSelectedServiceEvents(
     confidence: Math.min(...selected.map((event) => event.confidence)),
     ambiguities: unique([
       ...selected.flatMap((event) => event.ambiguities),
-      `Yhdistetty ${selected.length} poimitusta tapahtumasta.`,
+      `Merged from ${selected.length} extracted events.`,
     ]),
   };
   const removedIds = new Set(rest.map((event) => event.event_id));

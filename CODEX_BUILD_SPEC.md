@@ -72,17 +72,17 @@ The application converts user-redacted document images into an editable service-
 
 The product may support arbitrary vehicle inputs, but it must not promise that reliable maintenance data exists for every variation. The correct fallback is:
 
-> “Tarkkaa vaihtoväliä ei voitu varmistaa riittävän luotettavista, tähän ajoneuvovarianttiin sopivista lähteistä.”
+> “The exact replacement interval could not be verified from sufficiently reliable sources compatible with this vehicle variant.”
 
 ## User-facing status categories
 
-- **Kunnossa**
-- **Lähestyy**
-- **Ajankohtainen**
-- **Myöhässä**
-- **Epäselvä**
-- **Ei riittävää tietoa**
-- **Lähteissä ristiriita**
+- **OK**
+- **Due soon**
+- **Due**
+- **Overdue**
+- **Unknown**
+- **Insufficient evidence**
+- **Conflicting sources**
 
 The UI must distinguish calculated status from AI-generated explanation.
 
@@ -247,8 +247,8 @@ The extraction model returns both evidence as read from the document and normali
 
 Examples:
 
-- “jakopää”, “jakohihnasarja”, and “timing belt kit” can map to `timing_belt`,
-- “ATF”, “automaattiöljy”, and “gearbox oil” can map to `transmission_fluid`,
+- “timing drive”, “timing belt kit”, and “cam belt kit” can map to `timing_belt`,
+- “ATF”, “automatic transmission oil”, and “gearbox oil” can map to `transmission_fluid`,
 - uncertain wording maps to `other` plus a label.
 
 ## Unit conversion
@@ -334,8 +334,8 @@ When one dimension is overdue and another is not, overdue wins.
 
 Absence of a row is not proof that work was not performed. Wording must be:
 
-- “Huoltohistoriasta ei löytynyt merkintää”
-- not “Huoltoa ei ole tehty”.
+- “No service-history entry was found”
+- not “The service was not performed”.
 
 ## Powertrain component inventory
 

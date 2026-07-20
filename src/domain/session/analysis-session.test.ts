@@ -297,14 +297,14 @@ describe("analysis session reducer", () => {
       components: [
         {
           component_code: "air_filter" as const,
-          component_label: "Ilmansuodatin",
+          component_label: "Engine air filter",
           resolution: "insufficient_evidence" as const,
           interval_claims: [],
           recommended_claim_id: null,
           conflict_summary: null,
         },
       ],
-      global_warnings: ["Ei riittävää näyttöä."],
+      global_warnings: ["Insufficient evidence."],
       researched_at: "2026-07-19T12:00:00.000Z",
     };
     const completed = analysisSessionReducer(createInitialAnalysisSession(), {

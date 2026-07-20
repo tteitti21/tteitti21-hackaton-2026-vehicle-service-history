@@ -21,15 +21,15 @@ describe("deriveResearchComponents", () => {
         {
           event_id: "event-1",
           source_image_ids: ["image-1"],
-          raw_evidence: "Akku vaihdettu",
+          raw_evidence: "Battery replaced",
           service_date: null,
           odometer: null,
           actions: [
             {
               component_code: "battery",
-              component_label: "Käynnistysakku",
+              component_label: "Starter battery",
               action_type: "replaced",
-              description: "Akku vaihdettu",
+              description: "Battery replaced",
               confidence: 1,
             },
           ],
@@ -48,7 +48,7 @@ describe("deriveResearchComponents", () => {
     });
     expect(components).toContainEqual({
       component_code: "battery",
-      component_label: "Akku",
+      component_label: "Battery",
     });
     expect(
       components.filter(({ component_code }) => component_code === "battery"),
@@ -79,7 +79,7 @@ describe("deriveResearchComponents", () => {
     expect(new Set(codes).size).toBe(codes.length);
     expect(components).toContainEqual({
       component_code: "transmission_fluid",
-      component_label: "Automaattivaihteiston öljy",
+      component_label: "Automatic transmission fluid",
     });
   });
 
@@ -99,7 +99,7 @@ describe("deriveResearchComponents", () => {
       components: [
         {
           component_code: "cabin_filter",
-          component_label: "Raitisilmasuodatin",
+          component_label: "Cabin air filter",
           resolution: "insufficient_evidence",
           interval_claims: [],
           recommended_claim_id: null,
@@ -134,7 +134,7 @@ describe("deriveResearchComponents", () => {
     });
     expect(completed.global_warnings).toEqual(
       expect.arrayContaining([
-        expect.stringContaining("Jarruneste"),
+        expect.stringContaining("Brake fluid"),
       ]),
     );
   });

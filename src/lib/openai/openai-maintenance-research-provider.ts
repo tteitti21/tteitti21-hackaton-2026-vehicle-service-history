@@ -269,7 +269,7 @@ function hydrateMaintenanceResearch(
       ...normalized.global_warnings,
       ...missingLabels.map(
         (label) =>
-          `${label}: tarkkaa vaihtoväliä ei voitu varmistaa riittävän luotettavista, tähän ajoneuvovarianttiin sopivista lähteistä.`,
+          `${label}: the exact replacement interval could not be verified from sufficiently reliable sources compatible with this vehicle variant.`,
       ),
     ],
     researched_at: researchedAt.toISOString(),

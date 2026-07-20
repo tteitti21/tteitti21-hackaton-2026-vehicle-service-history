@@ -13,31 +13,31 @@ test("completes the synthetic three-document workflow from upload through export
   await fillSyntheticVehicle(page);
   await uploadSyntheticDocuments(page);
 
-  await expect(page.getByText(/3\/10 muistissa/)).toBeVisible();
+  await expect(page.getByText(/3\/10 in memory/)).toBeVisible();
   await page
-    .getByRole("button", { name: "Luo lähetysesikatselu" })
+    .getByRole("button", { name: "Create submission preview" })
     .click();
   await expect(
     page.getByRole("img", {
-      name: "Lähetettävä esikatselu: synthetic-service-document-1.png",
+      name: "Submission preview: synthetic-service-document-1.png",
     }),
   ).toBeVisible({ timeout: 15_000 });
   await expect(
     page.getByRole("img", {
-      name: "Lähetettävä esikatselu: synthetic-service-document-2.png",
+      name: "Submission preview: synthetic-service-document-2.png",
     }),
   ).toBeVisible();
   await expect(
     page.getByRole("img", {
-      name: "Lähetettävä esikatselu: synthetic-service-document-3.png",
+      name: "Submission preview: synthetic-service-document-3.png",
     }),
   ).toBeVisible();
 
   await page
-    .getByRole("checkbox", { name: /Olen tarkistanut yllä näkyvät/ })
+    .getByRole("checkbox", { name: /I have reviewed the submission versions shown above/ })
     .check();
   await page
-    .getByRole("button", { name: "Hyväksy peitetyt kuvat" })
+    .getByRole("button", { name: "Approve sanitized images" })
     .click();
 
   let extractionManifestIds: string[] = [];
@@ -71,32 +71,32 @@ test("completes the synthetic three-document workflow from upload through export
   });
 
   await page
-    .getByRole("button", { name: "Lähetä OpenAI:lle ja poimi tapahtumat" })
+    .getByRole("button", { name: "Submit to OpenAI and extract events" })
     .click();
 
   await expect(
     page.getByRole("heading", {
-      name: "Tarkista, normalisoi ja vahvista huoltohistoria.",
+      name: "Review, normalize, and confirm the service history.",
     }),
   ).toBeVisible();
   await expect(page.getByText("160 934,4 km", { exact: true })).toBeVisible();
   await page
     .getByRole("button", {
-      name: "Muokkaa tapahtumaa event-demo-ambiguous",
+      name: "Edit event event-demo-ambiguous",
     })
     .click();
   await expect(
     page.getByRole("textbox", {
-      name: "Epäselvyydet, yksi rivi kutakin huomiota kohti",
+      name: "Ambiguities, one observation per line",
     }),
-  ).toHaveValue(/Toimenpiteen laji on epäselvä/);
+  ).toHaveValue(/The action type is unclear/);
   await page
     .getByRole("checkbox", {
-      name: /Olen tarkistanut .* ja hyväksyn epävarmuuksien säilyttämisen/,
+      name: /I have reviewed .* and accept preserving the uncertainties/,
     })
     .check();
   await page
-    .getByRole("button", { name: "Vahvista tarkistettu huoltohistoria" })
+    .getByRole("button", { name: "Confirm reviewed service history" })
     .click();
 
   let submittedVehicle: unknown = null;
@@ -110,7 +110,7 @@ test("completes the synthetic three-document workflow from upload through export
   });
 
   await page
-    .getByRole("button", { name: "Etsi ajoneuvoversiot verkosta" })
+    .getByRole("button", { name: "Search the web for vehicle variants" })
     .click();
   const candidateOne = page.locator(
     'input[type="radio"][value="candidate-1"]',
@@ -122,12 +122,12 @@ test("completes the synthetic three-document workflow from upload through export
   await expect(candidateTwo).not.toBeChecked();
   await expect(
     page.getByRole("button", {
-      name: "Vahvista valittu ajoneuvoversio",
+      name: "Confirm selected vehicle variant",
     }),
   ).toBeDisabled();
   await candidateOne.check();
   await page
-    .getByRole("button", { name: "Vahvista valittu ajoneuvoversio" })
+    .getByRole("button", { name: "Confirm selected vehicle variant" })
     .click();
 
   let submittedResearch: Record<string, unknown> | null = null;
@@ -144,23 +144,23 @@ test("completes the synthetic three-document workflow from upload through export
   });
 
   await page
-    .getByRole("button", { name: "Tutki huoltovälit verkosta" })
+    .getByRole("button", { name: "Research maintenance intervals online" })
     .click();
 
-  const oilStatus = componentStatusCard(page, "Moottoriöljy");
-  await expect(oilStatus.getByText("Myöhässä")).toBeVisible();
-  const beltStatus = componentStatusCard(page, "Jakohihna");
-  await expect(beltStatus.getByText("Lähteissä ristiriita")).toBeVisible();
-  const airFilterStatus = componentStatusCard(page, "Ilmansuodatin");
+  const oilStatus = componentStatusCard(page, "Engine oil");
+  await expect(oilStatus.getByText("Overdue")).toBeVisible();
+  const beltStatus = componentStatusCard(page, "Timing belt");
+  await expect(beltStatus.getByText("Conflicting sources")).toBeVisible();
+  const airFilterStatus = componentStatusCard(page, "Engine air filter");
   await expect(
-    airFilterStatus.getByText("Huoltohistoriasta ei löytynyt merkintää."),
+    airFilterStatus.getByText("No service-history entry was found."),
   ).toBeVisible();
-  const coolantStatus = componentStatusCard(page, "Jäähdytysneste");
-  await expect(coolantStatus.getByText("Ei riittävää tietoa")).toBeVisible();
+  const coolantStatus = componentStatusCard(page, "Engine coolant");
+  await expect(coolantStatus.getByText("Insufficient evidence")).toBeVisible();
   await expect(
     page
       .getByRole("region", {
-        name: "Tarkista huoltovälit lähde kerrallaan.",
+        name: "Review maintenance intervals one source at a time.",
       })
       .getByRole("link", {
         name: "SYNTHETIC official market bulletin",
@@ -178,7 +178,7 @@ test("completes the synthetic three-document workflow from upload through export
   });
   expect(submittedResearch).toMatchObject({
     country: "FI",
-    market: "Eurooppa",
+    market: "Europe",
     vehicle_variant: { engine: "1.8 hybrid N18-X, 110 kW" },
     components: expect.arrayContaining([
       expect.objectContaining({ component_code: "engine_oil" }),
@@ -203,7 +203,7 @@ test("completes the synthetic three-document workflow from upload through export
   });
 
   const jsonDownloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Lataa JSON" }).click();
+  await page.getByRole("button", { name: "Download JSON" }).click();
   const jsonDownload = await jsonDownloadPromise;
   expect(jsonDownload.suggestedFilename()).toBe(
     "autohuolto-nordica-aurora-2026-07-19.json",
@@ -253,7 +253,7 @@ test("completes the synthetic three-document workflow from upload through export
   expect(exportedJsonText).not.toContain("data:image/");
 
   const excelDownloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Lataa Excel" }).click();
+  await page.getByRole("button", { name: "Download Excel" }).click();
   const excelDownload = await excelDownloadPromise;
   expect(excelDownload.suggestedFilename()).toBe(
     "autohuolto-nordica-aurora-2026-07-19.xlsx",
@@ -263,21 +263,21 @@ test("completes the synthetic three-document workflow from upload through export
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(excelPath!);
   expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
-    "Yhteenveto",
-    "Huoltohistoria",
-    "Komponentit",
-    "Lähteet",
+    "Summary",
+    "Service history",
+    "Components",
+    "Sources",
   ]);
   workbook.eachSheet((sheet) => {
     expect(sheet.getImages()).toEqual([]);
     expect(sheet.actualColumnCount).toBeLessThanOrEqual(2);
     expect(sheet.pageSetup.orientation).toBe("portrait");
   });
-  const componentSheet = workbook.getWorksheet("Komponentit")!;
+  const componentSheet = workbook.getWorksheet("Components")!;
   const exportedComponentCodes: string[] = [];
   const trustworthinessLevels: string[] = [];
   componentSheet.eachRow((row) => {
-    if (row.getCell(1).value === "Komponenttikoodi") {
+    if (row.getCell(1).value === "Component code") {
       exportedComponentCodes.push(String(row.getCell(2).value));
     }
     if (row.getCell(1).value === "trustworthiness_level") {
@@ -298,17 +298,17 @@ test("completes the synthetic three-document workflow from upload through export
     ]),
   );
   expect(trustworthinessLevels).toEqual(
-    expect.arrayContaining(["Korkea (high)", "Matala (low)"]),
+    expect.arrayContaining(["High (high)", "Low (low)"]),
   );
   expect(exportApiRequests).toEqual([]);
 
   expect(extractionManifestIds).toHaveLength(3);
   await page.reload();
 
-  await expect(page.getByRole("textbox", { name: "Merkki" })).toHaveValue("");
-  await expect(page.getByText(/3\/10 muistissa/)).toHaveCount(0);
+  await expect(page.getByRole("textbox", { name: "Make" })).toHaveValue("");
+  await expect(page.getByText(/3\/10 in memory/)).toHaveCount(0);
   await expect(page.getByTestId("confirmed-vehicle")).toHaveCount(0);
-  await expect(page.getByText("Ei vahvistettua ajoneuvoa")).toBeVisible();
+  await expect(page.getByText("No confirmed vehicle")).toBeVisible();
   expect(await context.cookies()).toEqual([]);
   const storage = await page.evaluate(async () => ({
     localStorageKeys: Object.keys(window.localStorage),
@@ -323,21 +323,21 @@ test("completes the synthetic three-document workflow from upload through export
 });
 
 async function fillSyntheticVehicle(page: Page) {
-  await page.getByRole("textbox", { name: "Merkki" }).fill("Nordica");
-  await page.getByRole("textbox", { name: "Malli" }).fill("Aurora");
-  await page.getByLabel("Sukupolvi tai alustakoodi").fill("N2");
-  await page.getByLabel("Mallivuosi").fill("2021");
-  await page.getByLabel("Ensirekisteröintivuosi").fill("2021");
-  await page.getByLabel("Moottorin tilavuus").fill("1,8");
-  await page.getByLabel("Moottorikoodi").fill("N18-X");
-  await page.getByLabel("Teho").fill("110");
+  await page.getByRole("textbox", { name: "Make" }).fill("Nordica");
+  await page.getByRole("textbox", { name: "Model" }).fill("Aurora");
+  await page.getByLabel("Generation or chassis code").fill("N2");
+  await page.getByLabel("Model year").fill("2021");
+  await page.getByLabel("First registration year").fill("2021");
+  await page.getByLabel("Engine displacement").fill("1,8");
+  await page.getByLabel("Engine code").fill("N18-X");
+  await page.getByLabel("Power").fill("110");
   await page.selectOption("#vehicle-fuelType", "hybrid");
   await page.selectOption("#vehicle-transmissionType", "cvt");
   await page.selectOption("#vehicle-drivetrain", "front_wheel_drive");
   await page
-    .getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" })
+    .getByRole("spinbutton", { name: "Current odometer reading" })
     .fill("180000");
-  await page.getByRole("button", { name: "Vahvista ajoneuvotiedot" }).click();
+  await page.getByRole("button", { name: "Confirm vehicle details" }).click();
 }
 
 async function uploadSyntheticDocuments(page: Page) {

@@ -32,9 +32,9 @@ const history: ServiceHistory = {
       actions: [
         {
           component_code: "engine_oil",
-          component_label: "Moottoriöljy",
+          component_label: "Engine oil",
           action_type: "replaced",
-          description: "Öljy vaihdettu",
+          description: "Oil replaced",
           confidence: 0.9,
         },
       ],
@@ -57,23 +57,23 @@ describe("ExtractionReview", () => {
       </AnalysisSessionProvider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Lataa tulos" }));
+    await user.click(screen.getByRole("button", { name: "Load result" }));
 
     expect(screen.getAllByText("synthetic-image-1")[0]).toBeVisible();
-    expect(screen.getAllByText(/Korkea \(88 %\)/)[0]).toBeVisible();
+    expect(screen.getAllByText(/High \(88 %\)/)[0]).toBeVisible();
     expect(screen.getByText("Synthetic warning")).toBeVisible();
 
-    const evidence = screen.getByLabelText("Raaka kuvasta luettu näyttö");
+    const evidence = screen.getByLabelText("Raw evidence read from the image");
     await user.clear(evidence);
-    await user.type(evidence, "Käyttäjän tarkistama näyttö");
-    expect(evidence).toHaveValue("Käyttäjän tarkistama näyttö");
+    await user.type(evidence, "Evidence reviewed by the user");
+    expect(evidence).toHaveValue("Evidence reviewed by the user");
 
-    await user.click(screen.getByRole("button", { name: "Lisää tapahtuma" }));
+    await user.click(screen.getByRole("button", { name: "Add event" }));
     expect(screen.getAllByRole("row")).toHaveLength(3);
 
     const bodyRows = screen.getAllByRole("row").slice(1);
     await user.click(
-      within(bodyRows[1]).getByRole("button", { name: "Poista" }),
+      within(bodyRows[1]).getByRole("button", { name: "Remove" }),
     );
     expect(screen.getAllByRole("row")).toHaveLength(2);
   });
@@ -98,19 +98,19 @@ describe("ExtractionReview", () => {
       </AnalysisSessionProvider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Lataa tulos" }));
+    await user.click(screen.getByRole("button", { name: "Load result" }));
     const bodyRows = screen.getAllByRole("row").slice(1);
 
     expect(bodyRows[0]).toHaveAttribute("aria-current", "true");
     expect(
       within(bodyRows[0]).getByRole("button", {
-        name: "Tapahtuma event-1 on muokattavana",
+        name: "Event event-1 is being edited",
       }),
     ).toHaveAttribute("aria-pressed", "true");
 
     await user.click(
       within(bodyRows[1]).getByRole("button", {
-        name: "Muokkaa tapahtumaa event-7",
+        name: "Edit event event-7",
       }),
     );
 
@@ -119,7 +119,7 @@ describe("ExtractionReview", () => {
     expect(bodyRows[1]).toHaveClass("reviewTableRowActive");
     expect(
       within(bodyRows[1]).getByRole("button", {
-        name: "Tapahtuma event-7 on muokattavana",
+        name: "Event event-7 is being edited",
       }),
     ).toHaveAttribute("aria-pressed", "true");
     expect(
@@ -130,18 +130,18 @@ describe("ExtractionReview", () => {
       "event-7",
     );
 
-    const dateInput = screen.getByLabelText("Päivämäärä");
+    const dateInput = screen.getByLabelText("Date");
     expect(dateInput).toHaveValue("12.03.2024");
-    expect(screen.getByText("Automaattinen tarkkuus")).toBeVisible();
-    expect(screen.getByText("Päivä", { selector: "strong" })).toBeVisible();
+    expect(screen.getByText("Automatic precision")).toBeVisible();
+    expect(screen.getByText("Day", { selector: "strong" })).toBeVisible();
     expect(
-      screen.queryByRole("combobox", { name: "Päivämäärän tarkkuus" }),
+      screen.queryByRole("combobox", { name: "Date precision" }),
     ).not.toBeInTheDocument();
 
     await user.clear(dateInput);
     await user.type(dateInput, "03.2024");
     expect(dateInput).toHaveValue("03.2024");
-    expect(screen.getByText("Kuukausi", { selector: "strong" })).toBeVisible();
+    expect(screen.getByText("Month", { selector: "strong" })).toBeVisible();
   });
 
   it("presents an honest result when no event was evidenced", async () => {
@@ -153,12 +153,12 @@ describe("ExtractionReview", () => {
       </AnalysisSessionProvider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Lataa tulos" }));
+    await user.click(screen.getByRole("button", { name: "Load result" }));
 
     expect(
-      screen.getByText(/Kuvista ei löytynyt varmistettavaa huoltotapahtumaa/),
+      screen.getByText(/No verifiable service event was found in the images/),
     ).toBeVisible();
-    expect(screen.getByText(/ei tarkoita, ettei huoltoja olisi tehty/i)).toBeVisible();
+    expect(screen.getByText(/does not mean no maintenance was performed/i)).toBeVisible();
   });
 
   it("shows a safe error without discarding the surrounding session", async () => {
@@ -170,13 +170,13 @@ describe("ExtractionReview", () => {
       </AnalysisSessionProvider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Aseta virhe" }));
+    await user.click(screen.getByRole("button", { name: "Set error" }));
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "Kuvat säilyvät selaimen muistissa.",
+      "Images remain in browser memory.",
     );
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "Turvallinen virheilmoitus",
+      "Safe error message",
     );
   });
 
@@ -193,7 +193,7 @@ describe("ExtractionReview", () => {
       ...mileHistory.events[0].actions[0],
       component_code: "other",
       component_label: "ATF",
-      description: "ATF vaihdettu",
+      description: "ATF replaced",
     };
 
     render(
@@ -203,20 +203,20 @@ describe("ExtractionReview", () => {
       </AnalysisSessionProvider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Lataa tulos" }));
+    await user.click(screen.getByRole("button", { name: "Load result" }));
 
     expect(
-      within(screen.getByRole("complementary", { name: "Normalisoidut arvot" }))
+      within(screen.getByRole("complementary", { name: "Normalized values" }))
         .getByText("160,9344 km"),
     ).toBeVisible();
 
     await user.click(
       screen.getByRole("button", {
-        name: "Käytä ehdotusta Vaihteistoöljy",
+        name: "Use suggestion Transmission fluid",
       }),
     );
 
-    expect(screen.getByLabelText("Komponentti")).toHaveValue(
+    expect(screen.getByLabelText("Component")).toHaveValue(
       "transmission_fluid",
     );
   });
@@ -230,16 +230,16 @@ describe("ExtractionReview", () => {
       </AnalysisSessionProvider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Lataa tulos" }));
+    await user.click(screen.getByRole("button", { name: "Load result" }));
 
-    const dateInput = screen.getByLabelText("Päivämäärä");
+    const dateInput = screen.getByLabelText("Date");
     await user.clear(dateInput);
     await user.type(dateInput, "31.02.2024");
 
     expect(dateInput).toHaveAttribute("aria-invalid", "true");
     expect(
       screen.getByRole("button", {
-        name: "Vahvista tarkistettu huoltohistoria",
+        name: "Confirm reviewed service history",
       }),
     ).toBeDisabled();
 
@@ -247,21 +247,21 @@ describe("ExtractionReview", () => {
     await user.type(dateInput, "29.02.2024");
     await user.click(
       screen.getByRole("button", {
-        name: "Vahvista tarkistettu huoltohistoria",
+        name: "Confirm reviewed service history",
       }),
     );
 
     expect(
       screen.getByRole("heading", {
-        name: "Huoltohistoria on vahvistettu.",
+        name: "The service history is confirmed.",
       }),
     ).toBeVisible();
 
-    await user.type(screen.getByLabelText("Muistiinpanot"), "Tarkistettu");
+    await user.type(screen.getByLabelText("Notes"), "Reviewed");
 
     expect(
       screen.getByRole("button", {
-        name: "Vahvista tarkistettu huoltohistoria",
+        name: "Confirm reviewed service history",
       }),
     ).toBeEnabled();
   });
@@ -283,17 +283,17 @@ describe("ExtractionReview", () => {
       </AnalysisSessionProvider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Lataa tulos" }));
+    await user.click(screen.getByRole("button", { name: "Load result" }));
 
-    expect(screen.getByText(/voivat kuvata samaa huoltokäyntiä/)).toBeVisible();
+    expect(screen.getByText(/may describe the same service visit/)).toBeVisible();
     const confirmButton = screen.getByRole("button", {
-      name: "Vahvista tarkistettu huoltohistoria",
+      name: "Confirm reviewed service history",
     });
     expect(confirmButton).toBeDisabled();
 
     await user.click(
       screen.getByRole("checkbox", {
-        name: /Olen tarkistanut 1 varoituksen/,
+        name: /I have reviewed 1 warning/,
       }),
     );
 
@@ -307,10 +307,10 @@ function SessionControls({ history: result }: Readonly<{ history: ServiceHistory
   return (
     <>
       <button type="button" onClick={() => completeExtraction(result)}>
-        Lataa tulos
+        Load result
       </button>
-      <button type="button" onClick={() => failExtraction("Turvallinen virheilmoitus")}>
-        Aseta virhe
+      <button type="button" onClick={() => failExtraction("Safe error message")}>
+        Set error
       </button>
     </>
   );

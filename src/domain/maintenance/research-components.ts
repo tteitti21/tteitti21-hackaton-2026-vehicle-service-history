@@ -145,7 +145,7 @@ export function ensureMaintenanceResearchCoverage(
     components,
     global_warnings: [
       ...research.global_warnings,
-      `Ajoneuvon vakiokomponenttiluetteloon täydennettiin ${addedLabels.length} kohdetta ilman varmennettua huoltoväliä: ${addedLabels.join(", ")}.`,
+      `${addedLabels.length} items were added to the vehicle's standard component inventory without a verified maintenance interval: ${addedLabels.join(", ")}.`,
     ],
   };
 }
@@ -212,10 +212,10 @@ function getPowertrainComponentLabel(
     AUTOMATIC_TRANSMISSION_TYPES.has(vehicle.transmissionType)
   ) {
     if (code === "transmission_fluid") {
-      return "Automaattivaihteiston öljy";
+      return "Automatic transmission fluid";
     }
     if (code === "transmission_filter") {
-      return "Automaattivaihteiston suodatin";
+      return "Automatic transmission filter";
     }
   }
 

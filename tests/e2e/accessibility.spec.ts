@@ -5,10 +5,10 @@ test("provides named controls, unique IDs, landmarks, and a working skip link", 
 }) => {
   await page.goto("/");
 
-  await expect(page.locator("html")).toHaveAttribute("lang", "fi");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.getByRole("main")).toHaveCount(1);
   await expect(
-    page.getByRole("navigation", { name: "Päänavigaatio" }),
+    page.getByRole("navigation", { name: "Main navigation" }),
   ).toBeVisible();
   await expect(page.getByRole("contentinfo")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
@@ -48,7 +48,7 @@ test("provides named controls, unique IDs, landmarks, and a working skip link", 
   expect(unnamedControls).toEqual([]);
 
   await page.keyboard.press("Tab");
-  const skipLink = page.getByRole("link", { name: "Siirry sisältöön" });
+  const skipLink = page.getByRole("link", { name: "Skip to content" });
   await expect(skipLink).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#sisalto$/);
@@ -60,13 +60,13 @@ test("keeps the privacy disclosure keyboard-readable", async ({ page }) => {
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: /Tietojen käsittely on rajattu yhteen istuntoon/,
+      name: /Data handling is limited to one session/,
     }),
   ).toBeVisible();
   await expect(page.getByRole("main")).toHaveCount(1);
   await expect(page.getByRole("link", { name: /OpenAI Enterprise Privacy/ }))
     .toHaveAttribute("rel", "noreferrer");
   await expect(page.locator("body")).toContainText(
-    "Sivun sulkeminen tai päivittäminen poistaa nykyisen istunnon",
+    "Closing or refreshing the page removes the current session",
   );
 });

@@ -154,7 +154,7 @@ export function createExtractPostHandler(
           "provider_timeout",
           requestId,
           extractionDiagnosticsHeaders,
-          `Kuvien käsittely ylitti ${formatTimeoutSeconds(config.timeoutMs)} sekunnin aikarajan. Kuvat säilyvät selaimessa uutta yritystä varten.`,
+          `Image processing exceeded the ${formatTimeoutSeconds(config.timeoutMs)}-second timeout. Images remain in the browser for another attempt.`,
         );
       }
 
@@ -259,22 +259,22 @@ function formatTimeoutSeconds(timeoutMs: number): string {
 function userFacingErrorMessage(code: string): string {
   switch (code) {
     case "payload_too_large":
-      return "Lähetyspaketti ylittää sallitun kokorajan.";
+      return "The submission package exceeds the allowed size limit.";
     case "unsupported_media_type":
-      return "Lähetyspaketti sisältää tiedostomuodon, jota ei hyväksytä.";
+      return "The submission package contains an unsupported file format.";
     case "rate_limited":
-      return "Poimintapyyntöjä on tehty liian monta. Yritä hetken kuluttua uudelleen.";
+      return "Too many extraction requests have been made. Try again in a moment.";
     case "provider_timeout":
-      return "Kuvien käsittely aikakatkaistiin. Kuvat säilyvät selaimessa uutta yritystä varten.";
+      return "Image processing timed out. Images remain in the browser for another attempt.";
     case "invalid_provider_output":
-      return "Kuvista saatu vastaus ei ollut turvallisesti käsiteltävässä muodossa. Kuvat säilyvät selaimessa.";
+      return "The response from the images was not in a safely processable format. Images remain in the browser.";
     case "provider_error":
-      return "Kuvien käsittely epäonnistui palveluntarjoajalla. Kuvat säilyvät selaimessa uutta yritystä varten.";
+      return "Image processing failed at the provider. Images remain in the browser for another attempt.";
     case "service_unavailable":
-      return "Kuvien poimintapalvelu ei ole tällä hetkellä käytettävissä.";
+      return "The image extraction service is currently unavailable.";
     case "forbidden":
-      return "Pyyntöä ei voitu hyväksyä.";
+      return "The request could not be accepted.";
     default:
-      return "Lähetyspakettia ei voitu käsitellä.";
+      return "The submission package could not be processed.";
   }
 }

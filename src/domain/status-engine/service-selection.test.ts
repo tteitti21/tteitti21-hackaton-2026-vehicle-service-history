@@ -6,7 +6,7 @@ import { selectLastRelevantService } from "./service-selection";
 const baseEvent: ServiceEvent = {
   event_id: "event-1",
   source_image_ids: ["image-1"],
-  raw_evidence: "Moottoriöljy vaihdettu",
+  raw_evidence: "Engine oil replaced",
   service_date: {
     value: "2024-01-15",
     precision: "day",
@@ -16,9 +16,9 @@ const baseEvent: ServiceEvent = {
   actions: [
     {
       component_code: "engine_oil",
-      component_label: "Moottoriöljy",
+      component_label: "Engine oil",
       action_type: "replaced",
-      description: "Öljy vaihdettu",
+      description: "Oil replaced",
       confidence: 0.9,
     },
   ],

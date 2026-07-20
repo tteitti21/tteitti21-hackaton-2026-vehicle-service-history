@@ -31,12 +31,12 @@ const ACTION_LABELS: Record<
   ReportServiceEvent["actions"][number]["action_type"],
   string
 > = {
-  replaced: "vaihdettu",
-  serviced: "huollettu",
-  repaired: "korjattu",
-  inspected: "tarkastettu",
-  adjusted: "säädetty",
-  unknown: "epäselvä",
+  replaced: "replaced",
+  serviced: "serviced",
+  repaired: "repaired",
+  inspected: "inspected",
+  adjusted: "adjusted",
+  unknown: "unknown",
 };
 
 const STATUS_COLORS: Record<
@@ -81,15 +81,15 @@ export function createExcelReportWorkbook(
   workbook.lastModifiedBy = "AutoHuolto AI";
   workbook.created = generatedAt;
   workbook.modified = generatedAt;
-  workbook.title = `${report.vehicle.make} ${report.vehicle.model} – huoltoraportti`;
-  workbook.subject = "Paikallisesti luotu ajoneuvon huoltohistorian raportti";
+  workbook.title = `${report.vehicle.make} ${report.vehicle.model} – service report`;
+  workbook.subject = "Locally generated vehicle service-history report";
   workbook.company = "AutoHuolto AI";
   workbook.calcProperties.fullCalcOnLoad = true;
 
-  const summarySheet = createVerticalWorksheet(workbook, "Yhteenveto");
-  const serviceSheet = createVerticalWorksheet(workbook, "Huoltohistoria");
-  const componentSheet = createVerticalWorksheet(workbook, "Komponentit");
-  const sourceSheet = createVerticalWorksheet(workbook, "Lähteet");
+  const summarySheet = createVerticalWorksheet(workbook, "Summary");
+  const serviceSheet = createVerticalWorksheet(workbook, "Service history");
+  const componentSheet = createVerticalWorksheet(workbook, "Components");
+  const sourceSheet = createVerticalWorksheet(workbook, "Sources");
 
   writeServiceHistorySheet(serviceSheet, report.service_history);
   const componentLastRow = writeComponentSheet(
@@ -140,63 +140,63 @@ function writeSummarySheet(
   report: VehicleReportModel,
   componentLastRow: number,
 ): void {
-  writeSheetTitle(sheet, "AutoHuolto AI – huoltoraportti");
+  writeSheetTitle(sheet, "AutoHuolto AI – service report");
   writeSheetNotice(
     sheet,
-    "Raportti luotiin paikallisesti selaimessa. Se ei sisällä kuvia eikä sitä lähetetty vientiä varten palvelimelle.",
+    "The report was generated locally in the browser. It does not contain images and was not sent to the server for export.",
   );
 
   let row = 4;
-  row = writeSectionHeading(sheet, row, "Ajoneuvo");
+  row = writeSectionHeading(sheet, row, "Vehicle");
   const vehicleRows: Array<[string, CellValue, DetailRowOptions?]> = [
-    ["Merkki", safeText(report.vehicle.make)],
-    ["Malli", safeText(report.vehicle.model)],
-    ["Sukupolvi", textOr(report.vehicle.generation, "Ei tiedossa")],
-    ["Mallivuosi", valueOr(report.vehicle.model_year, "Ei tiedossa")],
+    ["Make", safeText(report.vehicle.make)],
+    ["Model", safeText(report.vehicle.model)],
+    ["Generation", textOr(report.vehicle.generation, "Unknown")],
+    ["Model year", valueOr(report.vehicle.model_year, "Unknown")],
     [
-      "Ensirekisteröintivuosi",
-      valueOr(report.vehicle.first_registration_year, "Ei tiedossa"),
+      "First registration year",
+      valueOr(report.vehicle.first_registration_year, "Unknown"),
     ],
     [
-      "Moottorin tilavuus (l)",
-      valueOr(report.vehicle.engine_displacement_litres, "Ei tiedossa"),
+      "Engine displacement (l)",
+      valueOr(report.vehicle.engine_displacement_litres, "Unknown"),
       { numFmt: "0.0#" },
     ],
-    ["Moottorikoodi", textOr(report.vehicle.engine_code, "Ei tiedossa")],
-    ["Teho (kW)", valueOr(report.vehicle.power_kw, "Ei tiedossa")],
-    ["Käyttövoima", textOr(report.vehicle.fuel_type, "Ei tiedossa")],
+    ["Engine code", textOr(report.vehicle.engine_code, "Unknown")],
+    ["Power (kW)", valueOr(report.vehicle.power_kw, "Unknown")],
+    ["Fuel type", textOr(report.vehicle.fuel_type, "Unknown")],
     [
-      "Vaihteistotyyppi",
-      textOr(report.vehicle.transmission_type, "Ei tiedossa"),
+      "Transmission type",
+      textOr(report.vehicle.transmission_type, "Unknown"),
     ],
     [
-      "Vaihteistokoodi",
-      textOr(report.vehicle.transmission_code, "Ei tiedossa"),
+      "Transmission code",
+      textOr(report.vehicle.transmission_code, "Unknown"),
     ],
-    ["Vetotapa", textOr(report.vehicle.drivetrain, "Ei tiedossa")],
-    ["Maa", safeText(report.vehicle.country)],
-    ["Markkina", textOr(report.vehicle.market, "Ei tiedossa")],
+    ["Drivetrain", textOr(report.vehicle.drivetrain, "Unknown")],
+    ["Country", safeText(report.vehicle.country)],
+    ["Market", textOr(report.vehicle.market, "Unknown")],
     [
-      "Nykyinen mittarilukema (km)",
+      "Current odometer reading (km)",
       report.vehicle.current_odometer_km,
       { numFmt: "#,##0" },
     ],
     [
-      "Vahvistettu moottori",
-      textOr(report.vehicle.resolved_variant.engine, "Ei tiedossa"),
+      "Confirmed engine",
+      textOr(report.vehicle.resolved_variant.engine, "Unknown"),
     ],
     [
-      "Vahvistettu vaihteisto",
-      textOr(report.vehicle.resolved_variant.transmission, "Ei tiedossa"),
+      "Confirmed transmission",
+      textOr(report.vehicle.resolved_variant.transmission, "Unknown"),
     ],
     [
-      "Variantin yhteensopivuus",
+      "Variant compatibility",
       REPORT_COMPATIBILITY_LABELS_FI[
         report.vehicle.resolution.compatibility
       ],
     ],
     [
-      "Variantin epävarmuus",
+      "Variant uncertainty",
       safeText(
         [
           ...new Set([
@@ -208,8 +208,8 @@ function writeSummarySheet(
       ),
     ],
     [
-      "Lisätiedot",
-      textOr(report.vehicle.additional_details, "Ei lisätietoja"),
+      "Additional details",
+      textOr(report.vehicle.additional_details, "No additional details"),
     ],
   ];
   for (const [label, value, options] of vehicleRows) {
@@ -217,14 +217,14 @@ function writeSummarySheet(
   }
 
   row += 1;
-  row = writeSectionHeading(sheet, row, "Komponenttien tilat");
+  row = writeSectionHeading(sheet, row, "Component statuses");
   for (const status of STATUS_ORDER) {
     row = writeDetailRow(
       sheet,
       row,
       `${REPORT_STATUS_LABELS_FI[status]} (${status})`,
       {
-        formula: `COUNTIF('Komponentit'!$B$1:$B$${componentLastRow},"${status}")`,
+        formula: `COUNTIF('Components'!$B$1:$B$${componentLastRow},"${status}")`,
         result: report.summary.status_counts[status],
       },
       {
@@ -241,35 +241,35 @@ function writeSummarySheet(
   }
 
   row += 1;
-  row = writeSectionHeading(sheet, row, "Raportin tiedot");
+  row = writeSectionHeading(sheet, row, "Report details");
   const metadataRows: Array<[string, CellValue, DetailRowOptions?]> = [
     [
-      "Luotu",
+      "Generated",
       toExcelDate(report.metadata.generated_at),
       { numFmt: "yyyy-mm-dd hh:mm" },
     ],
     [
-      "Laskentapäivä",
+      "Calculation date",
       toExcelDate(report.metadata.analysis_date),
       { numFmt: "yyyy-mm-dd" },
     ],
-    ["Huoltotapahtumia", report.summary.service_event_count],
-    ["Komponentteja", report.summary.component_count],
-    ["Lähderivejä", report.summary.source_count],
+    ["Service events", report.summary.service_event_count],
+    ["Components", report.summary.component_count],
+    ["Source rows", report.summary.source_count],
     [
-      "Korkein prioriteetti",
+      "Highest priority",
       report.summary.highest_priority_status === null
-        ? "Ei laskettua tilaa"
+        ? "No calculated status"
         : REPORT_STATUS_LABELS_FI[report.summary.highest_priority_status],
     ],
-    ["Raporttiskeema", report.metadata.schema_version],
+    ["Report schema", report.metadata.schema_version],
   ];
   for (const [label, value, options] of metadataRows) {
     row = writeDetailRow(sheet, row, label, value, options);
   }
 
   row += 1;
-  row = writeSectionHeading(sheet, row, "Varoitukset ja rajaukset");
+  row = writeSectionHeading(sheet, row, "Warnings and scope");
   const warnings = [
     ...report.warnings.service_history,
     ...report.warnings.vehicle_resolution,
@@ -278,13 +278,13 @@ function writeSummarySheet(
   row = writeDetailRow(
     sheet,
     row,
-    "Varoitukset",
-    safeText(warnings.join("\n") || "Ei erillisiä varoituksia."),
+    "Warnings",
+    safeText(warnings.join("\n") || "No separate warnings."),
   );
   writeDetailRow(
     sheet,
     row,
-    "Rajaus",
+    "Scope",
     safeText(report.metadata.disclaimer_fi),
     {
       valueStyle: {
@@ -298,10 +298,10 @@ function writeServiceHistorySheet(
   sheet: Worksheet,
   events: ReportServiceEvent[],
 ): void {
-  writeSheetTitle(sheet, "Tarkistettu huoltohistoria");
+  writeSheetTitle(sheet, "Reviewed service history");
   writeSheetNotice(
     sheet,
-    "Jokainen tapahtuma on oma pystysuuntainen tietueensa. Alkuperäiset arvot ja epävarmuudet säilytetään.",
+    "Each event is its own vertical record. Original values and uncertainties are preserved.",
   );
 
   let row = 4;
@@ -309,8 +309,8 @@ function writeServiceHistorySheet(
     writeDetailRow(
       sheet,
       row,
-      "Huoltohistoria",
-      "Huoltohistoriasta ei löytynyt merkintää.",
+      "Service history",
+      "No service-history entry was found.",
     );
     return;
   }
@@ -319,16 +319,16 @@ function writeServiceHistorySheet(
     row = writeRecordHeading(
       sheet,
       row,
-      `Tapahtuma ${eventIndex + 1}: ${safeText(event.event_id)}`,
+      `Event ${eventIndex + 1}: ${safeText(event.event_id)}`,
     );
     const serviceDate =
       event.service_date === null
-        ? "Päivämäärä ei tiedossa"
+        ? "Date unknown"
         : event.service_date.precision === "day"
           ? toExcelDate(event.service_date.value)
           : safeText(event.service_date.value);
-    row = writeDetailRow(sheet, row, "Tapahtuma-ID", safeText(event.event_id));
-    row = writeDetailRow(sheet, row, "Huoltopäivä", serviceDate, {
+    row = writeDetailRow(sheet, row, "Event ID", safeText(event.event_id));
+    row = writeDetailRow(sheet, row, "Service date", serviceDate, {
       numFmt:
         event.service_date?.precision === "day"
           ? "yyyy-mm-dd"
@@ -337,30 +337,30 @@ function writeServiceHistorySheet(
     row = writeDetailRow(
       sheet,
       row,
-      "Päivän tarkkuus",
-      textOr(event.service_date?.precision, "Ei tiedossa"),
+      "Date precision",
+      textOr(event.service_date?.precision, "Unknown"),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Päivän luottamus",
-      valueOr(event.service_date?.confidence, "Ei arvioitu"),
+      "Date confidence",
+      valueOr(event.service_date?.confidence, "Not assessed"),
       { numFmt: "0%" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Mittarilukema (km)",
-      valueOr(event.odometer_km, "Mittarilukema ei tiedossa"),
+      "Odometer reading (km)",
+      valueOr(event.odometer_km, "Odometer reading unknown"),
       { numFmt: "#,##0.####" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Alkuperäinen mittarilukema",
+      "Original odometer reading",
       event.original_odometer_value === null ||
         event.original_odometer_unit === null
-        ? "Alkuperäistä mittarilukemaa ei ilmoitettu"
+        ? "Original odometer reading was not reported"
         : safeText(
             `${event.original_odometer_value} ${event.original_odometer_unit}`,
           ),
@@ -368,31 +368,31 @@ function writeServiceHistorySheet(
     row = writeDetailRow(
       sheet,
       row,
-      "Mittarilukeman luottamus",
-      valueOr(event.odometer_confidence, "Ei arvioitu"),
+      "Odometer confidence",
+      valueOr(event.odometer_confidence, "Not assessed"),
       { numFmt: "0%" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Korjaamo",
-      textOr(event.workshop, "Korjaamo ei tiedossa"),
+      "Workshop",
+      textOr(event.workshop, "Workshop unknown"),
     );
     if (event.actions.length === 0) {
       row = writeDetailRow(
         sheet,
         row,
-        "Toimenpiteet",
-        "Ei tunnistettuja toimenpiteitä",
+        "Actions",
+        "No identified actions",
       );
     } else {
       for (const [actionIndex, action] of event.actions.entries()) {
         row = writeDetailRow(
           sheet,
           row,
-          `Toimenpide ${actionIndex + 1}`,
+          `Action ${actionIndex + 1}`,
           safeText(
-            `${action.component_label} [${action.component_code}] – ${ACTION_LABELS[action.action_type]} – ${action.description} – luottamus ${Math.round(action.confidence * 100)} %`,
+            `${action.component_label} [${action.component_code}] – ${ACTION_LABELS[action.action_type]} – ${action.description} – confidence ${Math.round(action.confidence * 100)}%`,
           ),
         );
       }
@@ -400,35 +400,35 @@ function writeServiceHistorySheet(
     row = writeDetailRow(
       sheet,
       row,
-      "Raaka näyttö",
-      textOr(event.raw_evidence, "Ei raakatekstiä"),
+      "Raw evidence",
+      textOr(event.raw_evidence, "No raw text"),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Muistiinpanot",
-      textOr(event.notes, "Ei muistiinpanoja"),
+      "Notes",
+      textOr(event.notes, "No notes"),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Epävarmuudet",
-      safeText(event.ambiguities.join(" | ") || "Ei erillisiä epävarmuuksia"),
+      "Uncertainties",
+      safeText(event.ambiguities.join(" | ") || "No separate uncertainties"),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Tapahtuman luottamus",
+      "Event confidence",
       event.confidence,
       { numFmt: "0%" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Lähdekuvien tunnisteet",
+      "Source image identifiers",
       safeText(
         event.source_image_ids.join(" | ") ||
-          "Ei lähdekuvan tunnistetta",
+          "No source image identifier",
       ),
     );
     row += 1;
@@ -439,10 +439,10 @@ function writeComponentSheet(
   sheet: Worksheet,
   components: ReportComponent[],
 ): number {
-  writeSheetTitle(sheet, "Komponenttien huoltotilanne");
+  writeSheetTitle(sheet, "Component maintenance status");
   writeSheetNotice(
     sheet,
-    "Kaikki ajoneuvon voimalinjaan kuuluvat vakiokomponentit näytetään, vaikka huoltohistoriassa tai lähteissä ei olisi niistä merkintää.",
+    "All standard components for the vehicle powertrain are shown even when the service history or sources contain no entry for them.",
   );
 
   let row = 4;
@@ -457,10 +457,10 @@ function writeComponentSheet(
     row = writeDetailRow(
       sheet,
       row,
-      "Komponenttikoodi",
+      "Component code",
       component.component_code,
     );
-    row = writeDetailRow(sheet, row, "Tilakoodi", component.status, {
+    row = writeDetailRow(sheet, row, "Status code", component.status, {
       valueStyle: {
         fill: solidFill(colors.fill),
         font: {
@@ -472,7 +472,7 @@ function writeComponentSheet(
     row = writeDetailRow(
       sheet,
       row,
-      "Tila",
+      "Status",
       component.status_label_fi,
     );
     row = writeDetailRow(
@@ -484,146 +484,146 @@ function writeComponentSheet(
     row = writeDetailRow(
       sheet,
       row,
-      "Luotettavuuden perustelu",
+      "Trustworthiness rationale",
       safeText(component.trustworthiness_note_fi),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Huoltosuositus",
+      "Maintenance recommendation",
       safeText(component.maintenance_suggestion_fi),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Huoltohistorian kattavuus",
+      "Service-history coverage",
       safeText(component.service_history_note_fi),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Lähderatkaisu",
+      "Source resolution",
       REPORT_RESOLUTION_LABELS_FI[component.resolution],
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Ristiriita tai epävarmuus",
+      "Conflict or uncertainty",
       textOr(
         component.conflict_summary,
         component.resolution === "insufficient_evidence"
-          ? "Ei ratkaistavaa ristiriitaa; riittävä lähdenäyttö puuttuu."
-          : "Ei lähderistiriitaa.",
+          ? "No conflict to resolve; sufficient source evidence is missing."
+          : "No source conflict.",
       ),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Syykoodit",
-      safeText(component.reason_codes.join(" | ") || "Ei syykoodeja"),
+      "Reason codes",
+      safeText(component.reason_codes.join(" | ") || "No reason codes"),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Säilytettyjä huoltoväliväitteitä",
+      "Preserved maintenance interval claims",
       component.interval_claim_count,
       { numFmt: "0" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Valittu väite",
+      "Selected claim",
       textOr(
         component.recommended_claim_id,
         component.resolution === "conflicting_sources"
-          ? "Ei automaattista valintaa lähderistiriidan vuoksi"
-          : "Ei varmennettua väitettä",
+          ? "No automatic selection because of a source conflict"
+          : "No verified claim",
       ),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Huoltoväli (km)",
+      "Maintenance interval (km)",
       valueOr(
         component.recommended_interval_km,
-        "Ei varmennettua kilometriväliä",
+        "No verified distance interval",
       ),
       { numFmt: "#,##0" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Huoltoväli (kk)",
+      "Maintenance interval (months)",
       valueOr(
         component.recommended_interval_months,
-        "Ei varmennettua aikaväliä",
+        "No verified time interval",
       ),
       { numFmt: "0" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Ensin täyttyvä",
+      "Whichever comes first",
       component.whichever_first === null
-        ? "Ei sovellettavaa yhdistelmäväliä"
+        ? "No applicable combined interval"
         : formatBoolean(component.whichever_first),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Käyttöehdot",
-      textOr(component.conditions, "Ei erillisiä käyttöehtoja"),
+      "Operating conditions",
+      textOr(component.conditions, "No separate operating conditions"),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Viimeisin huoltotapahtuma",
+      "Latest service event",
       textOr(
         component.last_service_event_id,
-        "Ei valittua huoltotapahtumaa",
+        "No selected service event",
       ),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Käytetty matka (km)",
-      valueOr(component.distance_used_km, "Ei laskettavissa"),
+      "Distance used (km)",
+      valueOr(component.distance_used_km, "Cannot be calculated"),
       { numFmt: "#,##0" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Matkaa jäljellä (km)",
-      valueOr(component.distance_remaining_km, "Ei laskettavissa"),
+      "Distance remaining (km)",
+      valueOr(component.distance_remaining_km, "Cannot be calculated"),
       { numFmt: "#,##0" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Käytetty aika (kk)",
-      valueOr(component.months_used, "Ei laskettavissa"),
+      "Time used (months)",
+      valueOr(component.months_used, "Cannot be calculated"),
       { numFmt: "0" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Aikaa jäljellä (kk)",
-      valueOr(component.months_remaining, "Ei laskettavissa"),
+      "Time remaining (months)",
+      valueOr(component.months_remaining, "Cannot be calculated"),
       { numFmt: "0" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Erääntymislukema (km)",
-      valueOr(component.due_odometer_km, "Ei laskettavissa"),
+      "Due odometer (km)",
+      valueOr(component.due_odometer_km, "Cannot be calculated"),
       { numFmt: "#,##0" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Erääntymispäivä",
+      "Due date",
       component.due_date === null
-        ? "Ei laskettavissa"
+        ? "Cannot be calculated"
         : toExcelDate(component.due_date),
       { numFmt: "yyyy-mm-dd" },
     );
@@ -634,8 +634,8 @@ function writeComponentSheet(
     row = writeDetailRow(
       sheet,
       row,
-      "Komponentit",
-      "Komponenttitietoja ei ole saatavilla.",
+      "Components",
+      "Component details are not available.",
     );
   }
 
@@ -646,10 +646,10 @@ function writeSourceSheet(
   sheet: Worksheet,
   sources: ReportSource[],
 ): void {
-  writeSheetTitle(sheet, "Lähteet ja säilytetyt väitteet");
+  writeSheetTitle(sheet, "Sources and preserved claims");
   writeSheetNotice(
     sheet,
-    "Jokainen lähdeväite säilytetään omana pystysuuntaisena tietueenaan. Ristiriitaisia väitteitä ei yhdistetä eikä keskiarvoisteta.",
+    "Each source claim is preserved as its own vertical record. Conflicting claims are not merged or averaged.",
   );
 
   let row = 4;
@@ -657,8 +657,8 @@ function writeSourceSheet(
     writeDetailRow(
       sheet,
       row,
-      "Lähteet",
-      "Raportissa ei ole lähteitä. Huoltosuosituksia ei tule tulkita varmennetuiksi.",
+      "Sources",
+      "The report contains no sources. Maintenance recommendations must not be interpreted as verified.",
     );
     return;
   }
@@ -667,46 +667,46 @@ function writeSourceSheet(
     row = writeRecordHeading(
       sheet,
       row,
-      `${index + 1}. ${safeText(source.component_label ?? "Ajoneuvoversio")} – ${safeText(source.title)}`,
+      `${index + 1}. ${safeText(source.component_label ?? "Vehicle variant")} – ${safeText(source.title)}`,
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Lähde-ID",
+      "Source ID",
       safeText(source.source_id),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Lähteen rooli",
+      "Source role",
       source.source_scope === "vehicle_resolution"
-        ? "Ajoneuvoversio"
-        : "Huoltoväli",
+        ? "Vehicle variant"
+        : "Maintenance interval",
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Komponentti",
-      textOr(source.component_label, "Ajoneuvoversio"),
+      "Component",
+      textOr(source.component_label, "Vehicle variant"),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Komponenttikoodi",
-      textOr(source.component_code, "Ei komponenttikohtainen"),
+      "Component code",
+      textOr(source.component_code, "Not component-specific"),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Väite-ID",
-      textOr(source.claim_id, "Ei huoltoväliväitettä"),
+      "Claim ID",
+      textOr(source.claim_id, "No maintenance interval claim"),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Valittu suositus",
+      "Selected recommendation",
       source.recommended === null
-        ? "Ei sovellu ajoneuvolähteeseen"
+        ? "Not applicable to a vehicle source"
         : formatBoolean(source.recommended),
     );
     row = writeDetailRow(
@@ -718,84 +718,84 @@ function writeSourceSheet(
     row = writeDetailRow(
       sheet,
       row,
-      "Luotettavuuden perustelu",
+      "Trustworthiness rationale",
       safeText(source.trustworthiness_note_fi),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Huoltoväli (km)",
-      valueOr(source.interval_km, "Ei kilometriväitettä"),
+      "Maintenance interval (km)",
+      valueOr(source.interval_km, "No distance claim"),
       { numFmt: "#,##0" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Huoltoväli (kk)",
-      valueOr(source.interval_months, "Ei aikaväitettä"),
+      "Maintenance interval (months)",
+      valueOr(source.interval_months, "No time claim"),
       { numFmt: "0" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Ensin täyttyvä",
+      "Whichever comes first",
       source.whichever_first === null
-        ? "Ei sovellettavaa yhdistelmäväliä"
+        ? "No applicable combined interval"
         : formatBoolean(source.whichever_first),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Käyttöehdot",
-      textOr(source.conditions, "Ei erillisiä käyttöehtoja"),
+      "Operating conditions",
+      textOr(source.conditions, "No separate operating conditions"),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Alkuperäinen arvo",
+      "Original value",
       source.original_value === null || source.original_unit === null
-        ? "Ei alkuperäistä väliarvoa"
+        ? "No original interval value"
         : safeText(`${source.original_value} ${source.original_unit}`),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Lähdetaso",
-      valueOr(source.authority_rank, "Ei huoltovälilähteen tasoa"),
+      "Source tier",
+      valueOr(source.authority_rank, "No maintenance interval source tier"),
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Yhteensopivuus",
+      "Compatibility",
       `${REPORT_COMPATIBILITY_LABELS_FI[source.compatibility]} (${source.compatibility})`,
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Yhteensopivuuden perustelu",
+      "Compatibility rationale",
       safeText(source.compatibility_notes),
     );
-    row = writeDetailRow(sheet, row, "Otsikko", safeText(source.title));
+    row = writeDetailRow(sheet, row, "Title", safeText(source.title));
     row = writeDetailRow(
       sheet,
       row,
-      "Julkaisija",
-      textOr(source.publisher, "Julkaisija ei tiedossa"),
+      "Publisher",
+      textOr(source.publisher, "Publisher unknown"),
     );
     row = writeDetailRow(sheet, row, "URL", safeText(source.url));
     row = writeDetailRow(
       sheet,
       row,
-      "Haettu",
+      "Retrieved",
       source.retrieved_at === null
-        ? "Hakupäivä ei tiedossa"
+        ? "Retrieval date unknown"
         : toExcelDate(source.retrieved_at),
       { numFmt: "yyyy-mm-dd" },
     );
     row = writeDetailRow(
       sheet,
       row,
-      "Lähdenäyttö",
+      "Source evidence",
       safeText(source.evidence),
     );
     row += 1;
@@ -915,7 +915,7 @@ function valueOr(
 }
 
 function formatBoolean(value: boolean): string {
-  return value ? "Kyllä" : "Ei";
+  return value ? "Yes" : "No";
 }
 
 function solidFill(color: string): ExcelJS.Fill {

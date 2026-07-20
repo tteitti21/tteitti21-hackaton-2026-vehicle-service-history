@@ -21,20 +21,20 @@ const normalized = {
   components: [
     {
       component_code: "engine_oil",
-      component_label: "Moottoriöljy",
+      component_label: "Engine oil",
       interval_claims: [
         {
           interval_km: 16_093,
           interval_months: null,
           whichever_first: false,
-          conditions: "Normaali käyttö",
+          conditions: "Normal use",
           original_value: 10_000,
           original_unit: "mi",
           source_id: "source-1",
-          evidence: "Alkuperäinen taulukko ilmoittaa 10 000 mi.",
+          evidence: "The original table specifies 10,000 mi.",
           authority_rank: 1,
           compatibility: "exact",
-          compatibility_notes: "Moottori, vuosimalli ja markkina täsmäävät.",
+          compatibility_notes: "The engine, model year, and market match.",
         },
       ],
     },

@@ -181,22 +181,22 @@ function errorResponse(
 function userFacingErrorMessage(code: string): string {
   switch (code) {
     case "payload_too_large":
-      return "Huoltovälitutkimuksen pyyntö ylittää sallitun kokorajan.";
+      return "The maintenance research request exceeds the allowed size limit.";
     case "unsupported_media_type":
-      return "Huoltovälitutkimus on lähetettävä JSON-muodossa.";
+      return "Maintenance research must be submitted as JSON.";
     case "rate_limited":
-      return "Huoltovälitutkimuksia on tehty liian monta. Yritä hetken kuluttua uudelleen.";
+      return "Too many maintenance research requests have been made. Try again in a moment.";
     case "provider_timeout":
-      return "Huoltovälien verkkohaku aikakatkaistiin. Voit yrittää uudelleen.";
+      return "Maintenance interval web search timed out. You can try again.";
     case "invalid_provider_output":
-      return "Tutkimuksen huoltovälejä tai lähteitä ei voitu varmistaa turvallisesti.";
+      return "The researched maintenance intervals or sources could not be verified safely.";
     case "provider_error":
-      return "Huoltovälien verkkohaku epäonnistui palveluntarjoajalla.";
+      return "Maintenance interval web search failed at the provider.";
     case "service_unavailable":
-      return "Huoltovälien verkkohaku ei ole tällä hetkellä käytettävissä.";
+      return "Maintenance interval web search is currently unavailable.";
     case "forbidden":
-      return "Pyyntöä ei voitu hyväksyä.";
+      return "The request could not be accepted.";
     default:
-      return "Huoltovälitutkimuksen pyyntöä ei voitu käsitellä.";
+      return "The maintenance research request could not be processed.";
   }
 }

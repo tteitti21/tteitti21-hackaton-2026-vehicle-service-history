@@ -177,7 +177,7 @@ describe("POST /api/extract", () => {
     expect(await response.json()).toMatchObject({
       error: {
         code: "provider_timeout",
-        message: expect.stringContaining("5 sekunnin aikarajan"),
+        message: expect.stringContaining("5-second timeout"),
       },
     });
     expect(

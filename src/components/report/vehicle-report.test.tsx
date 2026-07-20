@@ -36,28 +36,28 @@ describe("VehicleReportPanel", () => {
     renderPanel();
 
     expect(
-      screen.getByText("Raportti odottaa valmista tilalaskentaa."),
+      screen.getByText("The report is waiting for completed status calculation."),
     ).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Valmistele raportti" }));
+    await user.click(screen.getByRole("button", { name: "Prepare report" }));
 
     expect(
       screen.getByRole("heading", { name: "Toyota Avensis", level: 3 }),
     ).toBeVisible();
     expect(screen.getByText("1", { selector: ".reportSummaryGrid strong" })).toBeVisible();
     expect(
-      screen.getByRole("heading", { name: "Tarkistettu huoltohistoria" }),
+      screen.getByRole("heading", { name: "Reviewed service history" }),
     ).toBeVisible();
     expect(
-      screen.getByRole("heading", { name: "Komponenttien laskettu tila" }),
+      screen.getByRole("heading", { name: "Calculated component status" }),
     ).toBeVisible();
     expect(
-      screen.getByRole("heading", { name: "Lähteet ja yhteensopivuus" }),
+      screen.getByRole("heading", { name: "Sources and compatibility" }),
     ).toBeVisible();
     expect(screen.getByText("160,9344 km")).toBeVisible();
-    expect(screen.getAllByText("Lähteissä ristiriita")).not.toHaveLength(0);
-    expect(screen.getAllByText("Ei riittävää tietoa")).not.toHaveLength(0);
+    expect(screen.getAllByText("Conflicting sources")).not.toHaveLength(0);
+    expect(screen.getAllByText("Insufficient evidence")).not.toHaveLength(0);
     expect(
-      screen.getAllByText(/Luotettavuus: Matala \(low\)/).length,
+      screen.getAllByText(/Trustworthiness: Low \(low\)/).length,
     ).toBeGreaterThan(0);
     expect(
       screen.getAllByRole("link", {
@@ -85,8 +85,8 @@ describe("VehicleReportPanel", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch");
     renderPanel();
 
-    await user.click(screen.getByRole("button", { name: "Valmistele raportti" }));
-    await user.click(screen.getByRole("button", { name: "Lataa JSON" }));
+    await user.click(screen.getByRole("button", { name: "Prepare report" }));
+    await user.click(screen.getByRole("button", { name: "Download JSON" }));
 
     expect(filenames[0]).toBe("autohuolto-toyota-avensis-2026-07-19.json");
     expect(blobs[0]?.type).toBe("application/json;charset=utf-8");
@@ -97,7 +97,7 @@ describe("VehicleReportPanel", () => {
     });
     expect(JSON.stringify(json)).not.toContain('"images":');
 
-    await user.click(screen.getByRole("button", { name: "Lataa Excel" }));
+    await user.click(screen.getByRole("button", { name: "Download Excel" }));
     await vi.waitFor(() => expect(createExcelReportBlob).toHaveBeenCalledOnce());
     expect(filenames[1]).toBe("autohuolto-toyota-avensis-2026-07-19.xlsx");
     expect(blobs[1]?.type).toBe(
@@ -153,9 +153,9 @@ function SetupButton() {
               actions: [
                 {
                   component_code: "engine_oil",
-                  component_label: "Moottoriöljy",
+                  component_label: "Engine oil",
                   action_type: "replaced",
-                  description: "Öljy vaihdettu",
+                  description: "Oil replaced",
                   confidence: 1,
                 },
               ],
@@ -173,7 +173,7 @@ function SetupButton() {
         completeMaintenanceResearch(maintenanceResearchFixture);
       }}
     >
-      Valmistele raportti
+      Prepare report
     </button>
   );
 }

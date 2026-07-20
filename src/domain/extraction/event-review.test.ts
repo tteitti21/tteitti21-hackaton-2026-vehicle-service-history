@@ -80,7 +80,7 @@ describe("event review operations", () => {
     expect(merged.events[0].raw_evidence).toContain("Oil changed");
     expect(merged.events[0].raw_evidence).toContain("120000 km");
     expect(merged.events[0].ambiguities).toContain(
-      "Yhdistetty 2 poimitusta tapahtumasta.",
+      "Merged from 2 extracted events.",
     );
   });
 

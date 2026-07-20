@@ -7,7 +7,7 @@ import Home from "./page";
 import PrivacyPage from "./tietosuoja/page";
 
 describe("Phase 9 shell", () => {
-  it("renders the Finnish product shell, vehicle form, and image privacy workflow", () => {
+  it("renders the English product shell, vehicle form, and image privacy workflow", () => {
     render(
       <AnalysisSessionProvider>
         <Home />
@@ -17,61 +17,61 @@ describe("Phase 9 shell", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: /Huoltohistoria selkeäksi/,
+        name: /A clear service history/,
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Vaihe 9 / MVP käytössä")).toBeVisible();
+    expect(screen.getByText("Phase 9 / MVP available")).toBeVisible();
     expect(
-      screen.getByRole("button", { name: "Lataa synteettinen demo" }),
+      screen.getByRole("button", { name: "Load synthetic demo" }),
     ).toBeVisible();
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: /Kuvaile ajoneuvo mahdollisimman tarkasti/,
+        name: /Describe the vehicle as precisely as possible/,
       }),
     ).toBeVisible();
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: /Peitä tunnisteet ennen kuin kuva voi lähteä selaimesta/,
+        name: /Redact identifiers before an image can leave the browser/,
       }),
     ).toBeVisible();
-    expect(screen.getByLabelText("Valitse kuvat")).toHaveAttribute(
+    expect(screen.getByLabelText("Select images")).toHaveAttribute(
       "accept",
       "image/jpeg,image/png,image/webp",
     );
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: /Poimitut huoltotapahtumat normalisoidaan tässä/,
+        name: /Extracted service events are normalized here/,
       }),
     ).toBeVisible();
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: /Rajaa tarkka ajoneuvoversio lähteiden avulla/,
+        name: /Narrow down the exact vehicle variant using sources/,
       }),
     ).toBeVisible();
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: /Tarkista huoltovälit lähde kerrallaan/,
+        name: /Review maintenance intervals one source at a time/,
       }),
     ).toBeVisible();
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: /Huoltojen tila lasketaan todennetusta näytöstä/,
+        name: /Maintenance status is calculated from verified evidence/,
       }),
     ).toBeVisible();
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: /Tarkista raportti ja tallenna se omalle laitteellesi/,
+        name: /Review the report and save it to your device/,
       }),
     ).toBeVisible();
     expect(
-      screen.getByRole("link", { name: /Miten tietoja käsitellään/ }),
+      screen.getByRole("link", { name: /How data is handled/ }),
     ).toHaveAttribute("href", "/tietosuoja");
   });
 
@@ -81,14 +81,14 @@ describe("Phase 9 shell", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: /Tietojen käsittely on rajattu yhteen istuntoon/,
+        name: /Data handling is limited to one session/,
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/ei tarkoita palveluntarjoajan varmennettua nollasäilytystä/i),
+      screen.getByText(/does not mean verified zero retention by the provider/i),
     ).toBeVisible();
     expect(
-      screen.getByText(/verkkohakutyökalulle välitetään vahvistetut/i),
+      screen.getByText(/confirmed vehicle details needed to distinguish the variant/i),
     ).toBeVisible();
     expect(
       screen.getByRole("link", { name: /OpenAI Enterprise Privacy/ }),

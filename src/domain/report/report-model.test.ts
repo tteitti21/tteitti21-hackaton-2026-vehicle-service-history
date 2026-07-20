@@ -34,9 +34,9 @@ const reviewedHistory: ServiceHistory = {
       actions: [
         {
           component_code: "engine_oil",
-          component_label: "Moottoriöljy",
+          component_label: "Engine oil",
           action_type: "replaced",
-          description: "Käyttäjän vahvistama vaihto",
+          description: "Replacement confirmed by the user",
           confidence: 1,
         },
       ],
@@ -69,7 +69,7 @@ describe("createVehicleReportModel", () => {
       resolution: {
         candidate_id: "candidate-1",
         compatibility: "strong",
-        missing_distinguishing_fields: ["vaihteistokoodi"],
+        missing_distinguishing_fields: ["transmission code"],
       },
     });
     expect(report.service_history[0]).toMatchObject({
@@ -99,7 +99,7 @@ describe("createVehicleReportModel", () => {
       component_code: "timing_belt",
       status: "conflicting_sources",
       interval_claim_count: 2,
-      conflict_summary: expect.stringContaining("ristiriitaisia"),
+      conflict_summary: expect.stringContaining("conflicting"),
       trustworthiness_level: "low",
       maintenance_suggestion_fi: expect.stringContaining("claim-2"),
     });
@@ -111,7 +111,7 @@ describe("createVehicleReportModel", () => {
       component_code: "air_filter",
       status: "insufficient_evidence",
       service_history_note_fi:
-        "Huoltohistoriasta ei löytynyt merkintää.",
+        "No service-history entry was found.",
     });
     expect(report.sources).toHaveLength(4);
     expect(report.sources).toEqual(
@@ -138,8 +138,8 @@ describe("createVehicleReportModel", () => {
     });
     expect(report.warnings.maintenance_research).toEqual(
       expect.arrayContaining([
-        expect.stringContaining("Vaihteistoöljy"),
-        expect.stringContaining("Jarruneste"),
+        expect.stringContaining("Transmission fluid"),
+        expect.stringContaining("Brake fluid"),
       ]),
     );
   });

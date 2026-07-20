@@ -18,7 +18,7 @@ const validServiceHistory = {
     {
       event_id: "event-1",
       source_image_ids: ["image-1"],
-      raw_evidence: "Öljy ja suodatin vaihdettu 12.3.2024, 120000 km",
+      raw_evidence: "Oil and filter replaced on 12.3.2024 at 120000 km",
       service_date: {
         value: "2024-03-12",
         precision: "day",
@@ -32,9 +32,9 @@ const validServiceHistory = {
       actions: [
         {
           component_code: "engine_oil",
-          component_label: "Moottoriöljy",
+          component_label: "Engine oil",
           action_type: "replaced",
-          description: "Moottoriöljy vaihdettu",
+          description: "Engine oil replaced",
           confidence: 0.94,
         },
       ],
@@ -62,7 +62,7 @@ const validMaintenanceResearch = {
   components: [
     {
       component_code: "engine_oil",
-      component_label: "Moottoriöljy",
+      component_label: "Engine oil",
       resolution: "resolved",
       interval_claims: [
         {

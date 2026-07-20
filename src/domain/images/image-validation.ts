@@ -40,7 +40,7 @@ export function validateImageSelection(
       issues.push({
         code: "too_many_files",
         fileName: file.name,
-        message: `Kuvia voi olla enintään ${limits.maxFiles}. Tiedostoa ${file.name} ei lisätty.`,
+        message: `A maximum of ${limits.maxFiles} images is allowed. File ${file.name} was not added.`,
       });
       continue;
     }
@@ -49,7 +49,7 @@ export function validateImageSelection(
       issues.push({
         code: "unsupported_type",
         fileName: file.name,
-        message: `${file.name}: tuettuja tiedostomuotoja ovat JPG, PNG ja WebP.`,
+        message: `${file.name}: supported file formats are JPG, PNG, and WebP.`,
       });
       continue;
     }
@@ -58,7 +58,7 @@ export function validateImageSelection(
       issues.push({
         code: "empty_file",
         fileName: file.name,
-        message: `${file.name}: tyhjää tiedostoa ei voi käyttää.`,
+        message: `${file.name}: an empty file cannot be used.`,
       });
       continue;
     }
@@ -67,7 +67,7 @@ export function validateImageSelection(
       issues.push({
         code: "file_too_large",
         fileName: file.name,
-        message: `${file.name}: tiedosto ylittää kokorajan ${formatMegabytes(limits.maxBytesPerFile)} Mt.`,
+        message: `${file.name}: the file exceeds the ${formatMegabytes(limits.maxBytesPerFile)} MiB size limit.`,
       });
       continue;
     }

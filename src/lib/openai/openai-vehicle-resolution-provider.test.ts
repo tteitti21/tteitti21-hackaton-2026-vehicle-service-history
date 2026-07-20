@@ -19,26 +19,26 @@ const normalizedCandidate = {
         generation: "T27",
         model_year: 2015,
         engine: "2.0 D-4D (1AD-FTV), 91 kW",
-        transmission: "6-vaihteinen manuaali",
-        market: "Eurooppa",
+        transmission: "6-speed manual",
+        market: "Europe",
         confidence: 0.9,
-        unresolved_fields: ["vaihteistokoodi"],
+        unresolved_fields: ["transmission code"],
       },
       compatibility: "strong",
       compatibility_explanation:
-        "Moottorin teho ja mallisarja täsmäävät, mutta vaihteistokoodi puuttuu.",
+        "The engine output and model series match, but the transmission code is missing.",
       matching_fields: ["T27", "91 kW"],
       conflicting_fields: [],
-      missing_distinguishing_fields: ["vaihteistokoodi"],
+      missing_distinguishing_fields: ["transmission code"],
       source_evidence: [
         {
           source_id: "source-1",
-          evidence: "Tekninen lähde yhdistää moottorin T27-mallisarjaan.",
+          evidence: "The technical source links the engine to the T27 model series.",
         },
       ],
     },
   ],
-  warnings: ["Vaihteistokoodi on vielä varmistettava."],
+  warnings: ["The transmission code still needs to be verified."],
 };
 
 describe("OpenAI vehicle-resolution request builders", () => {
@@ -205,7 +205,7 @@ describe("OpenAIVehicleResolutionProvider", () => {
       title: "Official technical specification",
       publisher: "manufacturer.example",
       url: "https://manufacturer.example/spec",
-      evidence: "Tekninen lähde yhdistää moottorin T27-mallisarjaan.",
+      evidence: "The technical source links the engine to the T27 model series.",
     });
     expect(result.sources).toHaveLength(2);
     expect(result.resolved_at).toBe("2026-07-19T12:00:00.000Z");

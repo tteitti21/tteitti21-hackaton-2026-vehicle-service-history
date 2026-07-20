@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s | AutoHuolto AI",
   },
   description:
-    "Yksityisyyttä painottava ja tilaton ajoneuvon huoltohistorian analysointipalvelu.",
+    "A privacy-first, stateless vehicle service-history analysis service.",
 };
 
 export default function RootLayout({
@@ -22,27 +22,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fi" data-scroll-behavior="smooth">
+    <html lang="en" data-scroll-behavior="smooth">
       <body>
         <AnalysisSessionProvider>
           <a className="skipLink" href="#sisalto">
-            Siirry sisältöön
+            Skip to content
           </a>
           <header className="siteHeader">
             <div className="headerInner">
               <Link
                 className="brand"
                 href="/"
-                aria-label="AutoHuolto AI – etusivu"
+                aria-label="AutoHuolto AI – home"
               >
                 <span className="brandMark" aria-hidden="true">
                   A
                 </span>
                 <span>AutoHuolto AI</span>
               </Link>
-              <nav aria-label="Päänavigaatio">
+              <nav aria-label="Main navigation">
                 <Link href="/#demo">Demo</Link>
-                <Link href="/tietosuoja">Tietosuoja</Link>
+                <Link href="/tietosuoja">Privacy</Link>
               </nav>
             </div>
           </header>
@@ -50,9 +50,9 @@ export default function RootLayout({
           <footer className="siteFooter">
             <div>
               <strong>AutoHuolto AI</strong>
-              <p>Istuntoa ei tallenneta sovelluksen tietokantaan.</p>
+              <p>The session is not stored in the application database.</p>
             </div>
-            <Link href="/tietosuoja">Lue tietosuojaperiaatteet</Link>
+            <Link href="/tietosuoja">Read the privacy principles</Link>
           </footer>
         </AnalysisSessionProvider>
       </body>

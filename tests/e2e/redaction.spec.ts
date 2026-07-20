@@ -10,23 +10,23 @@ test("redacts a synthetic identifier into the exact intercepted PNG payload", as
   const originalBytes = await uploadSyntheticRegistrationImage(page);
 
   const canvas = page.getByRole("img", {
-    name: /Muokattava kuva/,
+    name: /Editable image/,
   });
   await expect(
     page.getByRole("heading", { name: "synthetic-registration.png" }),
   ).toBeVisible();
   await expectCanvasSize(canvas, 320, 180);
 
-  await page.getByRole("button", { name: "Käännä oikealle" }).click();
+  await page.getByRole("button", { name: "Rotate right" }).click();
   await expectCanvasSize(canvas, 180, 320);
-  await page.getByRole("button", { name: "Kumoa" }).click();
+  await page.getByRole("button", { name: "Undo" }).click();
   await expectCanvasSize(canvas, 320, 180);
-  await page.getByRole("button", { name: "Tee uudelleen" }).click();
+  await page.getByRole("button", { name: "Redo" }).click();
   await expectCanvasSize(canvas, 180, 320);
-  await page.getByRole("button", { name: "Nollaa kuva" }).click();
+  await page.getByRole("button", { name: "Reset image" }).click();
   await expectCanvasSize(canvas, 320, 180);
 
-  await page.getByRole("button", { name: "Rajaa", exact: true }).click();
+  await page.getByRole("button", { name: "Crop", exact: true }).click();
   await dragCanvasRectangle(canvas, {
     x: 10,
     y: 10,
@@ -34,10 +34,10 @@ test("redacts a synthetic identifier into the exact intercepted PNG payload", as
     height: 160,
   });
   await expectCanvasSize(canvas, 300, 160);
-  await page.getByRole("button", { name: "Kumoa" }).click();
+  await page.getByRole("button", { name: "Undo" }).click();
   await expectCanvasSize(canvas, 320, 180);
 
-  await page.getByRole("button", { name: "Peitä alue" }).click();
+  await page.getByRole("button", { name: "Redact area" }).click();
   await dragCanvasRectangle(canvas, {
     x: 76,
     y: 62,
@@ -45,9 +45,9 @@ test("redacts a synthetic identifier into the exact intercepted PNG payload", as
     height: 58,
   });
 
-  await page.getByRole("button", { name: "Luo lähetysesikatselu" }).click();
+  await page.getByRole("button", { name: "Create submission preview" }).click();
   const exactPreview = page.getByRole("img", {
-    name: "Lähetettävä esikatselu: synthetic-registration.png",
+    name: "Submission preview: synthetic-registration.png",
   });
   await expect(exactPreview).toBeVisible({ timeout: 15_000 });
 
@@ -59,16 +59,16 @@ test("redacts a synthetic identifier into the exact intercepted PNG payload", as
   expect(previewPixels[1]).not.toEqual([0, 0, 0, 255]);
 
   const approveButton = page.getByRole("button", {
-    name: "Hyväksy peitetyt kuvat",
+    name: "Approve sanitized images",
   });
   await expect(approveButton).toBeDisabled();
   await page
-    .getByRole("checkbox", { name: /Olen tarkistanut yllä näkyvät/ })
+    .getByRole("checkbox", { name: /I have reviewed the submission versions shown above/ })
     .check();
   await approveButton.click();
   await expect(
     page.getByText(
-      "Hyväksytty tähän istuntoon. Kuvia ei lähetetä ennen erillistä poimintapainiketta.",
+      "Approved for this session. Images are not submitted before the separate extraction button is pressed.",
     ),
   ).toBeVisible();
 
@@ -84,7 +84,7 @@ test("redacts a synthetic identifier into the exact intercepted PNG payload", as
 
   await page.evaluate(async () => {
     const preview = document.querySelector<HTMLImageElement>(
-      'img[alt="Lähetettävä esikatselu: synthetic-registration.png"]',
+      'img[alt="Submission preview: synthetic-registration.png"]',
     );
 
     if (preview === null) {
@@ -161,7 +161,7 @@ test("submits only the sanitized image and renders an editable extraction", asyn
           {
             image_id: imageId,
             readability: 0.94,
-            notes: "Synteettinen kuva on selkeä.",
+            notes: "The synthetic image is clear.",
           },
         ],
         events: [
@@ -169,7 +169,7 @@ test("submits only the sanitized image and renders an editable extraction", asyn
             event_id: "event-synthetic-1",
             source_image_ids: [imageId],
             raw_evidence:
-              "Öljy ja suodatin vaihdettu 12.3.2024, 120000 km",
+              "Oil and filter replaced on 12.3.2024 at 120000 km",
             service_date: {
               value: "2024-03-12",
               precision: "day",
@@ -183,9 +183,9 @@ test("submits only the sanitized image and renders an editable extraction", asyn
             actions: [
               {
                 component_code: "engine_oil",
-                component_label: "Moottoriöljy",
+                component_label: "Engine oil",
                 action_type: "replaced",
-                description: "Öljy ja suodatin vaihdettu",
+                description: "Oil and filter replaced",
                 confidence: 0.9,
               },
             ],
@@ -201,20 +201,20 @@ test("submits only the sanitized image and renders an editable extraction", asyn
   });
 
   await page
-    .getByRole("button", { name: "Lähetä OpenAI:lle ja poimi tapahtumat" })
+    .getByRole("button", { name: "Submit to OpenAI and extract events" })
     .click();
 
   await expect(
     page.getByRole("heading", {
-      name: "Tarkista, normalisoi ja vahvista huoltohistoria.",
+      name: "Review, normalize, and confirm the service history.",
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("cell", { name: /Öljy ja suodatin vaihdettu/ }),
+    page.getByRole("cell", { name: /Oil and filter replaced/ }),
   ).toBeVisible();
-  await expect(page.getByText(/Korkea \(88 %\)/).first()).toBeVisible();
+  await expect(page.getByText(/High \(88 %\)/).first()).toBeVisible();
   await expect(
-    page.getByRole("complementary", { name: "Normalisoidut arvot" }),
+    page.getByRole("complementary", { name: "Normalized values" }),
   ).toContainText("160,9344 km");
   const activeEventRow = page
     .getByRole("row")
@@ -222,7 +222,7 @@ test("submits only the sanitized image and renders an editable extraction", asyn
   await expect(activeEventRow).toHaveAttribute("data-active", "true");
   await expect(
     activeEventRow.getByRole("button", {
-      name: "Tapahtuma event-synthetic-1 on muokattavana",
+      name: "Event event-synthetic-1 is being edited",
     }),
   ).toHaveAttribute("aria-pressed", "true");
   await expect(
@@ -230,44 +230,44 @@ test("submits only the sanitized image and renders an editable extraction", asyn
   ).toHaveCSS("position", "sticky");
 
   const serviceDate = page.getByRole("textbox", {
-    name: "Päivämäärä",
+    name: "Date",
     exact: true,
   });
   await expect(serviceDate).toHaveValue("12.03.2024");
   await expect(page.locator(".datePrecisionStatus strong")).toHaveText(
-    "Päivä",
+    "Day",
   );
   await expect(
-    page.getByRole("combobox", { name: "Päivämäärän tarkkuus" }),
+    page.getByRole("combobox", { name: "Date precision" }),
   ).toHaveCount(0);
   await serviceDate.fill("03.2024");
   await expect(page.locator(".datePrecisionStatus strong")).toHaveText(
-    "Kuukausi",
+    "Month",
   );
   await serviceDate.fill("12.03.2024");
   await expect(page.locator(".datePrecisionStatus strong")).toHaveText(
-    "Päivä",
+    "Day",
   );
   const requestSizeDebug = page.getByRole("complementary", {
-    name: "Lähetyksen kokotiedot",
+    name: "Submission size details",
   });
-  await expect(requestSizeDebug).toContainText("HTTP-pyyntörunko");
-  await expect(requestSizeDebug).toContainText("3 145 728 tavua");
-  await expect(requestSizeDebug).toContainText("210 763 776 tavua");
-  await expect(requestSizeDebug).toContainText("180 sekuntia");
+  await expect(requestSizeDebug).toContainText("HTTP request body");
+  await expect(requestSizeDebug).toContainText("3 145 728 bytes");
+  await expect(requestSizeDebug).toContainText("210 763 776 bytes");
+  await expect(requestSizeDebug).toContainText("180 seconds");
 
-  const evidence = page.getByLabel("Raaka kuvasta luettu näyttö");
-  await evidence.fill("Käyttäjän tarkistama synteettinen näyttö");
-  await expect(evidence).toHaveValue("Käyttäjän tarkistama synteettinen näyttö");
+  const evidence = page.getByLabel("Raw evidence read from the image");
+  await evidence.fill("Synthetic evidence reviewed by the user");
+  await expect(evidence).toHaveValue("Synthetic evidence reviewed by the user");
 
-  await page.getByRole("button", { name: "Lisää tapahtuma" }).click();
+  await page.getByRole("button", { name: "Add event" }).click();
   await expect(page.getByRole("row")).toHaveCount(3);
   await page
-    .getByRole("button", { name: "Vahvista tarkistettu huoltohistoria" })
+    .getByRole("button", { name: "Confirm reviewed service history" })
     .click();
   await expect(
     page.getByRole("heading", {
-      name: "Huoltohistoria on vahvistettu.",
+      name: "The service history is confirmed.",
     }),
   ).toBeVisible();
 
@@ -278,7 +278,7 @@ test("submits only the sanitized image and renders an editable extraction", asyn
   );
   await expect(
     page.getByRole("img", {
-      name: "Lähetettävä esikatselu: synthetic-registration.png",
+      name: "Submission preview: synthetic-registration.png",
     }),
   ).toBeVisible();
 });
@@ -287,16 +287,16 @@ test("requires explicit candidate selection and preserves research sources", asy
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("textbox", { name: "Merkki" }).fill("Toyota");
-  await page.getByRole("textbox", { name: "Malli" }).fill("Avensis");
-  await page.getByLabel("Sukupolvi tai alustakoodi").fill("T27");
-  await page.getByLabel("Mallivuosi").fill("2015");
-  await page.getByLabel("Teho").fill("91");
+  await page.getByRole("textbox", { name: "Make" }).fill("Toyota");
+  await page.getByRole("textbox", { name: "Model" }).fill("Avensis");
+  await page.getByLabel("Generation or chassis code").fill("T27");
+  await page.getByLabel("Model year").fill("2015");
+  await page.getByLabel("Power").fill("91");
   await page.selectOption("#vehicle-fuelType", "diesel");
   await page
-    .getByRole("spinbutton", { name: "Nykyinen matkamittarilukema" })
+    .getByRole("spinbutton", { name: "Current odometer reading" })
     .fill("184000");
-  await page.getByRole("button", { name: "Vahvista ajoneuvotiedot" }).click();
+  await page.getByRole("button", { name: "Confirm vehicle details" }).click();
 
   await prepareApprovedSyntheticImage(page);
   await page.route("**/api/extract", async (route) => {
@@ -318,10 +318,10 @@ test("requires explicit candidate selection and preserves research sources", asy
     });
   });
   await page
-    .getByRole("button", { name: "Lähetä OpenAI:lle ja poimi tapahtumat" })
+    .getByRole("button", { name: "Submit to OpenAI and extract events" })
     .click();
   await page
-    .getByRole("button", { name: "Vahvista tarkistettu huoltohistoria" })
+    .getByRole("button", { name: "Confirm reviewed service history" })
     .click();
 
   let submittedVehicle: unknown = null;
@@ -340,14 +340,14 @@ test("requires explicit candidate selection and preserves research sources", asy
               generation: "T27",
               model_year: 2015,
               engine: "2.0 D-4D (1AD-FTV), 91 kW",
-              transmission: "6-vaihteinen manuaali",
-              market: "Eurooppa",
+              transmission: "6-speed manual",
+              market: "Europe",
               confidence: 0.92,
               unresolved_fields: ["vaihteistokoodi"],
             },
             compatibility: "strong",
             compatibility_explanation:
-              "Mallisarja ja teho täsmäävät, mutta vaihteistokoodi puuttuu.",
+              "The model series and power match, but the transmission code is missing.",
             matching_fields: ["T27", "91 kW"],
             conflicting_fields: [],
             missing_distinguishing_fields: ["vaihteistokoodi"],
@@ -356,7 +356,7 @@ test("requires explicit candidate selection and preserves research sources", asy
                 title: "Toyota technical specification",
                 publisher: "toyota.example",
                 url: "https://toyota.example/t27",
-                evidence: "Lähde yhdistää moottorin ja mallisarjan.",
+                evidence: "The source links the engine and model series.",
               },
             ],
           },
@@ -368,23 +368,23 @@ test("requires explicit candidate selection and preserves research sources", asy
               generation: "T27",
               model_year: 2015,
               engine: "2.0 D-4D (2WW), 105 kW",
-              transmission: "6-vaihteinen manuaali",
-              market: "Eurooppa",
+              transmission: "6-speed manual",
+              market: "Europe",
               confidence: 0.62,
-              unresolved_fields: ["moottorikoodi"],
+              unresolved_fields: ["engine code"],
             },
             compatibility: "partial",
             compatibility_explanation:
-              "Mallisarja täsmää, mutta lähteen teho poikkeaa.",
+              "The model series matches, but the source reports a different power output.",
             matching_fields: ["T27"],
             conflicting_fields: ["105 kW vs. 91 kW"],
-            missing_distinguishing_fields: ["moottorikoodi"],
+            missing_distinguishing_fields: ["engine code"],
             sources: [
               {
                 title: "European engine catalogue",
                 publisher: "catalogue.example",
                 url: "https://catalogue.example/t27",
-                evidence: "Lähde listaa vaihtoehtoisen moottorin.",
+                evidence: "The source lists an alternative engine.",
               },
             ],
           },
@@ -401,14 +401,14 @@ test("requires explicit candidate selection and preserves research sources", asy
             url: "https://catalogue.example/t27",
           },
         ],
-        warnings: ["Moottorikoodi erottaa ehdokkaat."],
+        warnings: ["The engine code distinguishes the candidates."],
         resolved_at: "2026-07-19T10:00:00.000Z",
       }),
     });
   });
 
   await page
-    .getByRole("button", { name: "Etsi ajoneuvoversiot verkosta" })
+    .getByRole("button", { name: "Search the web for vehicle variants" })
     .click();
 
   const candidateRadios = page.getByRole("radio");
@@ -417,7 +417,7 @@ test("requires explicit candidate selection and preserves research sources", asy
   await expect(candidateRadios.nth(1)).not.toBeChecked();
   await expect(
     page.getByRole("button", {
-      name: "Vahvista valittu ajoneuvoversio",
+      name: "Confirm selected vehicle variant",
     }),
   ).toBeDisabled();
   await expect(
@@ -426,11 +426,11 @@ test("requires explicit candidate selection and preserves research sources", asy
 
   await candidateRadios.nth(1).check();
   await page
-    .getByRole("button", { name: "Vahvista valittu ajoneuvoversio" })
+    .getByRole("button", { name: "Confirm selected vehicle variant" })
     .click();
   await expect(
     page.getByText(
-      "Ajoneuvoversio vahvistettu myöhempää tutkimusta varten",
+      "Vehicle variant confirmed for later research",
     ),
   ).toBeVisible();
   await expect(page.locator(".confirmedVariant")).toContainText("2WW");
@@ -458,15 +458,15 @@ test("requires explicit candidate selection and preserves research sources", asy
           generation: "T27",
           model_year: 2015,
           engine: "2.0 D-4D (2WW), 105 kW",
-          transmission: "6-vaihteinen manuaali",
-          market: "Eurooppa",
+          transmission: "6-speed manual",
+          market: "Europe",
           confidence: 0.62,
-          unresolved_fields: ["moottorikoodi"],
+          unresolved_fields: ["engine code"],
         },
         components: [
           {
             component_code: "engine_oil",
-            component_label: "Moottoriöljy",
+            component_label: "Engine oil",
             resolution: "resolved",
             interval_claims: [
               {
@@ -474,7 +474,7 @@ test("requires explicit candidate selection and preserves research sources", asy
                 interval_km: 15000,
                 interval_months: null,
                 whichever_first: false,
-                conditions: "Normaali käyttö",
+                conditions: "Normal use",
                 original_value: 15000,
                 original_unit: "km",
                 source: {
@@ -488,7 +488,7 @@ test("requires explicit candidate selection and preserves research sources", asy
                 authority_rank: 1,
                 compatibility: "exact",
                 compatibility_notes:
-                  "Moottori, mallivuosi ja markkina täsmäävät.",
+                  "The engine, model year, and market match.",
               },
             ],
             recommended_claim_id: "claim-1",
@@ -502,27 +502,27 @@ test("requires explicit candidate selection and preserves research sources", asy
   });
 
   await page
-    .getByRole("button", { name: "Tutki huoltovälit verkosta" })
+    .getByRole("button", { name: "Research maintenance intervals online" })
     .click();
-  await expect(page.getByText("Lähde löytyi")).toBeVisible();
+  await expect(page.getByText("Source found")).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Toyota maintenance schedule" }).first(),
   ).toHaveAttribute("href", "https://toyota.example/maintenance");
   const calculatedStatus = page.locator(".componentStatusCard").filter({
-    hasText: "Moottoriöljy",
+    hasText: "Engine oil",
   });
-  await expect(calculatedStatus.getByText("Epäselvä")).toBeVisible();
+  await expect(calculatedStatus.getByText("Unknown")).toBeVisible();
   await expect(
     calculatedStatus.getByText(
-      "Huoltohistoriasta ei löytynyt merkintää.",
+      "No service-history entry was found.",
     ),
   ).toBeVisible();
   await expect(
-    calculatedStatus.getByText("Sovelluskoodin laskema"),
+    calculatedStatus.getByText("Calculated by application code"),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "Tarkista raportti ja tallenna se omalle laitteellesi.",
+      name: "Review the report and save it to your device.",
     }),
   ).toBeVisible();
 
@@ -534,7 +534,7 @@ test("requires explicit candidate selection and preserves research sources", asy
   });
 
   const jsonDownloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Lataa JSON" }).click();
+  await page.getByRole("button", { name: "Download JSON" }).click();
   const jsonDownload = await jsonDownloadPromise;
   expect(jsonDownload.suggestedFilename()).toBe(
     "autohuolto-toyota-avensis-2026-07-19.json",
@@ -577,7 +577,7 @@ test("requires explicit candidate selection and preserves research sources", asy
   );
 
   const excelDownloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Lataa Excel" }).click();
+  await page.getByRole("button", { name: "Download Excel" }).click();
   const excelDownload = await excelDownloadPromise;
   expect(excelDownload.suggestedFilename()).toBe(
     "autohuolto-toyota-avensis-2026-07-19.xlsx",
@@ -587,25 +587,25 @@ test("requires explicit candidate selection and preserves research sources", asy
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(excelPath!);
   expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
-    "Yhteenveto",
-    "Huoltohistoria",
-    "Komponentit",
-    "Lähteet",
+    "Summary",
+    "Service history",
+    "Components",
+    "Sources",
   ]);
   const exportedStatuses: string[] = [];
-  workbook.getWorksheet("Komponentit")?.eachRow((row) => {
-    if (row.getCell(1).value === "Tilakoodi") {
+  workbook.getWorksheet("Components")?.eachRow((row) => {
+    if (row.getCell(1).value === "Status code") {
       exportedStatuses.push(String(row.getCell(2).value));
     }
   });
   expect(exportedStatuses).toContain("unknown");
   const exportedUrls: string[] = [];
   const exportedEvidence: string[] = [];
-  workbook.getWorksheet("Lähteet")?.eachRow((row) => {
+  workbook.getWorksheet("Sources")?.eachRow((row) => {
     if (row.getCell(1).value === "URL") {
       exportedUrls.push(String(row.getCell(2).value));
     }
-    if (row.getCell(1).value === "Lähdenäyttö") {
+    if (row.getCell(1).value === "Source evidence") {
       exportedEvidence.push(String(row.getCell(2).value));
     }
   });
@@ -623,7 +623,7 @@ test("requires explicit candidate selection and preserves research sources", asy
   expect(submittedResearch).toMatchObject({
     current_odometer_km: 184000,
     country: "FI",
-    market: "Eurooppa",
+    market: "Europe",
     vehicle_variant: { engine: "2.0 D-4D (2WW), 105 kW" },
     components: expect.arrayContaining([
       expect.objectContaining({ component_code: "engine_oil" }),
@@ -659,21 +659,21 @@ test("keeps local images available after a provider error", async ({ page }) => 
   });
 
   await page
-    .getByRole("button", { name: "Lähetä OpenAI:lle ja poimi tapahtumat" })
+    .getByRole("button", { name: "Submit to OpenAI and extract events" })
     .click();
 
   await expect(page.locator(".extractionError")).toContainText(
-    "Kuvien käsittely epäonnistui palveluntarjoajalla.",
+    "Image processing failed at the provider.",
   );
   await expect(page.locator(".extractionError")).not.toContainText("<script>");
   await expect(
     page.getByRole("img", {
-      name: "Lähetettävä esikatselu: synthetic-registration.png",
+      name: "Submission preview: synthetic-registration.png",
     }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", {
-      name: "Lähetä OpenAI:lle ja poimi tapahtumat",
+      name: "Submit to OpenAI and extract events",
     }),
   ).toBeEnabled();
 });
@@ -682,7 +682,7 @@ test("rejects unsupported and oversized files before browser decoding", async ({
   page,
 }) => {
   await page.goto("/");
-  const input = page.getByLabel("Valitse kuvat");
+  const input = page.getByLabel("Select images");
 
   await input.setInputFiles({
     name: "unsupported.txt",
@@ -690,43 +690,43 @@ test("rejects unsupported and oversized files before browser decoding", async ({
     buffer: Buffer.from("not an image"),
   });
   await expect(
-    page.getByText(/tuettuja tiedostomuotoja ovat JPG, PNG ja WebP/),
+    page.getByText(/supported file formats are JPG, PNG, and WebP/),
   ).toBeVisible();
-  await expect(page.getByText(/1\/10 muistissa/)).toHaveCount(0);
+  await expect(page.getByText(/1\/10 in memory/)).toHaveCount(0);
 
   await input.setInputFiles({
     name: "too-large.png",
     mimeType: "image/png",
     buffer: Buffer.alloc(20_971_521),
   });
-  await expect(page.getByText(/tiedosto ylittää kokorajan 20 Mt/)).toBeVisible();
-  await expect(page.getByText(/1\/10 muistissa/)).toHaveCount(0);
+  await expect(page.getByText(/file exceeds the 20 MiB size limit/)).toBeVisible();
+  await expect(page.getByText(/1\/10 in memory/)).toHaveCount(0);
 });
 
 test("reload discards decoded images and sanitized previews", async ({ page }) => {
   await page.goto("/");
   await uploadSyntheticRegistrationImage(page);
-  await page.getByRole("button", { name: "Luo lähetysesikatselu" }).click();
+  await page.getByRole("button", { name: "Create submission preview" }).click();
   await expect(
     page.getByRole("img", {
-      name: "Lähetettävä esikatselu: synthetic-registration.png",
+      name: "Submission preview: synthetic-registration.png",
     }),
   ).toBeVisible();
 
   await page.reload();
 
-  await expect(page.getByText(/1\/10 muistissa/)).toHaveCount(0);
+  await expect(page.getByText(/1\/10 in memory/)).toHaveCount(0);
   await expect(
-    page.getByText("Lähetysversioita ei ole vielä luotu."),
+    page.getByText("No submission versions have been created yet."),
   ).toBeVisible();
-  await expect(page.getByText(/Kuvat eivät poistu laitteelta/)).toBeVisible();
+  await expect(page.getByText(/Images do not leave the device/)).toBeVisible();
 });
 
 async function prepareApprovedSyntheticImage(page: Page) {
   await uploadSyntheticRegistrationImage(page);
-  await page.getByRole("button", { name: "Peitä alue" }).click();
+  await page.getByRole("button", { name: "Redact area" }).click();
   await dragCanvasRectangle(
-    page.getByRole("img", { name: /Muokattava kuva/ }),
+    page.getByRole("img", { name: /Editable image/ }),
     {
       x: 76,
       y: 62,
@@ -734,16 +734,16 @@ async function prepareApprovedSyntheticImage(page: Page) {
       height: 58,
     },
   );
-  await page.getByRole("button", { name: "Luo lähetysesikatselu" }).click();
+  await page.getByRole("button", { name: "Create submission preview" }).click();
   await expect(
     page.getByRole("img", {
-      name: "Lähetettävä esikatselu: synthetic-registration.png",
+      name: "Submission preview: synthetic-registration.png",
     }),
   ).toBeVisible({ timeout: 15_000 });
   await page
-    .getByRole("checkbox", { name: /Olen tarkistanut yllä näkyvät/ })
+    .getByRole("checkbox", { name: /I have reviewed the submission versions shown above/ })
     .check();
-  await page.getByRole("button", { name: "Hyväksy peitetyt kuvat" }).click();
+  await page.getByRole("button", { name: "Approve sanitized images" }).click();
 }
 
 async function uploadSyntheticRegistrationImage(page: Page): Promise<number[]> {

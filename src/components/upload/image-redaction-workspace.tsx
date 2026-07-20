@@ -70,21 +70,21 @@ type EditorMode = "redact" | "crop";
 const MINIMUM_SELECTION_SIZE = 4;
 
 const extractionErrorMessages = {
-  forbidden: "Poimintapyyntö estettiin. Päivitä sivu ja yritä uudelleen.",
+  forbidden: "The extraction request was blocked. Refresh the page and try again.",
   rate_limited:
-    "Poimintapyyntöjä on tehty liian monta. Odota hetki ja yritä uudelleen.",
+    "Too many extraction requests have been made. Wait a moment and try again.",
   provider_timeout:
-    "Kuvien käsittely aikakatkaistiin. Kuvat säilyvät selaimessa uutta yritystä varten.",
+    "Image processing timed out. Images remain in the browser for another attempt.",
   invalid_provider_output:
-    "Kuvista saatu vastaus ei ollut turvallisesti käsiteltävässä muodossa. Kuvat säilyvät selaimessa.",
+    "The response from the images was not in a safely processable format. Images remain in the browser.",
   provider_error:
-    "Kuvien käsittely epäonnistui palveluntarjoajalla. Kuvat säilyvät selaimessa uutta yritystä varten.",
+    "Image processing failed at the provider. Images remain in the browser for another attempt.",
   service_unavailable:
-    "Kuvien poimintapalvelu ei ole tällä hetkellä käytettävissä.",
-  payload_too_large: "Lähetyspaketti ylittää sallitun kokorajan.",
+    "The image extraction service is currently unavailable.",
+  payload_too_large: "The submission package exceeds the allowed size limit.",
   unsupported_media_type:
-    "Lähetyspaketti sisältää tiedostomuodon, jota ei hyväksytä.",
-  invalid_request: "Lähetyspakettia ei voitu käsitellä.",
+    "The submission package contains an unsupported file format.",
+  invalid_request: "The submission package could not be processed.",
 } as const;
 
 export function ImageRedactionWorkspace({
@@ -114,7 +114,7 @@ export function ImageRedactionWorkspace({
     null,
   );
   const [workspaceMessage, setWorkspaceMessage] = useState(
-    "Lisää kuvat ja peitä niistä tarpeettomat tunnisteet.",
+    "Add images and redact unnecessary identifiers.",
   );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragStartRef = useRef<Point | null>(null);
@@ -151,7 +151,7 @@ export function ImageRedactionWorkspace({
   }, [clearExtraction, revokePreparedImages]);
 
   const clearWorkspace = useCallback(
-    (message = "Kaikki kuvat poistettiin tämän välilehden muistista.") => {
+    (message = "All images were removed from this tab's memory.") => {
       invalidatePreparedImages();
 
       for (const image of imagesRef.current) {
@@ -174,7 +174,7 @@ export function ImageRedactionWorkspace({
     }
 
     previousResetVersionRef.current = state.resetVersion;
-    clearWorkspace("Istunnon nollaus poisti myös kaikki kuvat muistista.");
+    clearWorkspace("Resetting the session also removed all images from memory.");
   }, [clearWorkspace, state.resetVersion]);
 
   useEffect(
@@ -261,7 +261,7 @@ export function ImageRedactionWorkspace({
         if (!hasSafeImageDimensions(bitmap.width, bitmap.height)) {
           bitmap.close();
           messages.push(
-            `${file.name}: kuvan pikselimäärä on liian suuri turvalliseen selainkäsittelyyn.`,
+            `${file.name}: the image pixel count is too large for safe browser processing.`,
           );
           continue;
         }
@@ -276,7 +276,7 @@ export function ImageRedactionWorkspace({
         });
       } catch {
         messages.push(
-          `${file.name}: kuvaa ei voitu avata. Tiedosto voi olla vioittunut.`,
+          `${file.name}: the image could not be opened. The file may be corrupted.`,
         );
       }
     }
@@ -293,7 +293,7 @@ export function ImageRedactionWorkspace({
     setImages(nextImages);
     setSelectedImageId((current) => current ?? decodedImages[0].id);
     setWorkspaceMessage(
-      `${decodedImages.length} ${decodedImages.length === 1 ? "kuva lisättiin" : "kuvaa lisättiin"} vain selaimen muistiin.`,
+      `${decodedImages.length} ${decodedImages.length === 1 ? "image was added" : "images were added"} only to browser memory.`,
     );
   };
 
@@ -329,7 +329,7 @@ export function ImageRedactionWorkspace({
         crop: null,
         redactions: [],
       });
-    }, "Kuva käännettiin. Aiempi rajaus ja peitteet nollattiin; toiminnon voi kumota.");
+    }, "The image was rotated. The previous crop and redactions were reset; the action can be undone.");
   };
 
   const removeSelectedImage = () => {
@@ -347,7 +347,7 @@ export function ImageRedactionWorkspace({
     setImages(remaining);
     setSelectedImageId(remaining[0]?.id ?? null);
     setDraftRectangle(null);
-    setWorkspaceMessage("Valittu kuva poistettiin selaimen muistista.");
+    setWorkspaceMessage("The selected image was removed from browser memory.");
   };
 
   const startRectangle = (event: ReactPointerEvent<HTMLCanvasElement>) => {
@@ -397,7 +397,7 @@ export function ImageRedactionWorkspace({
       rectangle.width < MINIMUM_SELECTION_SIZE ||
       rectangle.height < MINIMUM_SELECTION_SIZE
     ) {
-      setWorkspaceMessage("Valinta oli liian pieni. Vedä suurempi suorakulmio.");
+      setWorkspaceMessage("The selection was too small. Drag a larger rectangle.");
       return;
     }
 
@@ -408,7 +408,7 @@ export function ImageRedactionWorkspace({
             ...history.present,
             redactions: [...history.present.redactions, rectangle],
           }),
-        "Musta peite lisättiin. Luo uusi lähetysesikatselu tarkistamista varten.",
+        "A black redaction was added. Create a new submission preview for review.",
       );
       return;
     }
@@ -441,7 +441,7 @@ export function ImageRedactionWorkspace({
           redactions: [],
         });
       },
-      "Kuva rajattiin. Aiemmat peitteet nollattiin; toiminnon voi kumota.",
+      "The image was cropped. Previous redactions were reset; the action can be undone.",
     );
   };
 
@@ -453,7 +453,7 @@ export function ImageRedactionWorkspace({
     invalidatePreparedImages();
     const preparationVersion = editVersionRef.current;
     setIsPreparing(true);
-    setWorkspaceMessage("Luodaan uusia, metatiedottomia PNG-kuvia tarkistusta varten…");
+    setWorkspaceMessage("Creating new metadata-free PNG images for review…");
 
     try {
       const nextPreparedImages = await Promise.all(
@@ -490,12 +490,12 @@ export function ImageRedactionWorkspace({
       ).length;
       setWorkspaceMessage(
         oversizedCount > 0
-          ? `${oversizedCount} peitettyä PNG-kuvaa ylittää kuvakohtaisen kokorajan. Rajaa kuvaa pienemmäksi ennen lähetystä.`
-          : "Tarkista alla täsmälleen ne kuvat, jotka voidaan lähettää analyysiin.",
+          ? `${oversizedCount} sanitized PNG ${oversizedCount === 1 ? "image exceeds" : "images exceed"} the per-image size limit. Crop the image smaller before submission.`
+          : "Review below exactly which images can be submitted for analysis.",
       );
     } catch {
       setWorkspaceMessage(
-        "Lähetysesikatselua ei voitu luoda. Kokeile toista kuvaa tai selainta.",
+        "The submission preview could not be created. Try another image or browser.",
       );
     } finally {
       setIsPreparing(false);
@@ -513,7 +513,7 @@ export function ImageRedactionWorkspace({
 
     setImagesApproved(true);
     setWorkspaceMessage(
-      "Peitetyt kuvat on hyväksytty tähän istuntoon. Mitään ei ole vielä lähetetty.",
+      "The sanitized images have been approved for this session. Nothing has been submitted yet.",
     );
   };
 
@@ -534,7 +534,7 @@ export function ImageRedactionWorkspace({
     setRequestSizeResponse(null);
     setExtractionTimeoutMs(null);
     setWorkspaceMessage(
-      "Hyväksytyt peitetyt PNG-kuvat lähetetään OpenAI:lle poimintaa varten.",
+      "The approved sanitized PNG images are being submitted to OpenAI for extraction.",
     );
 
     try {
@@ -559,11 +559,11 @@ export function ImageRedactionWorkspace({
           readSafeApiError(
             payload,
             extractionErrorMessages,
-            "Kuvien poiminta epäonnistui. Kuvat säilyvät selaimessa uutta yritystä varten.",
+            "Image extraction failed. Images remain in the browser for another attempt.",
           ),
         );
         setWorkspaceMessage(
-          "Poiminta epäonnistui. Paikalliset kuvat ja lähetysversiot säilyvät selaimessa.",
+          "Extraction failed. Local images and submission versions remain in the browser.",
         );
         return;
       }
@@ -572,24 +572,24 @@ export function ImageRedactionWorkspace({
 
       if (!parsed.success) {
         failExtraction(
-          "Palvelimen vastaus ei ollut turvallisesti käsiteltävässä muodossa.",
+          "The server response was not in a safely processable format.",
         );
         setWorkspaceMessage(
-          "Poiminnan vastaus hylättiin. Kuvat säilyvät selaimessa uutta yritystä varten.",
+          "The extraction response was rejected. Images remain in the browser for another attempt.",
         );
         return;
       }
 
       completeExtraction(parsed.data);
       setWorkspaceMessage(
-        "Huoltotapahtumat poimittiin. Tarkista ja korjaa tulos alla.",
+        "Service events were extracted. Review and correct the result below.",
       );
     } catch {
       failExtraction(
-        "Poimintapalveluun ei saatu yhteyttä. Tarkista yhteys ja yritä uudelleen.",
+        "The extraction service could not be reached. Check the connection and try again.",
       );
       setWorkspaceMessage(
-        "Verkkovirhe ei poistanut paikallisia kuvia tai lähetysversioita.",
+        "The network error did not remove local images or submission versions.",
       );
     }
   };
@@ -598,33 +598,33 @@ export function ImageRedactionWorkspace({
     <section className="imageSection" aria-labelledby="image-workspace-heading">
       <div className="imageSectionIntro">
         <div>
-          <p className="sectionLabel">Vaihe 2–3 / Kuvat ja poiminta</p>
+          <p className="sectionLabel">Phases 2–3 / Images and extraction</p>
           <h2 id="image-workspace-heading">
-            Peitä tunnisteet ennen kuin kuva voi lähteä selaimesta.
+            Redact identifiers before an image can leave the browser.
           </h2>
         </div>
         <div className="privacyChecklist">
-          <strong>Ennen myöhempää lähetystä</strong>
+          <strong>Before later submission</strong>
           <ul>
-            <li>Vain alla näkyvä peitetty esikatselu voidaan lähettää.</li>
-            <li>Peitetyn kuvan vastaanottava palveluntarjoaja on OpenAI.</li>
-            <li>Rekisterinumeroa tai VINiä ei tarvita analyysiin.</li>
-            <li>Peitä myös nimet, osoitteet ja asiakasnumerot.</li>
+            <li>Only the sanitized preview shown below can be submitted.</li>
+            <li>The provider receiving the sanitized image is OpenAI.</li>
+            <li>A registration number or VIN is not needed for analysis.</li>
+            <li>Also redact names, addresses, and customer numbers.</li>
           </ul>
         </div>
       </div>
 
       <div className="uploadPanel">
         <div>
-          <h3>1. Lisää 1–{maxFiles} kuvaa</h3>
+          <h3>1. Add 1–{maxFiles} images</h3>
           <p>
-            JPG, PNG tai WebP, enintään{" "}
-            {formatMegabytes(maxBytesPerFile)} Mt kuvaa kohden. Tiedostot
-            avataan vain selaimen muistissa.
+            JPG, PNG, or WebP, up to{" "}
+            {formatMegabytes(maxBytesPerFile)} MiB per image. Files are opened
+            only in browser memory.
           </p>
         </div>
         <label className="fileButton" htmlFor="service-images">
-          Valitse kuvat
+          Select images
         </label>
         <input
           id="service-images"
@@ -638,7 +638,7 @@ export function ImageRedactionWorkspace({
 
       {uploadMessages.length > 0 ? (
         <div className="uploadErrors" role="alert">
-          <strong>Kaikkia tiedostoja ei voitu lisätä:</strong>
+          <strong>Not all files could be added:</strong>
           <ul>
             {uploadMessages.map((message) => (
               <li key={message}>{message}</li>
@@ -656,9 +656,9 @@ export function ImageRedactionWorkspace({
           <aside className="imageQueue" aria-labelledby="image-queue-heading">
             <div className="queueHeading">
               <div>
-                <p className="sectionLabel">Kuvat</p>
+                <p className="sectionLabel">Images</p>
                 <h3 id="image-queue-heading">
-                  {images.length}/{maxFiles} muistissa
+                  {images.length}/{maxFiles} in memory
                 </h3>
               </div>
               <button
@@ -666,7 +666,7 @@ export function ImageRedactionWorkspace({
                 type="button"
                 onClick={() => clearWorkspace()}
               >
-                Poista kaikki
+                Remove all
               </button>
             </div>
             <ol>
@@ -700,7 +700,7 @@ export function ImageRedactionWorkspace({
           <div className="editorPanel">
             <div className="editorHeading">
               <div>
-                <p className="sectionLabel">2. Muokkaa valittua kuvaa</p>
+                <p className="sectionLabel">2. Edit the selected image</p>
                 <h3>{selectedImage?.fileName}</h3>
               </div>
               <button
@@ -708,11 +708,11 @@ export function ImageRedactionWorkspace({
                 type="button"
                 onClick={removeSelectedImage}
               >
-                Poista kuva
+                Remove image
               </button>
             </div>
 
-            <div className="editorToolbar" aria-label="Kuvan muokkaustyökalut">
+            <div className="editorToolbar" aria-label="Image editing tools">
               <div className="toolGroup">
                 <button
                   type="button"
@@ -720,7 +720,7 @@ export function ImageRedactionWorkspace({
                   aria-pressed={mode === "redact"}
                   onClick={() => setMode("redact")}
                 >
-                  Peitä alue
+                  Redact area
                 </button>
                 <button
                   type="button"
@@ -728,15 +728,15 @@ export function ImageRedactionWorkspace({
                   aria-pressed={mode === "crop"}
                   onClick={() => setMode("crop")}
                 >
-                  Rajaa
+                  Crop
                 </button>
               </div>
               <div className="toolGroup">
                 <button type="button" onClick={() => rotateSelectedImage(-1)}>
-                  Käännä vasemmalle
+                  Rotate left
                 </button>
                 <button type="button" onClick={() => rotateSelectedImage(1)}>
-                  Käännä oikealle
+                  Rotate right
                 </button>
               </div>
               <div className="toolGroup">
@@ -746,11 +746,11 @@ export function ImageRedactionWorkspace({
                   onClick={() =>
                     updateSelectedEditor(
                       undoEditorChange,
-                      "Edellinen kuvanmuokkaus kumottiin.",
+                      "The previous image edit was undone.",
                     )
                   }
                 >
-                  Kumoa
+                  Undo
                 </button>
                 <button
                   type="button"
@@ -758,11 +758,11 @@ export function ImageRedactionWorkspace({
                   onClick={() =>
                     updateSelectedEditor(
                       redoEditorChange,
-                      "Kumottu kuvanmuokkaus tehtiin uudelleen.",
+                      "The undone image edit was redone.",
                     )
                   }
                 >
-                  Tee uudelleen
+                  Redo
                 </button>
                 <button
                   type="button"
@@ -773,19 +773,19 @@ export function ImageRedactionWorkspace({
                           history,
                           createEditorHistory().present,
                         ),
-                      "Valitun kuvan muokkaukset nollattiin.",
+                      "Edits to the selected image were reset.",
                     )
                   }
                 >
-                  Nollaa kuva
+                  Reset image
                 </button>
               </div>
             </div>
 
             <p className="toolHint">
               {mode === "redact"
-                ? "Vedä kuvan päällä suorakulmio. Alue peitetään lopulliseen PNG-kuvaan mustana."
-                : "Vedä säilytettävän alueen ympärille suorakulmio. Rajaus nollaa aiemmat peitteet."}
+                ? "Drag a rectangle over the image. The area will be blacked out in the final PNG image."
+                : "Drag a rectangle around the area to keep. Cropping resets previous redactions."}
             </p>
 
             <div className="canvasFrame">
@@ -793,7 +793,7 @@ export function ImageRedactionWorkspace({
                 ref={canvasRef}
                 className="editorCanvas"
                 role="img"
-                aria-label="Muokattava kuva. Käytä valittua työkalua vetämällä osoittimella kuvan päällä."
+                aria-label="Editable image. Use the selected tool by dragging the pointer over the image."
                 onPointerDown={startRectangle}
                 onPointerMove={updateRectangle}
                 onPointerUp={finishRectangle}
@@ -808,10 +808,10 @@ export function ImageRedactionWorkspace({
       ) : (
         <div className="emptyImageWorkspace">
           <span aria-hidden="true">02</span>
-          <h3>Kuvat eivät poistu laitteelta vielä tässä vaiheessa.</h3>
+          <h3>Images do not leave the device at this stage.</h3>
           <p>
-            Tiedostovalinta ei käynnistä automaattista lähetystä. Alkuperäistä
-            tiedostoa ei käytetä myöhemmän lähetyspaketin rakentamiseen.
+            Selecting files does not start automatic submission. The original
+            file is not used to build the later submission package.
           </p>
         </div>
       )}
@@ -819,12 +819,12 @@ export function ImageRedactionWorkspace({
       <div className="sanitizedPanel" aria-labelledby="sanitized-heading">
         <div className="sanitizedHeading">
           <div>
-            <p className="sectionLabel">3. Tarkista lähetysversio</p>
-            <h3 id="sanitized-heading">Täsmällinen peitetty esikatselu</h3>
+            <p className="sectionLabel">3. Review the submission version</p>
+            <h3 id="sanitized-heading">Exact sanitized preview</h3>
             <p>
-              Selain piirtää jokaisen kuvan uudeksi PNG-tiedostoksi. Peitteet
-              ovat pysyviä pikseleitä, eikä alkuperäisen tiedoston EXIF-metadata
-              siirry uuteen kuvaan.
+              The browser draws every image into a new PNG file. Redactions are
+              permanent pixels, and EXIF metadata from the original file is
+              not transferred to the new image.
             </p>
           </div>
           <button
@@ -833,7 +833,7 @@ export function ImageRedactionWorkspace({
             disabled={images.length === 0 || isPreparing}
             onClick={prepareSanitizedPreviews}
           >
-            {isPreparing ? "Luodaan esikatselua…" : "Luo lähetysesikatselu"}
+            {isPreparing ? "Creating preview…" : "Create submission preview"}
           </button>
         </div>
 
@@ -844,7 +844,7 @@ export function ImageRedactionWorkspace({
                 <li key={preparedImage.clientId}>
                   <Image
                     src={preparedImage.previewUrl}
-                    alt={`Lähetettävä esikatselu: ${preparedImage.sourceName}`}
+                    alt={`Submission preview: ${preparedImage.sourceName}`}
                     width={preparedImage.width}
                     height={preparedImage.height}
                     unoptimized
@@ -852,12 +852,12 @@ export function ImageRedactionWorkspace({
                   <div>
                     <strong>{preparedImage.sourceName}</strong>
                     <span>
-                      Uusi PNG · {preparedImage.width} × {preparedImage.height}{" "}
+                      New PNG · {preparedImage.width} × {preparedImage.height}{" "}
                       px · {formatBytes(preparedImage.blob.size)}
                     </span>
                     {preparedImage.blob.size > maxBytesPerFile ? (
                       <span className="sizeLimitWarning">
-                        Ylittää kuvakohtaisen rajan{" "}
+                        Exceeds the per-image limit{" "}
                         {formatBytes(maxBytesPerFile)}.
                       </span>
                     ) : null}
@@ -887,9 +887,9 @@ export function ImageRedactionWorkspace({
                   }}
                 />
                 <span>
-                  Olen tarkistanut yllä näkyvät lähetysversiot. Rekisterinumero,
-                  VIN, nimet, osoitteet ja muut tarpeettomat tunnisteet on
-                  peitetty.
+                  I have reviewed the submission versions shown above. The
+                  registration number, VIN, names, addresses, and other
+                  unnecessary identifiers have been redacted.
                 </span>
               </label>
               <button
@@ -898,14 +898,14 @@ export function ImageRedactionWorkspace({
                 disabled={!privacyConfirmed || hasOversizedPreparedImages}
                 onClick={approvePreparedImages}
               >
-                Hyväksy peitetyt kuvat
+                Approve sanitized images
               </button>
               <p>
                 {hasOversizedPreparedImages
-                  ? "Rajaa liian suuri lähetysversio pienemmäksi ja luo esikatselu uudelleen."
+                  ? "Crop the oversized submission version smaller and recreate the preview."
                   : imagesApproved
-                    ? "Hyväksytty tähän istuntoon. Kuvia ei lähetetä ennen erillistä poimintapainiketta."
-                    : "Hyväksyntä vaaditaan ennen ensimmäistä analyysipyyntöä."}
+                    ? "Approved for this session. Images are not submitted before the separate extraction button is pressed."
+                    : "Approval is required before the first analysis request."}
               </p>
               {imagesApproved ? (
                 <div className="extractionSubmit">
@@ -916,12 +916,12 @@ export function ImageRedactionWorkspace({
                     onClick={submitSanitizedImages}
                   >
                     {state.extractionStatus === "submitting"
-                      ? "Poimitaan tapahtumia…"
-                      : "Lähetä OpenAI:lle ja poimi tapahtumat"}
+                      ? "Extracting events…"
+                      : "Submit to OpenAI and extract events"}
                   </button>
                   <p>
-                    Vain yllä näkyvät uudet PNG-kuvat lähetetään. Alkuperäisiä
-                    tiedostoja ei ole lähetyspaketissa.
+                    Only the new PNG images shown above are submitted. Original
+                    files are not included in the submission package.
                   </p>
                 </div>
               ) : null}
@@ -929,7 +929,7 @@ export function ImageRedactionWorkspace({
           </>
         ) : (
           <div className="emptySanitizedPreview">
-            Lähetysversioita ei ole vielä luotu.
+            No submission versions have been created yet.
           </div>
         )}
       </div>
@@ -996,10 +996,10 @@ function formatBytes(bytes: number): string {
   });
   const readable =
     bytes >= 1_048_576
-      ? `${formatter.format(bytes / 1_048_576)} Mt`
-      : `${formatter.format(bytes / 1_024)} kt`;
+      ? `${formatter.format(bytes / 1_048_576)} MiB`
+      : `${formatter.format(bytes / 1_024)} KiB`;
 
-  return `${readable} (${new Intl.NumberFormat("fi-FI").format(bytes)} tavua)`;
+  return `${readable} (${new Intl.NumberFormat("fi-FI").format(bytes)} bytes)`;
 }
 
 function RequestSizeDebug({
@@ -1014,42 +1014,42 @@ function RequestSizeDebug({
   extractionTimeoutMs: number | null;
 }>) {
   return (
-    <aside className="requestSizeDebug" aria-label="Lähetyksen kokotiedot">
+    <aside className="requestSizeDebug" aria-label="Submission size details">
       <div>
-        <strong>Vianmääritys: lähetyksen koko</strong>
-        <span>Sisältöä tai kuvatietoja ei kirjoiteta lokiin.</span>
+        <strong>Diagnostics: submission size</strong>
+        <span>Content and image data are not written to logs.</span>
       </div>
       <dl>
         <div>
-          <dt>Peitetyt PNG-kuvat</dt>
+          <dt>Sanitized PNG images</dt>
           <dd>{formatBytes(sanitizedImageBytes)}</dd>
         </div>
         <div>
-          <dt>HTTP-pyyntörunko</dt>
+          <dt>HTTP request body</dt>
           <dd>
             {requestBodyBytes === null
-              ? "Tarkka koko näkyy palvelinvastauksen jälkeen."
+              ? "The exact size appears after the server response."
               : formatBytes(requestBodyBytes)}
           </dd>
         </div>
         <div>
-          <dt>Sovelluksen pyyntöraja</dt>
+          <dt>Application request limit</dt>
           <dd>{formatBytes(maximumRequestBytes)}</dd>
         </div>
         <div>
-          <dt>Käsittelyn aikaraja</dt>
+          <dt>Processing timeout</dt>
           <dd>
             {extractionTimeoutMs === null
-              ? "Palvelin vahvistaa lähetyksen jälkeen."
+              ? "The server confirms it after submission."
               : `${new Intl.NumberFormat("fi-FI", {
                   maximumFractionDigits: 1,
-                }).format(extractionTimeoutMs / 1_000)} sekuntia`}
+                }).format(extractionTimeoutMs / 1_000)} seconds`}
           </dd>
         </div>
       </dl>
       <p>
-        Pyyntörunko sisältää PNG-kuvien lisäksi multipart-otsakkeet ja pienen
-        kuvaluettelon.
+        In addition to the PNG images, the request body contains multipart
+        headers and a small image manifest.
       </p>
     </aside>
   );

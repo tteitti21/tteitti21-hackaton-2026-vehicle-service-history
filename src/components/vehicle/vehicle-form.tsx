@@ -18,46 +18,46 @@ import {
 } from "@/domain/vehicle/vehicle-input";
 
 const fuelTypeOptions = [
-  ["petrol", "Bensiini"],
+  ["petrol", "Petrol"],
   ["diesel", "Diesel"],
-  ["hybrid", "Hybridi"],
-  ["plug_in_hybrid", "Lataushybridi"],
-  ["electric", "Sähkö"],
-  ["lpg", "Nestekaasu (LPG)"],
-  ["cng", "Maakaasu (CNG)"],
-  ["hydrogen", "Vety"],
-  ["other", "Muu"],
+  ["hybrid", "Hybrid"],
+  ["plug_in_hybrid", "Plug-in hybrid"],
+  ["electric", "Electric"],
+  ["lpg", "Liquefied petroleum gas (LPG)"],
+  ["cng", "Compressed natural gas (CNG)"],
+  ["hydrogen", "Hydrogen"],
+  ["other", "Other"],
 ] as const;
 
 const transmissionOptions = [
-  ["manual", "Manuaali"],
-  ["automatic", "Automaatti"],
+  ["manual", "Manual"],
+  ["automatic", "Automatic"],
   ["cvt", "CVT"],
-  ["dual_clutch", "Kaksoiskytkin"],
-  ["automated_manual", "Robotisoitu manuaali"],
-  ["other", "Muu"],
+  ["dual_clutch", "Dual-clutch"],
+  ["automated_manual", "Automated manual"],
+  ["other", "Other"],
 ] as const;
 
 const drivetrainOptions = [
-  ["front_wheel_drive", "Etuveto"],
-  ["rear_wheel_drive", "Takaveto"],
-  ["all_wheel_drive", "Jatkuva neliveto"],
-  ["four_wheel_drive", "Kytkettävä neliveto"],
-  ["other", "Muu"],
+  ["front_wheel_drive", "Front-wheel drive"],
+  ["rear_wheel_drive", "Rear-wheel drive"],
+  ["all_wheel_drive", "All-wheel drive"],
+  ["four_wheel_drive", "Four-wheel drive"],
+  ["other", "Other"],
 ] as const;
 
 const countryOptions = [
-  ["FI", "Suomi"],
-  ["SE", "Ruotsi"],
-  ["NO", "Norja"],
-  ["DK", "Tanska"],
-  ["DE", "Saksa"],
-  ["EE", "Viro"],
-  ["FR", "Ranska"],
-  ["GB", "Yhdistynyt kuningaskunta"],
-  ["US", "Yhdysvallat"],
-  ["JP", "Japani"],
-  ["OTHER", "Muu maa"],
+  ["FI", "Finland"],
+  ["SE", "Sweden"],
+  ["NO", "Norway"],
+  ["DK", "Denmark"],
+  ["DE", "Germany"],
+  ["EE", "Estonia"],
+  ["FR", "France"],
+  ["GB", "United Kingdom"],
+  ["US", "United States"],
+  ["JP", "Japan"],
+  ["OTHER", "Other country"],
 ] as const;
 
 const countryLabels = Object.fromEntries(countryOptions) as Record<
@@ -132,16 +132,16 @@ export function VehicleForm() {
     <section className="vehicleSection" aria-labelledby="vehicle-form-heading">
       <div className="vehicleSectionIntro">
         <div>
-          <p className="sectionLabel">Vaihe 1 / Ajoneuvo</p>
-          <h2 id="vehicle-form-heading">Kuvaile ajoneuvo mahdollisimman tarkasti.</h2>
+          <p className="sectionLabel">Phase 1 / Vehicle</p>
+          <h2 id="vehicle-form-heading">Describe the vehicle as precisely as possible.</h2>
         </div>
         <div className="memoryNotice">
           <span aria-hidden="true">○</span>
           <div>
-            <strong>Vain tämän välilehden muistissa</strong>
+            <strong>Only in this tab&apos;s memory</strong>
             <p>
-              Tietoja ei lähetetä eikä tallenneta selaimen pysyvään
-              tallennustilaan. Sivun päivittäminen tyhjentää istunnon.
+              Data is not submitted or stored in persistent browser storage.
+              Refreshing the page clears the session.
             </p>
           </div>
         </div>
@@ -162,51 +162,51 @@ export function VehicleForm() {
               tabIndex={-1}
             >
               <strong>
-                Tarkista {errorCount === 1 ? "merkitty kenttä" : "merkityt kentät"}.
+                Check the {errorCount === 1 ? "marked field" : "marked fields"}.
               </strong>
               <p>
-                Ajoneuvotietoja ei vahvistettu, koska lomakkeessa on{" "}
-                {errorCount} {errorCount === 1 ? "virhe" : "virhettä"}.
+                Vehicle details were not confirmed because the form contains{" "}
+                {errorCount} {errorCount === 1 ? "error" : "errors"}.
               </p>
             </div>
           ) : null}
 
           <fieldset>
-            <legend>Ajoneuvon perustiedot</legend>
+            <legend>Basic vehicle details</legend>
             <p className="fieldGroupHint">
-              Pakolliset kentät on merkitty tähdellä. Rekisterinumeroa tai
-              valmistenumeroa ei tarvita.
+              Required fields are marked with an asterisk. A registration
+              number or vehicle identification number is not required.
             </p>
             <div className="formGrid">
               <TextField
                 field="make"
-                label="Merkki"
+                label="Make"
                 required
                 value={state.vehicleDraft.make}
                 error={errors.make}
                 onChange={handleFieldChange}
-                placeholder="Esim. Toyota"
+                placeholder="For example, Toyota"
               />
               <TextField
                 field="model"
-                label="Malli"
+                label="Model"
                 required
                 value={state.vehicleDraft.model}
                 error={errors.model}
                 onChange={handleFieldChange}
-                placeholder="Esim. Avensis"
+                placeholder="For example, Avensis"
               />
               <TextField
                 field="generation"
-                label="Sukupolvi tai alustakoodi"
+                label="Generation or chassis code"
                 value={state.vehicleDraft.generation}
                 error={errors.generation}
                 onChange={handleFieldChange}
-                placeholder="Esim. T27"
+                placeholder="For example, T27"
               />
               <TextField
                 field="modelYear"
-                label="Mallivuosi"
+                label="Model year"
                 value={state.vehicleDraft.modelYear}
                 error={errors.modelYear}
                 onChange={handleFieldChange}
@@ -214,11 +214,11 @@ export function VehicleForm() {
                 inputMode="numeric"
                 min="1886"
                 max={String(new Date().getFullYear() + 1)}
-                placeholder="Esim. 2015"
+                placeholder="For example, 2015"
               />
               <TextField
                 field="firstRegistrationYear"
-                label="Ensirekisteröintivuosi"
+                label="First registration year"
                 value={state.vehicleDraft.firstRegistrationYear}
                 error={errors.firstRegistrationYear}
                 onChange={handleFieldChange}
@@ -226,11 +226,11 @@ export function VehicleForm() {
                 inputMode="numeric"
                 min="1886"
                 max={String(new Date().getFullYear())}
-                placeholder="Esim. 2015"
+                placeholder="For example, 2015"
               />
               <TextField
                 field="currentOdometerKm"
-                label="Nykyinen matkamittarilukema"
+                label="Current odometer reading"
                 suffix="km"
                 required
                 value={state.vehicleDraft.currentOdometerKm}
@@ -240,40 +240,40 @@ export function VehicleForm() {
                 inputMode="numeric"
                 min="0"
                 max="10000000"
-                placeholder="Esim. 184000"
-                hint="Anna lukema kilometreinä ilman välilyöntejä."
+                placeholder="For example, 184000"
+                hint="Enter the reading in kilometres without spaces."
               />
             </div>
           </fieldset>
 
           <fieldset>
-            <legend>Moottori ja voimansiirto</legend>
+            <legend>Engine and drivetrain</legend>
             <p className="fieldGroupHint">
-              Moottori- ja vaihteistokoodit auttavat myöhemmin erottamaan
-              samantehoiset ajoneuvoversiot toisistaan.
+              Engine and transmission codes later help distinguish vehicle
+              variants with the same power output.
             </p>
             <div className="formGrid">
               <TextField
                 field="engineDisplacementLitres"
-                label="Moottorin tilavuus"
+                label="Engine displacement"
                 suffix="l"
                 value={state.vehicleDraft.engineDisplacementLitres}
                 error={errors.engineDisplacementLitres}
                 onChange={handleFieldChange}
                 inputMode="decimal"
-                placeholder="Esim. 2,0"
+                placeholder="For example, 2.0"
               />
               <TextField
                 field="engineCode"
-                label="Moottorikoodi"
+                label="Engine code"
                 value={state.vehicleDraft.engineCode}
                 error={errors.engineCode}
                 onChange={handleFieldChange}
-                placeholder="Esim. 1AD-FTV"
+                placeholder="For example, 1AD-FTV"
               />
               <TextField
                 field="powerKw"
-                label="Teho"
+                label="Power"
                 suffix="kW"
                 value={state.vehicleDraft.powerKw}
                 error={errors.powerKw}
@@ -282,11 +282,11 @@ export function VehicleForm() {
                 inputMode="numeric"
                 min="1"
                 max="2000"
-                placeholder="Esim. 93"
+                placeholder="For example, 93"
               />
               <SelectField
                 field="fuelType"
-                label="Käyttövoima"
+                label="Fuel type"
                 value={state.vehicleDraft.fuelType}
                 error={errors.fuelType}
                 onChange={handleFieldChange}
@@ -294,7 +294,7 @@ export function VehicleForm() {
               />
               <SelectField
                 field="transmissionType"
-                label="Vaihteistotyyppi"
+                label="Transmission type"
                 value={state.vehicleDraft.transmissionType}
                 error={errors.transmissionType}
                 onChange={handleFieldChange}
@@ -302,15 +302,15 @@ export function VehicleForm() {
               />
               <TextField
                 field="transmissionCode"
-                label="Vaihteistokoodi"
+                label="Transmission code"
                 value={state.vehicleDraft.transmissionCode}
                 error={errors.transmissionCode}
                 onChange={handleFieldChange}
-                placeholder="Esim. K311"
+                placeholder="For example, K311"
               />
               <SelectField
                 field="drivetrain"
-                label="Vetotapa"
+                label="Drivetrain"
                 value={state.vehicleDraft.drivetrain}
                 error={errors.drivetrain}
                 onChange={handleFieldChange}
@@ -320,15 +320,15 @@ export function VehicleForm() {
           </fieldset>
 
           <fieldset>
-            <legend>Maa, markkina ja lisätiedot</legend>
+            <legend>Country, market, and additional details</legend>
             <p className="fieldGroupHint">
-              Huolto-ohjelmat voivat vaihdella markkina-alueen ja
-              käyttöolosuhteiden mukaan.
+              Maintenance schedules may vary by market and operating
+              conditions.
             </p>
             <div className="formGrid">
               <SelectField
                 field="country"
-                label="Ajoneuvon maa"
+                label="Vehicle country"
                 required
                 value={state.vehicleDraft.country}
                 error={errors.country}
@@ -338,19 +338,19 @@ export function VehicleForm() {
               />
               <TextField
                 field="market"
-                label="Markkina-alue"
+                label="Market"
                 value={state.vehicleDraft.market}
                 error={errors.market}
                 onChange={handleFieldChange}
-                placeholder="Esim. Eurooppa"
+                placeholder="For example, Europe"
               />
               <TextAreaField
                 field="additionalDetails"
-                label="Muut tiedossa olevat versiotiedot"
+                label="Other known variant details"
                 value={state.vehicleDraft.additionalDetails}
                 error={errors.additionalDetails}
                 onChange={handleFieldChange}
-                placeholder="Esim. varustetaso, tuontimaa tai muu epävarma tieto"
+                placeholder="For example, trim level, import country, or other uncertain information"
               />
             </div>
           </fieldset>
@@ -358,25 +358,25 @@ export function VehicleForm() {
           <div className="formActions">
             <div>
               <button className="primaryButton" type="submit">
-                Vahvista ajoneuvotiedot
+                Confirm vehicle details
               </button>
             </div>
             <div className="resetAction">
-              <p>Vie valmis raportti ennen tyhjennystä tai sivulta poistumista.</p>
+              <p>Export the completed report before clearing or leaving the page.</p>
               <button
                 className="secondaryButton"
                 type="button"
                 onClick={handleReset}
                 disabled={resetDisabled}
               >
-                Tyhjennä istunto
+                Clear session
               </button>
             </div>
           </div>
         </form>
 
         <aside className="sessionPanel" aria-labelledby="session-heading">
-          <p className="sectionLabel">Istunnon tila</p>
+          <p className="sectionLabel">Session status</p>
           <h3 id="session-heading">{sessionHeading(state.status)}</h3>
           <p className="sessionStatus" aria-live="polite">
             {sessionDescription(state.status)}
@@ -386,8 +386,9 @@ export function VehicleForm() {
             <div className="emptySession">
               <span aria-hidden="true">01</span>
               <p>
-                Vahvistettu ajoneuvo näkyy tässä. Tietoja tarvitaan myöhemmin
-                ajoneuvoversion ja sopivien huoltolähteiden rajaamiseen.
+                The confirmed vehicle will appear here. These details are
+                needed later to narrow down the vehicle variant and compatible
+                maintenance sources.
               </p>
             </div>
           ) : (
@@ -395,10 +396,9 @@ export function VehicleForm() {
           )}
 
           <div className="sessionBoundary">
-            <strong>Istuntoa ei tallenneta</strong>
+            <strong>The session is not stored</strong>
             <p>
-              Ei localStoragea, IndexedDB:tä, evästeitä eikä palvelimen
-              tietokantaa.
+              No localStorage, IndexedDB, cookies, or server database.
             </p>
           </div>
         </aside>
@@ -525,7 +525,7 @@ function SelectField({
         required={required}
         onChange={(event) => onChange(field, event.target.value)}
       >
-        {allowEmpty ? <option value="">Ei tiedossa</option> : null}
+        {allowEmpty ? <option value="">Unknown</option> : null}
         {options.map(([optionValue, optionLabel]) => (
           <option key={optionValue} value={optionValue}>
             {optionLabel}
@@ -587,13 +587,13 @@ function TextAreaField({
 function sessionHeading(status: "empty" | "editing" | "confirmed" | "reset") {
   switch (status) {
     case "empty":
-      return "Ei vahvistettua ajoneuvoa";
+      return "No confirmed vehicle";
     case "editing":
-      return "Tiedot odottavat vahvistusta";
+      return "Details awaiting confirmation";
     case "confirmed":
-      return "Ajoneuvo vahvistettu";
+      return "Vehicle confirmed";
     case "reset":
-      return "Istunto on tyhjennetty";
+      return "Session cleared";
   }
 }
 
@@ -602,20 +602,20 @@ function sessionDescription(
 ) {
   switch (status) {
     case "empty":
-      return "Täytä vähintään merkki, malli ja nykyinen matkamittarilukema.";
+      return "Enter at least the make, model, and current odometer reading.";
     case "editing":
-      return "Luonnos on vain muistissa. Vahvista tiedot ennen seuraavaa vaihetta.";
+      return "The draft is only in memory. Confirm the details before the next phase.";
     case "confirmed":
-      return "Ajoneuvotiedot on vahvistettu tämän välilehden istuntoon.";
+      return "Vehicle details have been confirmed for this tab's session.";
     case "reset":
-      return "Kaikki tämän istunnon ajoneuvotiedot poistettiin muistista.";
+      return "All vehicle details for this session were removed from memory.";
   }
 }
 
 function VehicleSummary({ vehicle }: Readonly<{ vehicle: VehicleInput }>) {
   const variantDetails = [
     vehicle.generation,
-    vehicle.modelYear ? `mallivuosi ${vehicle.modelYear}` : undefined,
+    vehicle.modelYear ? `model year ${vehicle.modelYear}` : undefined,
     vehicle.engineDisplacementLitres
       ? `${vehicle.engineDisplacementLitres.toLocaleString("fi-FI")} l`
       : undefined,
@@ -631,12 +631,12 @@ function VehicleSummary({ vehicle }: Readonly<{ vehicle: VehicleInput }>) {
 
   return (
     <div className="vehicleSummary" data-testid="confirmed-vehicle">
-      <p className="summaryKicker">Vahvistettu ajoneuvo</p>
+      <p className="summaryKicker">Confirmed vehicle</p>
       <h4>
         {vehicle.make} {vehicle.model}
       </h4>
       {variantDetails.length > 0 ? (
-        <ul className="variantTags" aria-label="Ajoneuvoversion tiedot">
+        <ul className="variantTags" aria-label="Vehicle variant details">
           {variantDetails.map((detail) => (
             <li key={detail}>{detail}</li>
           ))}
@@ -644,22 +644,22 @@ function VehicleSummary({ vehicle }: Readonly<{ vehicle: VehicleInput }>) {
       ) : null}
       <dl>
         <div>
-          <dt>Matkamittari</dt>
+          <dt>Odometer</dt>
           <dd>{vehicle.currentOdometerKm.toLocaleString("fi-FI")} km</dd>
         </div>
         <div>
-          <dt>Maa</dt>
+          <dt>Country</dt>
           <dd>{countryLabels[vehicle.country]}</dd>
         </div>
         {vehicle.market ? (
           <div>
-            <dt>Markkina</dt>
+            <dt>Market</dt>
             <dd>{vehicle.market}</dd>
           </div>
         ) : null}
         {vehicle.firstRegistrationYear ? (
           <div>
-            <dt>Ensirekisteröinti</dt>
+            <dt>First registration</dt>
             <dd>{vehicle.firstRegistrationYear}</dd>
           </div>
         ) : null}

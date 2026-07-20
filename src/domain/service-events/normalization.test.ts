@@ -83,7 +83,7 @@ describe("service-event normalization", () => {
     ).toBe("valid");
   });
 
-  it("infers date precision from Finnish input and keeps ISO values internally", () => {
+  it("infers date precision from day-first input and keeps ISO values internally", () => {
     expect(inferServiceDateInput("29.02.2024")).toEqual({
       value: "2024-02-29",
       precision: "day",
@@ -96,14 +96,14 @@ describe("service-event normalization", () => {
       value: "2024",
       precision: "year",
     });
-    expect(inferServiceDateInput("kevät 2024")).toEqual({
-      value: "kevät 2024",
+    expect(inferServiceDateInput("spring 2024")).toEqual({
+      value: "spring 2024",
       precision: "unknown",
     });
     expect(createServiceDateFromInput("  ", 0.5)).toBeNull();
   });
 
-  it("formats canonical dates for Finnish editing and corrects contradictory precision", () => {
+  it("formats canonical dates for day-first editing and corrects contradictory precision", () => {
     const reconciled = reconcileServiceDatePrecision({
       value: "2024-03-12",
       precision: "unknown",

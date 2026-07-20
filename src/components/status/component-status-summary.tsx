@@ -12,49 +12,49 @@ import type { ComponentResearch } from "@/domain/schemas/maintenance-research";
 import { calculateComponentStatusSummary } from "@/domain/status-engine/status-engine";
 
 const statusLabels: Record<ComponentStatusValue, string> = {
-  ok: "Kunnossa",
-  due_soon: "Lähestyy",
-  due: "Ajankohtainen",
-  overdue: "Myöhässä",
-  unknown: "Epäselvä",
-  insufficient_evidence: "Ei riittävää tietoa",
-  conflicting_sources: "Lähteissä ristiriita",
+  ok: "OK",
+  due_soon: "Due soon",
+  due: "Due",
+  overdue: "Overdue",
+  unknown: "Unknown",
+  insufficient_evidence: "Insufficient evidence",
+  conflicting_sources: "Conflicting sources",
 };
 
 const reasonLabels: Record<ComponentStatusReasonCode, string> = {
-  source_conflict: "Luotettavat lähteet ilmoittavat eri huoltovälit.",
+  source_conflict: "Reliable sources report different maintenance intervals.",
   insufficient_source_evidence:
-    "Varianttiin sopivaa, riittävän luotettavaa huoltoväliä ei löytynyt.",
-  interval_claim_missing: "Valittua huoltoväliväitettä ei löytynyt.",
-  no_service_history_entry: "Huoltohistoriasta ei löytynyt merkintää.",
+    "No sufficiently reliable maintenance interval compatible with the variant was found.",
+  interval_claim_missing: "The selected maintenance interval claim was not found.",
+  no_service_history_entry: "No service-history entry was found.",
   no_qualifying_service_event:
-    "Merkintää ei voitu käyttää huoltovälin aloituspisteenä.",
-  inspection_only: "Historiassa on vain tarkastus, ei vaihtoa tai huoltoa.",
+    "The entry could not be used as the starting point for the maintenance interval.",
+  inspection_only: "The history contains only an inspection, not a replacement or service.",
   low_confidence_service_event:
-    "Huoltomerkinnän vastaavuus jäi luottamusrajan alle.",
+    "The service record match was below the confidence threshold.",
   ambiguous_last_service:
-    "Viimeisintä soveltuvaa huoltoa ei voitu valita yksiselitteisesti.",
-  future_service_date: "Huoltomerkinnän päivämäärä on tulevaisuudessa.",
+    "The latest applicable service could not be selected unambiguously.",
+  future_service_date: "The service record date is in the future.",
   service_odometer_above_current:
-    "Huoltomerkinnän mittarilukema ylittää nykyisen lukeman.",
+    "The service record odometer reading exceeds the current reading.",
   odometer_chronology_conflict:
-    "Komponentin huoltomerkintöjen mittarilukemat ovat ristiriidassa.",
-  missing_service_date: "Huollon päivämäärä puuttuu.",
+    "The odometer readings in the component service records conflict.",
+  missing_service_date: "The service date is missing.",
   imprecise_service_date:
-    "Huollon päivämäärä ei ole riittävän tarkka kuukausilaskentaan.",
-  invalid_service_date: "Huollon päivämäärä on virheellinen.",
-  unverified_service_date: "Huollon päivämäärää ei voitu varmistaa.",
-  missing_service_odometer: "Huollon mittarilukema puuttuu.",
-  invalid_service_odometer: "Huollon mittarilukema on virheellinen.",
+    "The service date is not precise enough for month calculations.",
+  invalid_service_date: "The service date is invalid.",
+  unverified_service_date: "The service date could not be verified.",
+  missing_service_odometer: "The service odometer reading is missing.",
+  invalid_service_odometer: "The service odometer reading is invalid.",
   unverified_service_odometer:
-    "Huollon mittarilukeman yksikköä ei voitu varmistaa.",
-  distance_overdue: "Kilometriväli on ylitetty.",
-  time_overdue: "Aikaväli on ylitetty.",
-  distance_due: "Kilometriväli on saavutettu tai välittömässä rajassa.",
-  time_due: "Aikaväli on saavutettu tai kuukauden sisällä.",
-  distance_due_soon: "Kilometriväli lähestyy.",
-  time_due_soon: "Aikaväli lähestyy.",
-  within_interval: "Tunnetut laskentamittojen rajat eivät ole täyttyneet.",
+    "The service odometer unit could not be verified.",
+  distance_overdue: "The distance interval has been exceeded.",
+  time_overdue: "The time interval has been exceeded.",
+  distance_due: "The distance interval has been reached or is within the immediate threshold.",
+  time_due: "The time interval has been reached or is within one month.",
+  distance_due_soon: "The distance interval is approaching.",
+  time_due_soon: "The time interval is approaching.",
+  within_interval: "The known calculation thresholds have not been reached.",
 };
 
 const visibleStatusOrder: readonly ComponentStatusValue[] = [
@@ -108,17 +108,17 @@ export function ComponentStatusSummaryPanel() {
     >
       <div className="componentStatusHeading">
         <div>
-          <p className="sectionLabel">Vaihe 7 / Deterministinen tilalaskenta</p>
+          <p className="sectionLabel">Phase 7 / Deterministic status calculation</p>
           <h2 id="component-status-heading">
-            Huoltojen tila lasketaan todennetusta näytöstä.
+            Maintenance status is calculated from verified evidence.
           </h2>
         </div>
         <div className="calculationNotice">
-          <strong>Tila ei ole tekoälyn mielipide</strong>
+          <strong>Status is not an AI opinion</strong>
           <p>
-            Sovelluskoodi käyttää vahvistettua huoltohistoriaa, valittua
-            lähdeväliä, nykyistä mittarilukemaa ja laskentapäivää. Lähdeteksti
-            ei voi muuttaa tulosta.
+            Application code uses the confirmed service history, selected
+            source interval, current odometer reading, and calculation date.
+            Source text cannot change the result.
           </p>
         </div>
       </div>
@@ -127,16 +127,16 @@ export function ComponentStatusSummaryPanel() {
         <div className="emptyResolutionState">
           <span aria-hidden="true">07</span>
           <div>
-            <strong>Tilalaskenta odottaa huoltovälitutkimusta.</strong>
+            <strong>Status calculation is waiting for maintenance interval research.</strong>
             <p>
-              Kun vaihe 6 valmistuu, tulokset lasketaan paikallisesti ilman
-              uutta verkkopyyntöä.
+              When Phase 6 is complete, results are calculated locally without
+              a new network request.
             </p>
           </div>
         </div>
       ) : (
         <>
-          <div className="statusCountGrid" aria-label="Tilojen yhteenveto">
+          <div className="statusCountGrid" aria-label="Status summary">
             {visibleStatusOrder.map((status) => (
               <div key={status} className={`statusCount status-${status}`}>
                 <strong>{summary.counts[status]}</strong>
@@ -145,7 +145,7 @@ export function ComponentStatusSummaryPanel() {
             ))}
           </div>
           <p className="calculationTimestamp">
-            Laskentapäivä{" "}
+            Calculation date{" "}
             <time dateTime={summary.analysisDate}>
               {formatFinnishDate(summary.analysisDate)}
             </time>
@@ -184,7 +184,7 @@ function StatusCard({
           </span>
           <h3>{component.component_label}</h3>
         </div>
-        <span className="calculatedByCode">Sovelluskoodin laskema</span>
+        <span className="calculatedByCode">Calculated by application code</span>
       </header>
 
       <ul className="statusReasons">
@@ -195,39 +195,39 @@ function StatusCard({
 
       <dl className="statusMetrics">
         <StatusMetric
-          label="Käytetty matka"
+          label="Distance used"
           value={formatKilometres(status.distance_used_km)}
         />
         <StatusMetric
-          label="Matkaa jäljellä"
+          label="Distance remaining"
           value={formatKilometres(status.distance_remaining_km)}
         />
         <StatusMetric
-          label="Käytetty aika"
+          label="Time used"
           value={formatMonths(status.months_used)}
         />
         <StatusMetric
-          label="Aikaa jäljellä"
+          label="Time remaining"
           value={formatMonths(status.months_remaining)}
         />
         <StatusMetric
-          label="Arvioitu erääntymislukema"
+          label="Estimated due odometer"
           value={formatKilometres(status.due_odometer_km)}
         />
         <StatusMetric
-          label="Arvioitu erääntymispäivä"
+          label="Estimated due date"
           value={
             status.due_date === null
-              ? "Ei laskettavissa"
+              ? "Cannot be calculated"
               : formatFinnishDate(status.due_date)
           }
         />
       </dl>
 
       <p className="statusEvidenceIds">
-        Huoltomerkintä: {status.last_service_event_id ?? "ei valittua merkintää"}
+        Service record: {status.last_service_event_id ?? "no selected record"}
         {" · "}
-        Lähdeväite: {status.interval_claim_id ?? "ei valittua väitettä"}
+        Source claim: {status.interval_claim_id ?? "no selected claim"}
       </p>
     </article>
   );
@@ -247,12 +247,12 @@ function StatusMetric({
 
 function formatKilometres(value: number | null): string {
   return value === null
-    ? "Ei laskettavissa"
+    ? "Cannot be calculated"
     : `${new Intl.NumberFormat("fi-FI").format(value)} km`;
 }
 
 function formatMonths(value: number | null): string {
-  return value === null ? "Ei laskettavissa" : `${value} kk`;
+  return value === null ? "Cannot be calculated" : `${value} months`;
 }
 
 function formatFinnishDate(value: string): string {
