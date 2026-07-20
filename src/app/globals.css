@@ -30,6 +30,11 @@ body {
   overflow-wrap: break-word;
 }
 
+main {
+  min-width: 0;
+  overflow-x: clip;
+}
+
 a {
   color: inherit;
 }
