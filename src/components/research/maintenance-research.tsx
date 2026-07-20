@@ -2,7 +2,11 @@
 
 import { useAnalysisSession } from "@/components/session/analysis-session-provider";
 import { deriveResearchComponents } from "@/domain/maintenance/research-components";
-import { SOURCE_AUTHORITY_LABELS } from "@/domain/maintenance/source-hierarchy";
+import {
+  assessSourceTrustworthiness,
+  SOURCE_AUTHORITY_LABELS,
+  TRUSTWORTHINESS_LABELS_FI,
+} from "@/domain/maintenance/source-hierarchy";
 import {
   maintenanceResearchSchema,
   type ComponentResearch,
@@ -72,7 +76,10 @@ export function MaintenanceResearchPanel() {
         state.confirmedVehicleVariant.market ??
         state.confirmedVehicle.market ??
         null,
-      components: deriveResearchComponents(state.serviceHistory),
+      components: deriveResearchComponents(
+        state.serviceHistory,
+        state.confirmedVehicle,
+      ),
     };
 
     beginMaintenanceResearch();
@@ -300,6 +307,11 @@ function IntervalClaimCard({
   claim,
   recommended,
 }: Readonly<{ claim: IntervalClaim; recommended: boolean }>) {
+  const trustworthiness = assessSourceTrustworthiness(
+    claim.authority_rank,
+    claim.compatibility,
+  );
+
   return (
     <li className={recommended ? "recommendedClaim" : undefined}>
       <div className="claimHeading">
@@ -323,8 +335,16 @@ function IntervalClaimCard({
           <dt>Yhteensopivuus</dt>
           <dd>{compatibilityLabels[claim.compatibility]}</dd>
         </div>
+        <div>
+          <dt>Luotettavuustaso</dt>
+          <dd>
+            {TRUSTWORTHINESS_LABELS_FI[trustworthiness.level]} (
+            {trustworthiness.level})
+          </dd>
+        </div>
       </dl>
       <p className="compatibilityNotes">{claim.compatibility_notes}</p>
+      <p className="compatibilityNotes">{trustworthiness.note_fi}</p>
       <div className="claimSource">
         <a href={claim.source.url} target="_blank" rel="noreferrer">
           {claim.source.title}

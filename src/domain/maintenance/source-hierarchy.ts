@@ -13,10 +13,97 @@ export const SOURCE_AUTHORITY_LABELS: Readonly<Record<number, string>> = {
   6: "Heikko täydentävä lähde",
 };
 
+export type TrustworthinessLevel = "high" | "medium" | "low";
+
+export const TRUSTWORTHINESS_LABELS_FI: Readonly<
+  Record<TrustworthinessLevel, string>
+> = {
+  high: "Korkea",
+  medium: "Keskitaso",
+  low: "Matala",
+};
+
+export interface TrustworthinessAssessment {
+  level: TrustworthinessLevel;
+  note_fi: string;
+}
+
 interface ComponentEvidence {
   component_code: ComponentCode;
   component_label: string;
   interval_claims: IntervalClaim[];
+}
+
+export function assessSourceTrustworthiness(
+  authorityRank: number | null,
+  compatibility: IntervalClaim["compatibility"],
+): TrustworthinessAssessment {
+  if (
+    (authorityRank === null || authorityRank <= 2) &&
+    (compatibility === "exact" || compatibility === "strong")
+  ) {
+    return {
+      level: "high",
+      note_fi:
+        "Lähde on ensisijainen ja sen yhteensopivuus ajoneuvoversioon on vahva.",
+    };
+  }
+
+  if (
+    (authorityRank === null && compatibility === "partial") ||
+    (authorityRank !== null &&
+      authorityRank <= 4 &&
+      (compatibility === "exact" ||
+        compatibility === "strong" ||
+        (authorityRank <= 2 && compatibility === "partial")))
+  ) {
+    return {
+      level: "medium",
+      note_fi:
+        "Lähde on käyttökelpoinen, mutta lähdetaso tai ajoneuvoyhteensopivuus sisältää epävarmuutta.",
+    };
+  }
+
+  return {
+    level: "low",
+    note_fi:
+      "Lähdetaso tai ajoneuvoyhteensopivuus ei riitä yksin vahvaan huoltosuositukseen.",
+  };
+}
+
+export function assessComponentTrustworthiness(
+  component: ComponentResearch,
+): TrustworthinessAssessment {
+  if (component.resolution === "conflicting_sources") {
+    return {
+      level: "low",
+      note_fi:
+        "Huoltosuosituksen luotettavuus on matala, koska yhteensopivat lähteet ilmoittavat eri huoltovälejä. Jokaisen väitteen oma luotettavuus näytetään lähdetiedoissa.",
+    };
+  }
+
+  if (component.resolution === "insufficient_evidence") {
+    return {
+      level: "low",
+      note_fi:
+        "Huoltosuositusta ei voitu varmistaa riittävästä ajoneuvoversioon sopivasta lähdenäytöstä.",
+    };
+  }
+
+  const claim = component.interval_claims.find(
+    (candidate) => candidate.claim_id === component.recommended_claim_id,
+  );
+  if (claim === undefined) {
+    return {
+      level: "low",
+      note_fi: "Valittua huoltoväliväitettä ei löytynyt.",
+    };
+  }
+
+  return assessSourceTrustworthiness(
+    claim.authority_rank,
+    claim.compatibility,
+  );
 }
 
 export function resolveComponentEvidence(

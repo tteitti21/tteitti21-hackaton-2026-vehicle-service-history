@@ -337,6 +337,19 @@ Absence of a row is not proof that work was not performed. Wording must be:
 - “Huoltohistoriasta ei löytynyt merkintää”
 - not “Huoltoa ei ole tehty”.
 
+## Powertrain component inventory
+
+Every status view and exported report must contain a complete standard
+component inventory for the confirmed powertrain, including components with no
+service-history event or verified interval. Missing entries use
+`insufficient_evidence`; they must never be omitted or populated with a guessed
+interval.
+
+For a combustion vehicle with an automatic, CVT, dual-clutch, or automated
+manual transmission, the inventory must include at least engine oil, oil
+filter, transmission fluid, timing belt and/or chain, brake fluid, fuel filter,
+engine air filter, cabin air filter, and engine coolant.
+
 ## Conflicting sources
 
 Preserve every credible claim. Do not average intervals.
@@ -350,6 +363,11 @@ Show:
 - conservative interpretation if one is justified.
 
 If the conflict cannot be resolved, status is `conflicting_sources`.
+
+Each preserved claim and report source includes a deterministic
+`trustworthiness_level` (`high`, `medium`, or `low`) derived from source
+authority and vehicle compatibility. Unresolved component suggestions remain
+low-trust even when individual conflicting sources are high-trust.
 
 ## Source-quality hierarchy
 

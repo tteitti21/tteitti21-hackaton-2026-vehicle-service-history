@@ -2,6 +2,13 @@ import type {
   ComponentStatusReasonCode,
   ComponentStatusValue,
 } from "@/domain/schemas/component-status";
+import { ensureMaintenanceResearchCoverage } from "@/domain/maintenance/research-components";
+import {
+  assessComponentTrustworthiness,
+  assessSourceTrustworthiness,
+  TRUSTWORTHINESS_LABELS_FI,
+  type TrustworthinessLevel,
+} from "@/domain/maintenance/source-hierarchy";
 import type {
   MaintenanceResearch,
   VehicleVariant,
@@ -19,7 +26,7 @@ import { normalizeOdometer } from "@/domain/service-events/normalization";
 import { calculateComponentStatusSummary } from "@/domain/status-engine/status-engine";
 import type { VehicleInput } from "@/domain/vehicle/vehicle-input";
 
-export const REPORT_SCHEMA_VERSION = "1.0";
+export const REPORT_SCHEMA_VERSION = "1.1";
 
 export const REPORT_STATUS_LABELS_FI: Record<ComponentStatusValue, string> = {
   ok: "Kunnossa",
@@ -145,6 +152,11 @@ export interface ReportComponent {
   reason_codes: ComponentStatusReasonCode[];
   resolution: "resolved" | "conflicting_sources" | "insufficient_evidence";
   conflict_summary: string | null;
+  trustworthiness_level: TrustworthinessLevel;
+  trustworthiness_label_fi: string;
+  trustworthiness_note_fi: string;
+  maintenance_suggestion_fi: string;
+  service_history_note_fi: string;
   interval_claim_count: number;
   recommended_claim_id: string | null;
   recommended_interval_km: number | null;
@@ -174,6 +186,9 @@ export interface ReportSource {
   original_value: number | null;
   original_unit: "km" | "mi" | "months" | "years" | "mixed" | null;
   authority_rank: number | null;
+  trustworthiness_level: TrustworthinessLevel;
+  trustworthiness_label_fi: string;
+  trustworthiness_note_fi: string;
   compatibility:
     | "exact"
     | "strong"
@@ -202,16 +217,21 @@ export function createVehicleReportModel(
     throw new RangeError("Confirmed vehicle candidate is unavailable.");
   }
 
+  const maintenanceResearch = ensureMaintenanceResearchCoverage(
+    input.maintenanceResearch,
+    input.serviceHistory,
+    input.confirmedVehicle,
+  );
   const statusSummary = calculateComponentStatusSummary({
-    research: input.maintenanceResearch,
+    research: maintenanceResearch,
     serviceHistory: input.serviceHistory,
     currentOdometerKm: input.confirmedVehicle.currentOdometerKm,
-    analysisDate: new Date(input.maintenanceResearch.researched_at),
+    analysisDate: new Date(maintenanceResearch.researched_at),
   });
   const statusByComponent = new Map(
     statusSummary.statuses.map((status) => [status.component_code, status]),
   );
-  const sources = createReportSources(candidate, input.maintenanceResearch);
+  const sources = createReportSources(candidate, maintenanceResearch);
 
   return {
     metadata: {
@@ -259,7 +279,7 @@ export function createVehicleReportModel(
     },
     summary: {
       service_event_count: input.serviceHistory.events.length,
-      component_count: input.maintenanceResearch.components.length,
+      component_count: maintenanceResearch.components.length,
       source_count: sources.length,
       highest_priority_status: statusSummary.highestPriorityStatus,
       status_counts: { ...statusSummary.counts },
@@ -284,7 +304,7 @@ export function createVehicleReportModel(
         ambiguities: [...event.ambiguities],
       };
     }),
-    components: input.maintenanceResearch.components.map((component) => {
+    components: maintenanceResearch.components.map((component) => {
       const status = statusByComponent.get(component.component_code);
       if (status === undefined) {
         throw new RangeError(
@@ -294,6 +314,7 @@ export function createVehicleReportModel(
       const recommendedClaim = component.interval_claims.find(
         (claim) => claim.claim_id === component.recommended_claim_id,
       );
+      const trustworthiness = assessComponentTrustworthiness(component);
 
       return {
         component_code: component.component_code,
@@ -303,6 +324,16 @@ export function createVehicleReportModel(
         reason_codes: [...status.reason_codes],
         resolution: component.resolution,
         conflict_summary: component.conflict_summary,
+        trustworthiness_level: trustworthiness.level,
+        trustworthiness_label_fi:
+          TRUSTWORTHINESS_LABELS_FI[trustworthiness.level],
+        trustworthiness_note_fi: trustworthiness.note_fi,
+        maintenance_suggestion_fi:
+          createMaintenanceSuggestion(component),
+        service_history_note_fi:
+          status.last_service_event_id === null
+            ? "Huoltohistoriasta ei löytynyt merkintää."
+            : `Viimeisin laskennassa käytetty merkintä: ${status.last_service_event_id}.`,
         interval_claim_count: component.interval_claims.length,
         recommended_claim_id: component.recommended_claim_id,
         recommended_interval_km: recommendedClaim?.interval_km ?? null,
@@ -323,7 +354,7 @@ export function createVehicleReportModel(
     warnings: {
       service_history: [...input.serviceHistory.warnings],
       vehicle_resolution: [...input.vehicleResolution.warnings],
-      maintenance_research: [...input.maintenanceResearch.global_warnings],
+      maintenance_research: [...maintenanceResearch.global_warnings],
     },
   };
 }
@@ -332,6 +363,10 @@ function createReportSources(
   candidate: VehicleCandidate,
   research: MaintenanceResearch,
 ): ReportSource[] {
+  const vehicleTrustworthiness = assessSourceTrustworthiness(
+    null,
+    candidate.compatibility,
+  );
   const vehicleSources: ReportSource[] = candidate.sources.map(
     (source, index) => ({
       source_id: `vehicle-${candidate.candidate_id}-${index + 1}`,
@@ -347,6 +382,10 @@ function createReportSources(
       original_value: null,
       original_unit: null,
       authority_rank: null,
+      trustworthiness_level: vehicleTrustworthiness.level,
+      trustworthiness_label_fi:
+        TRUSTWORTHINESS_LABELS_FI[vehicleTrustworthiness.level],
+      trustworthiness_note_fi: vehicleTrustworthiness.note_fi,
       compatibility: candidate.compatibility,
       compatibility_notes: candidate.compatibility_explanation,
       title: source.title,
@@ -358,32 +397,84 @@ function createReportSources(
   );
   const maintenanceSources = research.components.flatMap((component) =>
     component.interval_claims.map(
-      (claim): ReportSource => ({
-        source_id: `maintenance-${claim.claim_id}`,
-        source_scope: "maintenance_interval",
-        component_code: component.component_code,
-        component_label: component.component_label,
-        claim_id: claim.claim_id,
-        recommended: component.recommended_claim_id === claim.claim_id,
-        interval_km: claim.interval_km,
-        interval_months: claim.interval_months,
-        whichever_first: claim.whichever_first,
-        conditions: claim.conditions,
-        original_value: claim.original_value,
-        original_unit: claim.original_unit,
-        authority_rank: claim.authority_rank,
-        compatibility: claim.compatibility,
-        compatibility_notes: claim.compatibility_notes,
-        title: claim.source.title,
-        publisher: claim.source.publisher,
-        url: claim.source.url,
-        retrieved_at: claim.source.retrieved_at,
-        evidence: claim.source.evidence,
-      }),
+      (claim): ReportSource => {
+        const trustworthiness = assessSourceTrustworthiness(
+          claim.authority_rank,
+          claim.compatibility,
+        );
+        return {
+          source_id: `maintenance-${claim.claim_id}`,
+          source_scope: "maintenance_interval",
+          component_code: component.component_code,
+          component_label: component.component_label,
+          claim_id: claim.claim_id,
+          recommended: component.recommended_claim_id === claim.claim_id,
+          interval_km: claim.interval_km,
+          interval_months: claim.interval_months,
+          whichever_first: claim.whichever_first,
+          conditions: claim.conditions,
+          original_value: claim.original_value,
+          original_unit: claim.original_unit,
+          authority_rank: claim.authority_rank,
+          trustworthiness_level: trustworthiness.level,
+          trustworthiness_label_fi:
+            TRUSTWORTHINESS_LABELS_FI[trustworthiness.level],
+          trustworthiness_note_fi: trustworthiness.note_fi,
+          compatibility: claim.compatibility,
+          compatibility_notes: claim.compatibility_notes,
+          title: claim.source.title,
+          publisher: claim.source.publisher,
+          url: claim.source.url,
+          retrieved_at: claim.source.retrieved_at,
+          evidence: claim.source.evidence,
+        };
+      },
     ),
   );
 
   return [...vehicleSources, ...maintenanceSources];
+}
+
+function createMaintenanceSuggestion(
+  component: MaintenanceResearch["components"][number],
+): string {
+  if (component.resolution === "insufficient_evidence") {
+    return "Tarkkaa vaihtoväliä ei voitu varmistaa riittävän luotettavista, tähän ajoneuvovarianttiin sopivista lähteistä.";
+  }
+
+  if (component.resolution === "conflicting_sources") {
+    const claims = component.interval_claims
+      .map(
+        (claim) =>
+          `${claim.claim_id}: ${formatClaimInterval(claim.interval_km, claim.interval_months, claim.whichever_first)}`,
+      )
+      .join(" | ");
+    return `${component.conflict_summary ?? "Lähteissä on ratkaisematon ristiriita."} Säilytetyt väitteet: ${claims}.`;
+  }
+
+  const claim = component.interval_claims.find(
+    (candidate) => candidate.claim_id === component.recommended_claim_id,
+  );
+  if (claim === undefined) {
+    return "Valittua huoltoväliväitettä ei löytynyt.";
+  }
+
+  const conditions =
+    claim.conditions === null ? "Ei erillisiä käyttöehtoja." : claim.conditions;
+  return `${formatClaimInterval(claim.interval_km, claim.interval_months, claim.whichever_first)}. ${conditions}`;
+}
+
+function formatClaimInterval(
+  intervalKm: number | null,
+  intervalMonths: number | null,
+  whicheverFirst: boolean,
+): string {
+  const values = [
+    intervalKm === null ? null : `${intervalKm} km`,
+    intervalMonths === null ? null : `${intervalMonths} kk`,
+  ].filter((value): value is string => value !== null);
+
+  return values.join(whicheverFirst ? " tai " : " + ");
 }
 
 function cloneVehicleVariant(variant: VehicleVariant): VehicleVariant {

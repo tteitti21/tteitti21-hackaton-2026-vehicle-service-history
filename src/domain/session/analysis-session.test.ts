@@ -102,6 +102,15 @@ describe("analysis session reducer", () => {
       model: "Aurora",
       currentOdometerKm: "180000",
     });
+    expect(loaded.maintenanceResearch?.components).toHaveLength(18);
+    expect(loaded.maintenanceResearch?.components).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          component_code: "transmission_fluid",
+          resolution: "insufficient_evidence",
+        }),
+      ]),
+    );
     expect(
       analysisSessionReducer(loaded, { type: "reset_session" }),
     ).toEqual(createInitialAnalysisSession("reset", 1));

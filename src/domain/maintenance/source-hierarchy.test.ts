@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import type { IntervalClaim } from "@/domain/schemas/maintenance-research";
-import { resolveComponentEvidence } from "./source-hierarchy";
+import {
+  assessComponentTrustworthiness,
+  assessSourceTrustworthiness,
+  resolveComponentEvidence,
+} from "./source-hierarchy";
 
 const baseClaim: IntervalClaim = {
   claim_id: "claim-1",
@@ -89,6 +93,36 @@ describe("resolveComponentEvidence", () => {
     expect(result).toMatchObject({
       resolution: "insufficient_evidence",
       recommended_claim_id: null,
+    });
+  });
+
+  it("scores source quality and lowers the suggestion score for conflicts", () => {
+    expect(assessSourceTrustworthiness(1, "exact")).toMatchObject({
+      level: "high",
+    });
+    expect(assessSourceTrustworthiness(4, "strong")).toMatchObject({
+      level: "medium",
+    });
+    expect(assessSourceTrustworthiness(6, "weak")).toMatchObject({
+      level: "low",
+    });
+
+    const conflict = resolveComponentEvidence({
+      component_code: "timing_belt",
+      component_label: "Jakohihna",
+      interval_claims: [
+        baseClaim,
+        {
+          ...baseClaim,
+          claim_id: "claim-2",
+          interval_km: 20_000,
+          original_value: 20_000,
+        },
+      ],
+    });
+    expect(assessComponentTrustworthiness(conflict)).toMatchObject({
+      level: "low",
+      note_fi: expect.stringContaining("eri huoltovälejä"),
     });
   });
 });

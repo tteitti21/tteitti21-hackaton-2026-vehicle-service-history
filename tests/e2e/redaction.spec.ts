@@ -554,15 +554,21 @@ test("requires explicit candidate selection and preserves research sources", asy
       resolution: { candidate_id: "candidate-2" },
       resolved_variant: { engine: "2.0 D-4D (2WW), 105 kW" },
     },
-    summary: { component_count: 1, source_count: 2 },
+    summary: { component_count: 17, source_count: 2 },
     service_history: [],
-    components: [
-      {
+    components: expect.arrayContaining([
+      expect.objectContaining({
         component_code: "engine_oil",
         status: "unknown",
         recommended_interval_km: 15000,
-      },
-    ],
+        trustworthiness_level: "high",
+      }),
+      expect.objectContaining({
+        component_code: "transmission_fluid",
+        status: "insufficient_evidence",
+        trustworthiness_level: "low",
+      }),
+    ]),
   });
   expect(exportedJsonText).not.toContain('"images":');
   expect(exportedJsonText).not.toContain("data:image/");
@@ -586,16 +592,32 @@ test("requires explicit candidate selection and preserves research sources", asy
     "Komponentit",
     "Lähteet",
   ]);
-  expect(workbook.getWorksheet("Komponentit")?.getCell("C2").value).toBe(
-    "unknown",
-  );
-  expect(workbook.getWorksheet("Lähteet")?.getCell("R3").value).toBe(
-    "https://toyota.example/maintenance",
-  );
-  expect(workbook.getWorksheet("Lähteet")?.getCell("T3").value).toBe(
+  const exportedStatuses: string[] = [];
+  workbook.getWorksheet("Komponentit")?.eachRow((row) => {
+    if (row.getCell(1).value === "Tilakoodi") {
+      exportedStatuses.push(String(row.getCell(2).value));
+    }
+  });
+  expect(exportedStatuses).toContain("unknown");
+  const exportedUrls: string[] = [];
+  const exportedEvidence: string[] = [];
+  workbook.getWorksheet("Lähteet")?.eachRow((row) => {
+    if (row.getCell(1).value === "URL") {
+      exportedUrls.push(String(row.getCell(2).value));
+    }
+    if (row.getCell(1).value === "Lähdenäyttö") {
+      exportedEvidence.push(String(row.getCell(2).value));
+    }
+  });
+  expect(exportedUrls).toContain("https://toyota.example/maintenance");
+  expect(exportedEvidence).toContain(
     "'=HYPERLINK(\"https://attacker.example\",\"Virallinen taulukko ilmoittaa 15 000 km\")",
   );
-  workbook.eachSheet((sheet) => expect(sheet.getImages()).toEqual([]));
+  workbook.eachSheet((sheet) => {
+    expect(sheet.getImages()).toEqual([]);
+    expect(sheet.actualColumnCount).toBeLessThanOrEqual(2);
+    expect(sheet.pageSetup.orientation).toBe("portrait");
+  });
   expect(exportApiRequests).toEqual([]);
 
   expect(submittedResearch).toMatchObject({
@@ -603,6 +625,16 @@ test("requires explicit candidate selection and preserves research sources", asy
     country: "FI",
     market: "Eurooppa",
     vehicle_variant: { engine: "2.0 D-4D (2WW), 105 kW" },
+    components: expect.arrayContaining([
+      expect.objectContaining({ component_code: "engine_oil" }),
+      expect.objectContaining({ component_code: "oil_filter" }),
+      expect.objectContaining({ component_code: "transmission_fluid" }),
+      expect.objectContaining({ component_code: "brake_fluid" }),
+      expect.objectContaining({ component_code: "fuel_filter" }),
+      expect.objectContaining({ component_code: "air_filter" }),
+      expect.objectContaining({ component_code: "cabin_filter" }),
+      expect.objectContaining({ component_code: "coolant" }),
+    ]),
   });
   expect(JSON.stringify(submittedResearch)).not.toContain("raw_evidence");
   expect(JSON.stringify(submittedResearch)).not.toContain("source_image_ids");

@@ -57,6 +57,9 @@ describe("VehicleReportPanel", () => {
     expect(screen.getAllByText("Lähteissä ristiriita")).not.toHaveLength(0);
     expect(screen.getAllByText("Ei riittävää tietoa")).not.toHaveLength(0);
     expect(
+      screen.getAllByText(/Luotettavuus: Matala \(low\)/).length,
+    ).toBeGreaterThan(0);
+    expect(
       screen.getAllByRole("link", {
         name: "Toyota Avensis technical specifications",
       })[0],

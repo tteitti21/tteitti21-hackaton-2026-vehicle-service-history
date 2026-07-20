@@ -60,7 +60,7 @@ describe("local report download helpers", () => {
 function minimalReport(): VehicleReportModel {
   return {
     metadata: {
-      schema_version: "1.0",
+      schema_version: "1.1",
       generated_at: "2026-07-19T12:00:00.000Z",
       analysis_date: "2026-07-19",
       distance_unit: "km",

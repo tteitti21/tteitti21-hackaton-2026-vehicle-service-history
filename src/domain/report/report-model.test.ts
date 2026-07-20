@@ -54,7 +54,7 @@ describe("createVehicleReportModel", () => {
     const report = createReport();
 
     expect(report.metadata).toMatchObject({
-      schema_version: "1.0",
+      schema_version: "1.1",
       generated_at: "2026-07-19T14:30:00.000Z",
       analysis_date: "2026-07-19",
       distance_unit: "km",
@@ -80,16 +80,38 @@ describe("createVehicleReportModel", () => {
       original_odometer_value: 100,
       original_odometer_unit: "mi",
     });
-    expect(report.components).toHaveLength(3);
-    expect(report.components[1]).toMatchObject({
+    expect(report.components).toHaveLength(16);
+    expect(report.components).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ component_code: "transmission_fluid" }),
+        expect.objectContaining({ component_code: "oil_filter" }),
+        expect.objectContaining({ component_code: "brake_fluid" }),
+        expect.objectContaining({ component_code: "fuel_filter" }),
+        expect.objectContaining({ component_code: "cabin_filter" }),
+        expect.objectContaining({ component_code: "coolant" }),
+      ]),
+    );
+    expect(
+      report.components.find(
+        ({ component_code }) => component_code === "timing_belt",
+      ),
+    ).toMatchObject({
       component_code: "timing_belt",
       status: "conflicting_sources",
       interval_claim_count: 2,
       conflict_summary: expect.stringContaining("ristiriitaisia"),
+      trustworthiness_level: "low",
+      maintenance_suggestion_fi: expect.stringContaining("claim-2"),
     });
-    expect(report.components[2]).toMatchObject({
+    expect(
+      report.components.find(
+        ({ component_code }) => component_code === "air_filter",
+      ),
+    ).toMatchObject({
       component_code: "air_filter",
       status: "insufficient_evidence",
+      service_history_note_fi:
+        "Huoltohistoriasta ei löytynyt merkintää.",
     });
     expect(report.sources).toHaveLength(4);
     expect(report.sources).toEqual(
@@ -103,14 +125,23 @@ describe("createVehicleReportModel", () => {
           claim_id: "claim-3",
           interval_km: 120_000,
           recommended: false,
+          trustworthiness_level: "high",
         }),
       ]),
     );
-    expect(report.warnings).toEqual({
+    expect(report.warnings).toMatchObject({
       service_history: ["=untrusted-warning"],
       vehicle_resolution: vehicleResolutionFixture.warnings,
-      maintenance_research: maintenanceResearchFixture.global_warnings,
+      maintenance_research: expect.arrayContaining(
+        maintenanceResearchFixture.global_warnings,
+      ),
     });
+    expect(report.warnings.maintenance_research).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("Vaihteistoöljy"),
+        expect.stringContaining("Jarruneste"),
+      ]),
+    );
   });
 
   it("never includes image objects, filenames, bytes, or data URLs", () => {

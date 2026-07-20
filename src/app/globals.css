@@ -844,11 +844,13 @@ textarea {
 
 .componentResearchList {
   display: grid;
+  min-width: 0;
   gap: 1rem;
   margin-top: 1.5rem;
 }
 
 .componentResearchCard {
+  min-width: 0;
   padding: clamp(1.2rem, 3vw, 1.8rem);
   background: var(--surface);
   border: 1px solid var(--line);
@@ -863,6 +865,10 @@ textarea {
   justify-content: space-between;
 }
 
+.componentResearchCard > header > div {
+  min-width: 0;
+}
+
 .componentResearchCard h3 {
   margin: 0.45rem 0 0;
   font-size: 1.35rem;
@@ -871,6 +877,7 @@ textarea {
 .componentResearchCard code {
   color: var(--muted);
   font-size: 0.72rem;
+  overflow-wrap: anywhere;
 }
 
 .researchResolution {
@@ -3344,6 +3351,7 @@ h2 {
   .eventEditorHeading,
   .actionEditorHeading,
   .componentSuggestion,
+  .componentResearchCard > header,
   .resolutionSearchActions,
   .reportExportActions {
     align-items: stretch;

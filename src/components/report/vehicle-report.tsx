@@ -412,9 +412,18 @@ function ReportComponentTable({
                   </span>
                 </td>
                 <td>
-                  {component.conflict_summary ??
-                    component.conditions ??
-                    "Ei erillistä ehtoa"}
+                  <strong>
+                    Luotettavuus: {component.trustworthiness_label_fi} (
+                    {component.trustworthiness_level})
+                  </strong>
+                  <span>{component.trustworthiness_note_fi}</span>
+                  <span>{component.maintenance_suggestion_fi}</span>
+                  <span>{component.service_history_note_fi}</span>
+                  <span>
+                    {component.conflict_summary ??
+                      component.conditions ??
+                      "Ei erillistä ehtoa"}
+                  </span>
                 </td>
               </tr>
             ))}
@@ -468,6 +477,11 @@ function ReportSourceTable({
                   {source.authority_rank !== null ? (
                     <span>Lähdetaso {source.authority_rank}</span>
                   ) : null}
+                  <span>
+                    Luotettavuus: {source.trustworthiness_label_fi} (
+                    {source.trustworthiness_level})
+                  </span>
+                  <span>{source.trustworthiness_note_fi}</span>
                 </td>
                 <td>
                   <a href={source.url} target="_blank" rel="noreferrer">

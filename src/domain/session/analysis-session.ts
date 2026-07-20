@@ -2,6 +2,7 @@ import type {
   MaintenanceResearch,
   VehicleVariant,
 } from "@/domain/schemas/maintenance-research";
+import { ensureMaintenanceResearchCoverage } from "@/domain/maintenance/research-components";
 import type {
   ServiceEvent,
   ServiceHistory,
@@ -339,7 +340,14 @@ export function analysisSessionReducer(
     case "complete_maintenance_research":
       return {
         ...state,
-        maintenanceResearch: action.research,
+        maintenanceResearch:
+          state.confirmedVehicle === null || state.serviceHistory === null
+            ? action.research
+            : ensureMaintenanceResearchCoverage(
+                action.research,
+                state.serviceHistory,
+                state.confirmedVehicle,
+              ),
         maintenanceResearchStatus: "success",
         maintenanceResearchError: null,
       };
@@ -373,7 +381,11 @@ export function analysisSessionReducer(
         vehicleResolutionStatus: "success",
         confirmedVehicleCandidateId: candidate.candidate_id,
         confirmedVehicleVariant: candidate.variant,
-        maintenanceResearch: action.demo.maintenanceResearch,
+        maintenanceResearch: ensureMaintenanceResearchCoverage(
+          action.demo.maintenanceResearch,
+          action.demo.serviceHistory,
+          action.demo.vehicle,
+        ),
         maintenanceResearchStatus: "success",
         demoMode: true,
       };

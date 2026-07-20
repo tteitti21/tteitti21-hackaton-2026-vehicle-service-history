@@ -54,23 +54,36 @@ describe("MaintenanceResearchPanel", () => {
 
     expect(await screen.findByText("Lähde löytyi")).toBeVisible();
     expect(screen.getByText("Lähteissä ristiriita")).toBeVisible();
-    expect(screen.getByText("Ei riittävää tietoa")).toBeVisible();
+    expect(screen.getAllByText("Ei riittävää tietoa")[0]).toBeVisible();
     expect(
       screen.getByText(/Väliä ei valittu automaattisesti/),
     ).toBeVisible();
     expect(
-      screen.getByText(/Tarkkaa vaihtoväliä ei voitu varmistaa/),
+      screen.getAllByText(/Tarkkaa vaihtoväliä ei voitu varmistaa/)[0],
     ).toBeVisible();
     expect(
       screen.getAllByRole("link", {
         name: "Official maintenance schedule",
       })[0],
     ).toHaveAttribute("href", "https://manufacturer.example/maintenance");
+    expect(screen.getAllByText("Korkea (high)")[0]).toBeVisible();
 
     const body = JSON.parse(
       vi.mocked(fetchMock).mock.calls[0]?.[1]?.body as string,
     ) as Record<string, unknown>;
     expect(body.current_odometer_km).toBe(184_000);
+    expect(body.components).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ component_code: "engine_oil" }),
+        expect.objectContaining({ component_code: "oil_filter" }),
+        expect.objectContaining({ component_code: "transmission_fluid" }),
+        expect.objectContaining({ component_code: "brake_fluid" }),
+        expect.objectContaining({ component_code: "fuel_filter" }),
+        expect.objectContaining({ component_code: "air_filter" }),
+        expect.objectContaining({ component_code: "cabin_filter" }),
+        expect.objectContaining({ component_code: "coolant" }),
+      ]),
+    );
     expect(JSON.stringify(body)).not.toContain("Akku vaihdettu 2024");
     expect(JSON.stringify(body)).not.toContain("image-1");
   });

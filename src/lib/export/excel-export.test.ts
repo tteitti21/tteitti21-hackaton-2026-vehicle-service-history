@@ -1,4 +1,4 @@
-import ExcelJS from "exceljs";
+import ExcelJS, { type Worksheet } from "exceljs";
 import { describe, expect, it } from "vitest";
 
 import { createVehicleReportModel } from "@/domain/report/report-model";
@@ -51,7 +51,7 @@ const reviewedHistory: ServiceHistory = {
 };
 
 describe("Excel report export", () => {
-  it("creates four readable, formatted report sheets with typed values and trusted formulas", async () => {
+  it("creates four portrait, two-column sheets that read vertically", async () => {
     const report = createReport();
     const bytes = await createExcelReportBytes(report);
     const workbook = new ExcelJS.Workbook();
@@ -64,27 +64,60 @@ describe("Excel report export", () => {
       "Komponentit",
       "Lähteet",
     ]);
-    expect(workbook.getWorksheet("Huoltohistoria")?.getCell("E2").value).toBe(
-      168_998.8228,
-    );
-    expect(workbook.getWorksheet("Huoltohistoria")?.getCell("E2").numFmt).toBe(
-      "#,##0.####",
-    );
-    expect(workbook.getWorksheet("Komponentit")?.getCell("J2").value).toBe(
+    workbook.eachSheet((sheet) => {
+      expect(sheet.actualColumnCount).toBeLessThanOrEqual(2);
+      expect(sheet.pageSetup.orientation).toBe("portrait");
+      expect(sheet.pageSetup.fitToWidth).toBe(1);
+      expect(sheet.views[0]).toMatchObject({
+        state: "frozen",
+        ySplit: 2,
+        showGridLines: false,
+      });
+      expect(sheet.getImages()).toEqual([]);
+      assertDetailRowsHaveValues(sheet);
+    });
+
+    const serviceSheet = workbook.getWorksheet("Huoltohistoria")!;
+    const odometerCell = findValueCell(serviceSheet, "Mittarilukema (km)");
+    expect(odometerCell.value).toBe(168_998.822784);
+    expect(odometerCell.numFmt).toBe("#,##0.####");
+
+    const componentSheet = workbook.getWorksheet("Komponentit")!;
+    expect(findValueCell(componentSheet, "Huoltoväli (km)").value).toBe(
       15_000,
     );
-    expect(workbook.getWorksheet("Lähteet")?.getCell("R2").value).toBe(
-      "https://toyota.example/avensis-t27",
+    expect(
+      findAllValueCells(componentSheet, "trustworthiness_level").map(
+        (cell) => cell.value,
+      ),
+    ).toEqual(expect.arrayContaining(["Korkea (high)", "Matala (low)"]));
+    expect(
+      findAllValueCells(componentSheet, "Komponenttikoodi").map(
+        (cell) => cell.value,
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        "engine_oil",
+        "oil_filter",
+        "transmission_fluid",
+        "brake_fluid",
+        "fuel_filter",
+        "air_filter",
+        "cabin_filter",
+        "coolant",
+      ]),
     );
-    expect(workbook.getWorksheet("Komponentit")?.views[0]).toMatchObject({
-      state: "frozen",
-      ySplit: 1,
-      showGridLines: false,
-    });
+
+    const sourceSheet = workbook.getWorksheet("Lähteet")!;
+    expect(
+      findAllValueCells(sourceSheet, "URL").map((cell) => cell.value),
+    ).toContain("https://toyota.example/avensis-t27");
+    expect(
+      findAllValueCells(sourceSheet, "Väite-ID").map((cell) => cell.value),
+    ).toEqual(expect.arrayContaining(["claim-2", "claim-3"]));
 
     const formulas: string[] = [];
     workbook.eachSheet((sheet) => {
-      expect(sheet.getImages()).toEqual([]);
       sheet.eachRow((row) => {
         row.eachCell((cell) => {
           if (cell.type === ExcelJS.ValueType.Formula) {
@@ -105,7 +138,7 @@ describe("Excel report export", () => {
     expect(formulas).toEqual(
       expect.arrayContaining([
         expect.stringMatching(
-          /^COUNTIF\('Komponentit'!\$C\$2:\$C\$\d+,"overdue"\)$/,
+          /^COUNTIF\('Komponentit'!\$B\$1:\$B\$\d+,"overdue"\)$/,
         ),
       ]),
     );
@@ -138,16 +171,19 @@ describe("Excel report export", () => {
 
     expect(dangerousStrings).toEqual([]);
     expect(
-      loaded.getWorksheet("Yhteenveto")?.getCell("B5").value,
+      findValueCell(loaded.getWorksheet("Yhteenveto")!, "Merkki").value,
     ).toBe("'=malicious-make");
     expect(
-      loaded.getWorksheet("Huoltohistoria")?.getCell("K2").value,
+      findValueCell(
+        loaded.getWorksheet("Huoltohistoria")!,
+        "Raaka näyttö",
+      ).value,
     ).toBe("'=HYPERLINK(\"https://attacker.example\")");
     expect(
-      loaded.getWorksheet("Lähteet")?.getCell("P2").value,
+      findValueCell(loaded.getWorksheet("Lähteet")!, "Otsikko").value,
     ).toBe("'+malicious-source-title");
     expect(
-      loaded.getWorksheet("Lähteet")?.getCell("T2").value,
+      findValueCell(loaded.getWorksheet("Lähteet")!, "Lähdenäyttö").value,
     ).toBe("'@malicious-source-evidence");
     expect(JSON.stringify(workbook.model)).not.toContain("original-image.png");
     workbook.eachSheet((sheet) => expect(sheet.getImages()).toEqual([]));
@@ -162,6 +198,41 @@ function createReport() {
     serviceHistory: reviewedHistory,
     maintenanceResearch: maintenanceResearchFixture,
     generatedAt: new Date("2026-07-19T14:30:00.000Z"),
+  });
+}
+
+function findValueCell(sheet: Worksheet, label: string): ExcelJS.Cell {
+  const cells = findAllValueCells(sheet, label);
+  if (cells.length === 0) {
+    throw new Error(`Missing workbook field: ${sheet.name}/${label}`);
+  }
+  return cells[0]!;
+}
+
+function findAllValueCells(
+  sheet: Worksheet,
+  label: string,
+): ExcelJS.Cell[] {
+  const cells: ExcelJS.Cell[] = [];
+  sheet.eachRow((row) => {
+    if (row.getCell(1).value === label) {
+      cells.push(row.getCell(2));
+    }
+  });
+  return cells;
+}
+
+function assertDetailRowsHaveValues(sheet: Worksheet): void {
+  sheet.eachRow((row) => {
+    const label = row.getCell(1);
+    const value = row.getCell(2);
+    if (
+      typeof label.value === "string" &&
+      value.type !== ExcelJS.ValueType.Merge
+    ) {
+      expect(value.value, `${sheet.name}/${label.value}`).not.toBeNull();
+      expect(value.value, `${sheet.name}/${label.value}`).not.toBe("");
+    }
   });
 }
 

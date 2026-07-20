@@ -180,6 +180,17 @@ test("completes the synthetic three-document workflow from upload through export
     country: "FI",
     market: "Eurooppa",
     vehicle_variant: { engine: "1.8 hybrid N18-X, 110 kW" },
+    components: expect.arrayContaining([
+      expect.objectContaining({ component_code: "engine_oil" }),
+      expect.objectContaining({ component_code: "oil_filter" }),
+      expect.objectContaining({ component_code: "transmission_fluid" }),
+      expect.objectContaining({ component_code: "timing_belt" }),
+      expect.objectContaining({ component_code: "brake_fluid" }),
+      expect.objectContaining({ component_code: "fuel_filter" }),
+      expect.objectContaining({ component_code: "air_filter" }),
+      expect.objectContaining({ component_code: "cabin_filter" }),
+      expect.objectContaining({ component_code: "coolant" }),
+    ]),
   });
   expect(JSON.stringify(submittedResearch)).not.toContain("raw_evidence");
   expect(JSON.stringify(submittedResearch)).not.toContain("source_image_ids");
@@ -215,9 +226,24 @@ test("completes the synthetic three-document workflow from upload through export
     },
     summary: {
       service_event_count: 3,
-      component_count: 4,
+      component_count: 18,
     },
   });
+  expect(exportedJson.components).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        component_code: "transmission_fluid",
+        status: "insufficient_evidence",
+        trustworthiness_level: "low",
+      }),
+      expect.objectContaining({
+        component_code: "timing_belt",
+        status: "conflicting_sources",
+        trustworthiness_level: "low",
+        maintenance_suggestion_fi: expect.stringContaining("claim-2"),
+      }),
+    ]),
+  );
   expect(exportedJson.service_history[0]).toMatchObject({
     original_odometer_value: 100_000,
     original_odometer_unit: "mi",
@@ -242,7 +268,38 @@ test("completes the synthetic three-document workflow from upload through export
     "Komponentit",
     "Lähteet",
   ]);
-  workbook.eachSheet((sheet) => expect(sheet.getImages()).toEqual([]));
+  workbook.eachSheet((sheet) => {
+    expect(sheet.getImages()).toEqual([]);
+    expect(sheet.actualColumnCount).toBeLessThanOrEqual(2);
+    expect(sheet.pageSetup.orientation).toBe("portrait");
+  });
+  const componentSheet = workbook.getWorksheet("Komponentit")!;
+  const exportedComponentCodes: string[] = [];
+  const trustworthinessLevels: string[] = [];
+  componentSheet.eachRow((row) => {
+    if (row.getCell(1).value === "Komponenttikoodi") {
+      exportedComponentCodes.push(String(row.getCell(2).value));
+    }
+    if (row.getCell(1).value === "trustworthiness_level") {
+      trustworthinessLevels.push(String(row.getCell(2).value));
+    }
+  });
+  expect(exportedComponentCodes).toEqual(
+    expect.arrayContaining([
+      "engine_oil",
+      "oil_filter",
+      "transmission_fluid",
+      "timing_belt",
+      "brake_fluid",
+      "fuel_filter",
+      "air_filter",
+      "cabin_filter",
+      "coolant",
+    ]),
+  );
+  expect(trustworthinessLevels).toEqual(
+    expect.arrayContaining(["Korkea (high)", "Matala (low)"]),
+  );
   expect(exportApiRequests).toEqual([]);
 
   expect(extractionManifestIds).toHaveLength(3);
