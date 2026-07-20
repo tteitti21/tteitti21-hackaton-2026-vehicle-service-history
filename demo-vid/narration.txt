@@ -1,0 +1,17 @@
+The idea for AutoHuolto AI grew from a problem I had already encountered. I had used AI assistance to organize vehicle maintenance information into an Excel-based service record. That experience showed me the value of structured maintenance data, but also how difficult it can be to interpret invoices, service-book entries, handwritten notes, and photographs.
+
+To turn the idea into a working application, I first used the GPT-5.6 Sol model in ChatGPT to define the project and create an MVP specification. The plan described a privacy-focused web application that could extract maintenance events from images, let the user review the results, identify the correct vehicle variant, research maintenance intervals from reliable sources, and calculate the current maintenance status. It also set clear constraints: no permanent accounts, no database, no unnecessary storage of sensitive documents, and no unsupported recommendations presented as facts.
+
+I then implemented the application with Codex, again using GPT-5.6 Sol. Codex produced the project code and helped resolve technical errors during development. My role was to guide and verify the process. I tested each workflow, supplied error logs, reviewed the results, and requested functional or visual changes whenever the application did not behave as intended.
+
+The completed application begins by collecting the vehicle’s make, model, year, engine, transmission, market, and current odometer reading. The user then uploads photographs of maintenance records. Before an image leaves the browser, names, addresses, registration numbers, vehicle identification numbers, and other sensitive details can be covered. The application creates new sanitized PNG files, and only the versions approved by the user are submitted.
+
+OpenAI extracts the visible maintenance events into a strict structured format. The user can compare each event with the original evidence, correct dates and odometer readings, adjust component mappings, add or remove records, and resolve duplicate or chronological warnings.
+
+After the history is confirmed, the application searches for possible vehicle variants. Ambiguous results are never selected automatically. The sources remain visible, and the user explicitly confirms the correct vehicle before maintenance research continues.
+
+The research stage prioritizes manufacturer manuals and official technical sources. Evidence is converted into a validated structure, conflicting claims remain visible, and every recommendation retains its source. When evidence is insufficient, the application reports that limitation instead of inventing an interval.
+
+The final maintenance status is calculated by deterministic functions rather than by the language model. Each component is classified as okay, approaching its interval, due, overdue, unknown, conflicting, or unsupported. This makes the results repeatable and testable.
+
+Finally, the reviewed history, maintenance statuses, uncertainty, compatibility notes, and source links can be downloaded locally as JSON or Excel. AutoHuolto AI turns fragmented vehicle records into transparent, source-backed maintenance guidance while keeping the user in control of both the conclusions and their data.

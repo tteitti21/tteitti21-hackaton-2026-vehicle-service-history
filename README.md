@@ -1,17 +1,97 @@
-# AutoHuolto AI – Codex implementation package
+# AutoHuolto AI
 
-This package defines a privacy-first, stateless web application that:
+AutoHuolto AI is a privacy-first, stateless vehicle service-history analyzer.
+Used-car maintenance evidence is commonly scattered across handwritten
+service-book entries, workshop receipts, inspection papers, and photographs.
+Understanding it requires the buyer or owner to reconcile dates, odometer
+readings, component terminology, uncertain vehicle variants, and
+model-specific maintenance intervals by hand.
 
-1. accepts service-book and receipt images anonymized in the user's browser,
-2. extracts a structured service history from the images with OpenAI API image analysis,
-3. lets the user review and correct the extracted rows,
-4. searches the web for maintenance and replacement intervals related to the vehicle variant,
-5. calculates maintenance status deterministically in application code,
-6. displays sources and uncertainties,
-7. exports the result as JSON and Excel files,
-8. does not use its own database or permanently store the user's images or reports.
+The application turns user-redacted document images into an editable service
+timeline, helps the user confirm the correct vehicle variant, researches
+maintenance intervals with visible sources, calculates component status, and
+exports a local report. It is intended to make fragmented records easier to
+review without hiding uncertainty or treating AI output as mechanical advice.
 
-## Starting instructions for Codex
+## What the application does
+
+1. Collects make, model, year, engine, transmission, market, and current
+   odometer details.
+2. Opens service-book and receipt images only in browser memory.
+3. Lets the user redact identifiers, crop, and rotate images with a local
+   Canvas editor.
+4. Creates new sanitized PNG blobs and submits only the versions the user
+   explicitly approves.
+5. Extracts schema-validated maintenance events that the user can edit, add,
+   remove, merge, and confirm.
+6. Detects possible duplicates, invalid values, and chronological conflicts.
+7. Finds source-backed vehicle candidates without auto-selecting an ambiguous
+   variant.
+8. Researches maintenance intervals using a source hierarchy and preserves
+   conflicts, compatibility notes, original units, and insufficient-evidence
+   results.
+9. Calculates due and overdue status deterministically in application code.
+10. Generates JSON and Excel reports locally without including image bytes.
+
+There is no user account, application database, object store, persistent
+cache, or background job. The complete product narrative is also available in
+[`demo-vid/narration.txt`](demo-vid/narration.txt).
+
+## How Codex and GPT-5.6 were used
+
+### Codex: development acceleration
+
+Codex was used as a development agent, not as the runtime maintenance
+analyzer. Working from the phased MVP specification, it accelerated:
+
+- scaffolding the Next.js, React, and TypeScript application;
+- implementing browser-side upload, Canvas redaction, sanitized PNG creation,
+  and approval controls;
+- defining Zod schemas, API boundaries, normalization rules, and pure status
+  functions;
+- building vehicle-resolution, maintenance-research, report, JSON, and Excel
+  workflows;
+- writing unit, component, privacy, and Playwright end-to-end tests;
+- diagnosing request-size, timeout, CI, responsive-layout, and development
+  server failures from supplied logs;
+- reviewing privacy boundaries, source traceability, error handling, and
+  spreadsheet formula-injection protection.
+
+The human developer defined the scope, supplied test observations and error
+logs, reviewed behavior, requested changes, and verified each phase. Codex is
+not part of the deployed request path and does not receive uploaded user
+documents when the application runs.
+
+### GPT-5.6: specification and runtime evidence processing
+
+GPT-5.6 Sol in ChatGPT was used during planning to turn the original idea into
+the MVP specification. The development process also used GPT-5.6 Sol through
+Codex. At runtime, the model is selected through environment variables rather
+than hard-coded. The checked-in `.env.example` uses `gpt-5.6-terra` as the
+default extraction model, and vehicle resolution and research use the
+configured research model or inherit that default.
+
+GPT-5.6, or another configured model with the required Responses API features,
+is used in three bounded product workflows:
+
+| Workflow | Model input | Structured or validated output |
+|---|---|---|
+| Service-event extraction | User-approved sanitized PNG blobs and client-generated image IDs. Original files are not included. | Service events, raw evidence, normalized dates and odometers, actions, image references, confidence, and ambiguities. Output is checked with Zod; one bounded repair attempt is allowed after invalid structured output. |
+| Vehicle-variant identification | Confirmed make, model, year, engine, transmission, country, and market fields. Images and current odometer are excluded from the web-search request. | Up to five candidates with matching, conflicting, and missing distinguishing fields plus preserved source links. Candidate normalization is schema-validated, and the user must explicitly select one. |
+| Maintenance research | Confirmed variant, country, market, and component categories. Images, service-history contents, and current odometer are not sent to the research model. | A source-backed research memo followed by a separate strict normalized result containing intervals, compatibility, source authority, original units, conflicts, and insufficient-evidence outcomes. Source identifiers must trace back to the web-search response. |
+
+Every OpenAI Responses API call keeps the API key on the server, uses
+`store: false`, and returns data that is validated before entering application
+state. Model output supplies evidence; it does **not** decide whether a
+component is due or overdue. Pure TypeScript functions calculate status from
+the reviewed service history, confirmed interval, current odometer, and
+analysis date, so the same validated inputs produce the same result.
+
+Model IDs remain configurable because deployments must choose a current model
+that supports the required image input, web search, and Structured Outputs
+features.
+
+## Continuing development with Codex
 
 Open `AGENTS.md` in the project root and follow it. Then read:
 
@@ -22,7 +102,7 @@ Open `AGENTS.md` in the project root and follow it. Then read:
 
 Build one phase at a time. Do not skip tests or privacy requirements.
 
-## Recommended implementation
+## Architecture at a glance
 
 - Next.js, TypeScript, and App Router
 - one deployable web application
@@ -145,24 +225,151 @@ before it is written to cells. Images and their contents are excluded from both
 export formats; only the session identifiers of service-event source images are
 preserved as text for traceability.
 
-## Local development
+## Prerequisites
 
-Requirements:
+- Node.js **20.9 or newer**; Node.js 22 LTS is recommended.
+- npm; the repository records `npm@10.9.2` as its package manager.
+- An OpenAI API key for live extraction, vehicle search, and maintenance
+  research. The built-in synthetic demo and mocked tests do not require live
+  API calls.
+- Chromium for Playwright browser tests.
 
-- Node.js 20.9 or newer
-- npm
+## Installation and startup
 
-Install dependencies and start the development server:
+Install the exact dependency versions in `package-lock.json`:
 
 ```bash
 npm ci
+```
+
+For live OpenAI workflows, copy `.env.example` to `.env.local` and add the API
+key only to that local file. For example:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+On macOS or Linux, use:
+
+```bash
+cp .env.example .env.local
+```
+
+Start the development server:
+
+```bash
 npm run dev
 ```
 
-If necessary, copy `.env.example` to `.env.local`. Do not store the API key in
-source code or in a browser-visible `NEXT_PUBLIC_` variable.
+Open `http://localhost:3000`. To run the production build locally:
 
-## Quality gates
+```bash
+npm run build
+npm start
+```
+
+Never commit `.env.local`, place a real key in `.env.example`, or expose the
+key through a `NEXT_PUBLIC_` variable.
+
+## Environment variables
+
+`.env.example` is the authoritative secret-free template:
+
+```dotenv
+OPENAI_API_KEY=
+OPENAI_EXTRACTION_MODEL=gpt-5.6-terra
+OPENAI_EXTRACTION_TIMEOUT_MS=180000
+OPENAI_RESEARCH_MODEL=
+OPENAI_RESEARCH_TIMEOUT_MS=180000
+MAX_UPLOAD_FILES=10
+MAX_UPLOAD_BYTES_PER_FILE=20971520
+```
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `OPENAI_API_KEY` | Yes for live AI requests | Server-only credential used by `/api/extract`, `/api/resolve-vehicle`, and `/api/research`. It is not needed to browse the UI or load the built-in synthetic demo. |
+| `OPENAI_EXTRACTION_MODEL` | No | Image-capable Responses API model used for structured service-event extraction. Blank or missing values fall back to `gpt-5.6-terra`. |
+| `OPENAI_EXTRACTION_TIMEOUT_MS` | No | Extraction timeout in milliseconds. The accepted range is 5,000–240,000; the default is 180,000. |
+| `OPENAI_RESEARCH_MODEL` | No | Model used for vehicle web search, candidate normalization, maintenance research, and research normalization. A blank value inherits the extraction model and then the application default. |
+| `OPENAI_RESEARCH_TIMEOUT_MS` | No | Vehicle-resolution and maintenance-research timeout. It inherits the extraction timeout when blank and otherwise accepts 5,000–240,000 milliseconds. |
+| `MAX_UPLOAD_FILES` | No | Maximum sanitized images per extraction request. The default is 10. |
+| `MAX_UPLOAD_BYTES_PER_FILE` | No | Maximum bytes per sanitized PNG. The default is 20,971,520 bytes, or 20 MiB. |
+
+The total multipart request limit is derived as
+`MAX_UPLOAD_FILES × MAX_UPLOAD_BYTES_PER_FILE + 1 MiB` for multipart overhead.
+The hosting platform or reverse proxy may impose a smaller independent limit.
+
+## Safe demo workflow
+
+The safest manual demonstration uses the built-in completed analysis and makes
+no `/api/*` request:
+
+1. Start the application with `npm run dev`.
+2. Open the home page and read the privacy notice.
+3. Select **Load synthetic demo** in the **Phase 9 / Synthetic demo** panel.
+4. Review the fictional vehicle, editable service events, candidate variants,
+   research conflicts, insufficient-evidence result, deterministic statuses,
+   and source-backed report.
+5. Download JSON and Excel locally.
+6. Reload the page and confirm that the session disappears.
+
+The demo uses reserved `.invalid` source domains. They are deliberately
+non-resolving citations and must not be represented as real manufacturer
+pages.
+
+To demonstrate upload and redaction, use only generated fictional images in a
+test or non-production environment. Cover the synthetic identifiers, create
+the exact submission preview, confirm it, and submit only if exercising the
+live API is intentional. Never use a real registration, VIN, name, address,
+invoice, or workshop customer record for a smoke test.
+
+## Synthetic sample data and fixtures
+
+The built-in sample is defined in
+[`src/demo/synthetic-demo.ts`](src/demo/synthetic-demo.ts):
+
+| Field | Synthetic value |
+|---|---|
+| Vehicle | Nordica Aurora N2 |
+| Model and registration year | 2021 |
+| Powertrain | 1.8 hybrid, engine code N18-X, 110 kW, CVT/e-CVT, front-wheel drive |
+| Market | Finland / Europe |
+| Current odometer | 180,000 km |
+
+Its three fictional service-document references contain:
+
+- an engine-oil replacement on 10 January 2025 at `100000 mi`, normalized
+  exactly to `160934.4 km`;
+- an ambiguous June 2024 brake-fluid/brakes entry with no odometer;
+- a timing-belt inspection on 14 February 2026 at `176000 km`, with no
+  replacement claim.
+
+The research fixture includes two candidate variants, conflicting timing-belt
+intervals, an interval originally expressed in miles, and insufficient
+evidence for engine coolant. This deliberately exercises uncertainty instead
+of presenting a perfectly complete history.
+
+The repository does not store real or reusable personal document images.
+Playwright creates synthetic PNGs in browser memory:
+
+- [`tests/e2e/full-workflow.spec.ts`](tests/e2e/full-workflow.spec.ts) generates
+  three service-document images and runs the complete mocked workflow;
+- [`tests/e2e/redaction.spec.ts`](tests/e2e/redaction.spec.ts) generates an
+  image with a visible synthetic identifier, redacts it, intercepts the
+  multipart request, and verifies that neither the original file nor its bytes
+  were transmitted;
+- [`src/test/extraction-request-fixture.ts`](src/test/extraction-request-fixture.ts)
+  builds synthetic multipart API requests for route tests.
+
+## Tests and quality gates
+
+Install Playwright's Chromium build once:
+
+```bash
+npx playwright install chromium
+```
+
+Run the checks individually:
 
 ```bash
 npm run lint
@@ -173,12 +380,88 @@ npm run test:e2e
 npm run build
 ```
 
-Playwright requires a local Chromium installation:
+The commands cover:
 
-```bash
-npx playwright install chromium
-```
+- `npm run lint` — ESLint with zero warnings allowed;
+- `npm run privacy:audit` — repository privacy and secret-pattern guardrails;
+- `npm run typecheck` — TypeScript validation without emitting files;
+- `npm test` — Vitest unit and React component tests;
+- `npm run test:e2e` — a production build followed by the Playwright desktop
+  and mobile workflows;
+- `npm run build` — the production Next.js build.
 
-Production environment requirements, proxy privacy constraints, environment
-variables, the synthetic smoke test, and known operating limits are documented
-in [`docs/09_DEPLOYMENT.md`](docs/09_DEPLOYMENT.md).
+Use `npm run test:watch` for local Vitest watch mode.
+
+## Privacy model
+
+AutoHuolto AI is application-stateless, not a claim of provider-side zero data
+retention.
+
+- Original image files remain in browser memory. The user manually redacts
+  identifiers before submission.
+- The browser renders the edited pixels into new sanitized PNG blobs. The
+  original file and its EXIF metadata are not used in the multipart submission
+  package.
+- The user sees the exact sanitized previews, confirms that identifiers have
+  been covered, and explicitly approves them. Only those approved sanitized
+  blobs are submitted to OpenAI for extraction.
+- The vehicle-resolution model receives confirmed variant fields, not document
+  images or the current odometer. The maintenance-research model receives the
+  confirmed variant, country, market, and component categories, not images,
+  service-history text, or the odometer.
+- Vehicle details, images, extracted events, candidates, research, statuses,
+  and reports remain in React memory for the current tab. The application has
+  no account, database, file bucket, persistent cache, localStorage, or
+  IndexedDB for analysis data.
+- JSON and Excel exports are generated locally. Images are excluded from both
+  formats.
+- OpenAI Responses API calls use `store: false`; background mode and persistent
+  OpenAI file resources are not used.
+- Request bodies, image bytes, extracted text, vehicle identifiers, and report
+  contents must not be logged. Only non-sensitive operational metadata may be
+  recorded.
+- Closing or reloading the page clears the application session. Provider and
+  hosting-platform retention or abuse-monitoring policies may still apply to
+  transmitted sanitized content, so the project does not claim that nothing
+  is retained anywhere.
+
+See [`docs/07_PRIVACY_AND_SECURITY.md`](docs/07_PRIVACY_AND_SECURITY.md) for
+the complete privacy and threat model.
+
+## Limitations and uncertainty handling
+
+- Redaction is manual. The application does not promise automatic detection of
+  every name, registration number, VIN, address, or other identifier.
+- Image extraction depends on legibility and document quality. Empty,
+  illegible, low-confidence, or ambiguous evidence is reported honestly and
+  remains editable by the user.
+- A normalized event does not erase its raw evidence. Date precision,
+  confidence, original odometer value, and original unit remain visible.
+- Candidate vehicles are suggestions. Matching power alone is insufficient,
+  ambiguous candidates are never selected automatically, and unresolved
+  engine, transmission, year, or market details remain visible.
+- Maintenance intervals vary by model year, engine, transmission, market, and
+  operating conditions. Official compatible sources outrank weaker sources;
+  credible conflicts are preserved rather than averaged.
+- When a credible compatible interval cannot be found, the result is
+  `insufficient_evidence`. Conflicting best-tier sources produce
+  `conflicting_sources`. The analyzer does not invent a source or interval to
+  fill a blank.
+- Missing service-history evidence means only that no entry was found. It is
+  not proof that maintenance was not performed.
+- Statuses are limited to **OK**, **Due soon**, **Due**, **Overdue**,
+  **Unknown**, **Insufficient evidence**, and **Conflicting sources**. They are
+  deterministic calculations from the reviewed data and configured thresholds,
+  not mechanical diagnoses or language-model opinions.
+- The report does not replace a physical inspection, manufacturer schedule,
+  workshop diagnosis, or professional advice.
+- The session cannot be recovered after a reload or closed tab. Export the
+  report before leaving if it should be kept.
+- Live extraction and web research depend on OpenAI availability, source
+  availability, request limits, timeouts, and deployment-platform constraints.
+  The application cannot guarantee reliable maintenance evidence for every
+  vehicle variant.
+
+Production requirements, proxy privacy constraints, the synthetic smoke test,
+and operating limits are documented in
+[`docs/09_DEPLOYMENT.md`](docs/09_DEPLOYMENT.md).
